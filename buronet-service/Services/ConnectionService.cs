@@ -265,7 +265,7 @@ namespace buronet_service.Services // Ensure this namespace is correct
             else if (updateDto.Status == ConnectionRequestStatus.Rejected.ToString())
             {
                 request.Status = ConnectionRequestStatus.Rejected.ToString();
-            } 
+            }
             else
             {
                 throw new ArgumentException("Invalid status for connection request update.");
@@ -294,51 +294,223 @@ namespace buronet_service.Services // Ensure this namespace is correct
             return true;
         }
 
-        public async Task<IEnumerable<SuggestedUserDto>> GetSuggestedUsersAsync(Guid currentUserId, int limit)
+        //public async Task<IEnumerable<SuggestedUserDto>> GetSuggestedUsersAsync(Guid currentUserId, int limit)
+        //{
+
+        //    // STEP 1: Build the exclusion list in SQL (already connected, pending requests, yourself)
+        //    var usersToExclude =
+        //        from u in _context.Users
+        //        where
+        //            // Already connected (either direction)
+        //            _context.Connections.Any(c => (c.UserId1 == currentUserId && c.UserId2 == u.Id) ||
+        //                                          (c.UserId2 == currentUserId && c.UserId1 == u.Id))
+        //            // Pending connection requests (either direction)
+        //            || _context.ConnectionRequests.Any(cr => (cr.SenderId == currentUserId && cr.ReceiverId == u.Id) ||
+        //                                                     (cr.ReceiverId == currentUserId && cr.SenderId == u.Id))
+        //            // The current user themselves
+        //            || u.Id == currentUserId
+        //        select u.Id;
+
+        //    // STEP 2: Find connections-of-your-connections
+        //    var connectionsOfConnections = await _context.Connections
+        //        .Where(coc => usersToExclude.Contains(coc.UserId1) || usersToExclude.Contains(coc.UserId2))
+        //        .Select(coc => usersToExclude.Contains(coc.UserId1) ? coc.UserId2 : coc.UserId1)
+        //        .Distinct()
+        //        .ToListAsync();
+
+        //    // STEP 3: Get the final suggested users
+        //    // - Must be a connection-of-a-connection
+        //    // - Must NOT be in the exclusion list
+        //    // - Order by recent profile activity
+        //    // - Limit results to 'limit'
+        //    var suggestedUsers = await _context.Users
+        //        .AsNoTracking()
+        //        .Include(u => u.Profile)
+        //        .Where(u => connectionsOfConnections.Contains(u.Id) && !usersToExclude.Contains(u.Id))
+        //        .OrderByDescending(u => u.Profile!.UpdatedAt)
+        //        .Take(limit)
+        //        .ToListAsync();
+
+
+        //    // STEP 6: Convert the DB entities into the format needed by the API
+        //    return _mapper.Map<IEnumerable<SuggestedUserDto>>(suggestedUsers);
+        //}
+
+
+        public async Task<List<IEnumerable<SuggestedUserDto>>> GetSuggestedUsersAsync(Guid currentUserId, int limit)
         {
-            //_logger.LogInformation("Fetching suggested users for user {UserId} with a limit of {Limit}.", currentUserId, limit);
+            var result = new List<IEnumerable<SuggestedUserDto>>();
 
-            // Get a list of all user IDs that the current user is already connected to
-            var connectedUserIds = await _context.Connections
-                .Where(c => c.UserId1 == currentUserId)
-                .Select(c => c.UserId2)
+            // STEP 1: Build exclusion list (already connected, pending requests, yourself)
+            var usersToExcludeQuery =
+                from u in _context.Users
+                where
+                    _context.Connections.Any(c =>
+                        (c.UserId1 == currentUserId && c.UserId2 == u.Id) ||
+                        (c.UserId2 == currentUserId && c.UserId1 == u.Id))
+                    || _context.ConnectionRequests.Any(cr =>
+                        (cr.SenderId == currentUserId && cr.ReceiverId == u.Id) ||
+                        (cr.ReceiverId == currentUserId && cr.SenderId == u.Id))
+                    || u.Id == currentUserId
+                select u.Id;
+
+            // STEP 2: Get connections-of-connections (both directions in one query)
+            var connectionsOfConnections = await _context.Connections
+                .Where(coc => usersToExcludeQuery.Contains(coc.UserId1) || usersToExcludeQuery.Contains(coc.UserId2))
+                .Select(coc => usersToExcludeQuery.Contains(coc.UserId1) ? coc.UserId2 : coc.UserId1)
+                .Distinct()
                 .ToListAsync();
 
-            // Also get the reverse connections
-            var reverseConnectedUserIds = await _context.Connections
-                .Where(c => c.UserId2 == currentUserId)
-                .Select(c => c.UserId1)
+            // STEP 3: Get current user's data sequentially (to avoid DbContext concurrency issues)
+            var currentUserHeadline = await _context.Users
+                .Where(u => u.Id == currentUserId)
+                .Select(u => u.Profile!.Headline)
+                .FirstOrDefaultAsync();
+
+            var currentUserTitle = await _context.UserExperiences
+                .Where(e => e.UserProfileId == currentUserId)
+                .OrderByDescending(e => e.EndDate ?? DateTime.MaxValue)
+                .Select(e => e.Title)
+                .FirstOrDefaultAsync();
+
+            var currentUserEducation = await _context.UserEducation
+                .Where(e => e.UserProfileId == currentUserId)
+                .Select(e => new { e.Institution, e.Degree, e.Major })
                 .ToListAsync();
 
-            connectedUserIds.AddRange(reverseConnectedUserIds);
-            connectedUserIds = connectedUserIds.Distinct().ToList();
-            connectedUserIds.Add(currentUserId); // Exclude the current user themselves
+            // STEP 4: Similar headline
+            string? headlineKeyword = currentUserHeadline?
+                .Split(' ', StringSplitOptions.RemoveEmptyEntries)
+                .FirstOrDefault();
 
-            // Get a list of all user IDs that the current user has sent a connection request to
-            var sentRequestUserIds = await _context.ConnectionRequests
-                .Where(cr => cr.SenderId == currentUserId)
-                .Select(cr => cr.ReceiverId)
-                .ToListAsync();
-
-            // Get a list of all user IDs that have sent a connection request to the current user
-            var receivedRequestUserIds = await _context.ConnectionRequests
-                .Where(cr => cr.ReceiverId == currentUserId)
-                .Select(cr => cr.SenderId)
-                .ToListAsync();
-
-            // Combine all users to exclude from suggestions
-            var usersToExclude = connectedUserIds.Union(sentRequestUserIds).Union(receivedRequestUserIds);
-
-            // Fetch a list of suggested users from the database.
-            var suggestedUsers = await _context.Users
+            var similarHeadlineUsers = await _context.Users
                 .AsNoTracking()
                 .Include(u => u.Profile)
-                .Where(u => !usersToExclude.Contains(u.Id)) // Filter out already connected/requested users
-                .OrderByDescending(u => u.Profile!.UpdatedAt) // Order by recent profile activity
+                .Where(u =>
+                    connectionsOfConnections.Contains(u.Id) &&
+                    !usersToExcludeQuery.Contains(u.Id) &&
+                    (string.IsNullOrEmpty(headlineKeyword) ||
+                     (u.Profile!.Headline != null && u.Profile.Headline.Contains(headlineKeyword))))
+                .OrderByDescending(u => u.Profile!.UpdatedAt)
                 .Take(limit)
                 .ToListAsync();
 
-            return _mapper.Map<IEnumerable<SuggestedUserDto>>(suggestedUsers);
+            result.Add(_mapper.Map<IEnumerable<SuggestedUserDto>>(similarHeadlineUsers));
+
+            // STEP 5: Similar title
+            if (!string.IsNullOrEmpty(currentUserTitle))
+            {
+                var similarTitleUsers = await _context.Users
+                    .AsNoTracking()
+                    .Include(u => u.Profile)
+                    .Where(u =>
+                        connectionsOfConnections.Contains(u.Id) &&
+                        !usersToExcludeQuery.Contains(u.Id) &&
+                        _context.UserExperiences.Any(e =>
+                            e.UserProfileId == u.Id &&
+                            e.Title == currentUserTitle))
+                    .OrderByDescending(u => u.Profile!.UpdatedAt)
+                    .Take(limit)
+                    .ToListAsync();
+
+                result.Add(_mapper.Map<IEnumerable<SuggestedUserDto>>(similarTitleUsers));
+            }
+            else
+            {
+                result.Add(Enumerable.Empty<SuggestedUserDto>());
+            }
+
+            // STEP 6: Similar education
+            var possibleUsers = await _context.Users
+                .AsNoTracking()
+                .Include(u => u.Profile)
+                .Where(u =>
+                    connectionsOfConnections.Contains(u.Id) &&
+                    !usersToExcludeQuery.Contains(u.Id))
+                .OrderByDescending(u => u.Profile!.UpdatedAt)
+                .Take(limit * 3) // extra for filtering
+                .ToListAsync();
+
+            var possibleUserIds = possibleUsers.Select(u => u.Id).ToList();
+
+            var possibleUserEducations = await _context.UserEducation
+                .Where(e => possibleUserIds.Contains(e.UserProfileId))
+                .Select(e => new { e.UserProfileId, e.Institution, e.Degree, e.Major })
+                .ToListAsync();
+
+            // In-memory parallel filtering for speed
+            var similarEducationUsers = possibleUsers
+                .AsParallel()
+                .Where(u =>
+                    possibleUserEducations.Any(e =>
+                        e.UserProfileId == u.Id &&
+                        currentUserEducation.Any(edu =>
+                            (edu.Institution != null && e.Institution == edu.Institution) ||
+                            (edu.Degree != null && e.Degree == edu.Degree) ||
+                            (edu.Major != null && e.Major == edu.Major)
+                        )
+                    )
+                )
+                .Take(limit)
+                .ToList();
+
+            result.Add(_mapper.Map<IEnumerable<SuggestedUserDto>>(similarEducationUsers));
+
+            return result;
         }
+
+
+
+        public async Task<IEnumerable<PopularUserDto>> GetPopularUsersAsync(Guid currentUserId, int limit)
+        {
+            var twoWeeksAgo = DateTime.UtcNow.AddDays(-14);
+
+            // STEP 1: Build the exclusion list (already connected + yourself)
+            var usersToExclude =
+                from u in _context.Users
+                where
+                    _context.Connections.Any(c => (c.UserId1 == currentUserId && c.UserId2 == u.Id) ||
+                                                  (c.UserId2 == currentUserId && c.UserId1 == u.Id))
+                    || u.Id == currentUserId
+                select u.Id;
+
+            // STEP 2: Get all your direct connections (used for mutual connections calculation)
+            var myConnections =
+                from c in _context.Connections
+                where c.UserId1 == currentUserId || c.UserId2 == currentUserId
+                select c.UserId1 == currentUserId ? c.UserId2 : c.UserId1;
+
+            // STEP 3: Find unconnected users ranked by recent connections and mutual connections
+            var popularUsersQuery =
+                from u in _context.Users
+                where !usersToExclude.Contains(u.Id)
+                let recentConnectionCount = _context.Connections.Count(c =>
+                    (c.UserId1 == u.Id || c.UserId2 == u.Id) &&
+                    c.CreatedAt >= twoWeeksAgo)
+                let mutualCount =
+                    (from c in _context.Connections
+                     where (c.UserId1 == u.Id && myConnections.Contains(c.UserId2))
+                        || (c.UserId2 == u.Id && myConnections.Contains(c.UserId1))
+                     select c).Count()
+                where recentConnectionCount > 0 // must have at least one recent connection in last 2 weeks
+                orderby recentConnectionCount descending, mutualCount descending, u.Profile!.UpdatedAt descending
+                select new PopularUserDto
+                {
+                    Id = u.Id,
+                    Username = u.Username,
+                    FirstName = u.Profile!.FirstName,
+                    LastName = u.Profile!.LastName,
+                    ProfilePictureUrl = u.Profile!.ProfilePictureUrl,
+                    Headline = u.Profile!.Headline,
+                    MutualConnections = mutualCount
+                };
+
+            // STEP 4: Return top 'limit' users
+            return await popularUsersQuery
+                .AsNoTracking()
+                .Take(limit)
+                .ToListAsync();
+        }
+
     }
 }
