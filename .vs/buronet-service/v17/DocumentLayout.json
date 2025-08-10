@@ -1,0 +1,812 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "E:\\Devonix\\Buronet\\.NET\\buronet-service\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{0A2E1032-2B84-47A9-A588-0B6797EEE74E}|buronet-service\\buronet-service.csproj|e:\\devonix\\buronet\\.net\\buronet-service\\buronet-service\\services\\connectionservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{0A2E1032-2B84-47A9-A588-0B6797EEE74E}|buronet-service\\buronet-service.csproj|solutionrelative:buronet-service\\services\\connectionservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{0A2E1032-2B84-47A9-A588-0B6797EEE74E}|buronet-service\\buronet-service.csproj|e:\\devonix\\buronet\\.net\\buronet-service\\buronet-service\\models\\dtos\\user\\connectiondto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{0A2E1032-2B84-47A9-A588-0B6797EEE74E}|buronet-service\\buronet-service.csproj|solutionrelative:buronet-service\\models\\dtos\\user\\connectiondto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{0A2E1032-2B84-47A9-A588-0B6797EEE74E}|buronet-service\\buronet-service.csproj|e:\\devonix\\buronet\\.net\\buronet-service\\buronet-service\\models\\dtos\\user\\userprofiledto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{0A2E1032-2B84-47A9-A588-0B6797EEE74E}|buronet-service\\buronet-service.csproj|solutionrelative:buronet-service\\models\\dtos\\user\\userprofiledto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{0A2E1032-2B84-47A9-A588-0B6797EEE74E}|buronet-service\\buronet-service.csproj|e:\\devonix\\buronet\\.net\\buronet-service\\buronet-service\\services\\iconnectionservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{0A2E1032-2B84-47A9-A588-0B6797EEE74E}|buronet-service\\buronet-service.csproj|solutionrelative:buronet-service\\services\\iconnectionservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{0A2E1032-2B84-47A9-A588-0B6797EEE74E}|buronet-service\\buronet-service.csproj|e:\\devonix\\buronet\\.net\\buronet-service\\buronet-service\\models\\user\\connection.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{0A2E1032-2B84-47A9-A588-0B6797EEE74E}|buronet-service\\buronet-service.csproj|solutionrelative:buronet-service\\models\\user\\connection.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{0A2E1032-2B84-47A9-A588-0B6797EEE74E}|buronet-service\\buronet-service.csproj|e:\\devonix\\buronet\\.net\\buronet-service\\buronet-service\\models\\user\\userprofile.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{0A2E1032-2B84-47A9-A588-0B6797EEE74E}|buronet-service\\buronet-service.csproj|solutionrelative:buronet-service\\models\\user\\userprofile.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{0A2E1032-2B84-47A9-A588-0B6797EEE74E}|buronet-service\\buronet-service.csproj|e:\\devonix\\buronet\\.net\\buronet-service\\buronet-service\\models\\user\\user.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{0A2E1032-2B84-47A9-A588-0B6797EEE74E}|buronet-service\\buronet-service.csproj|solutionrelative:buronet-service\\models\\user\\user.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{0A2E1032-2B84-47A9-A588-0B6797EEE74E}|buronet-service\\buronet-service.csproj|e:\\devonix\\buronet\\.net\\buronet-service\\buronet-service\\mappings\\userprofilemappingprofile.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{0A2E1032-2B84-47A9-A588-0B6797EEE74E}|buronet-service\\buronet-service.csproj|solutionrelative:buronet-service\\mappings\\userprofilemappingprofile.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{0A2E1032-2B84-47A9-A588-0B6797EEE74E}|buronet-service\\buronet-service.csproj|e:\\devonix\\buronet\\.net\\buronet-service\\buronet-service\\models\\dtos\\user\\connectionrequestdto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{0A2E1032-2B84-47A9-A588-0B6797EEE74E}|buronet-service\\buronet-service.csproj|solutionrelative:buronet-service\\models\\dtos\\user\\connectionrequestdto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{0A2E1032-2B84-47A9-A588-0B6797EEE74E}|buronet-service\\buronet-service.csproj|e:\\devonix\\buronet\\.net\\buronet-service\\buronet-service\\models\\user\\connectionrequest.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{0A2E1032-2B84-47A9-A588-0B6797EEE74E}|buronet-service\\buronet-service.csproj|solutionrelative:buronet-service\\models\\user\\connectionrequest.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{0A2E1032-2B84-47A9-A588-0B6797EEE74E}|buronet-service\\buronet-service.csproj|e:\\devonix\\buronet\\.net\\buronet-service\\buronet-service\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{0A2E1032-2B84-47A9-A588-0B6797EEE74E}|buronet-service\\buronet-service.csproj|solutionrelative:buronet-service\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{0A2E1032-2B84-47A9-A588-0B6797EEE74E}|buronet-service\\buronet-service.csproj|e:\\devonix\\buronet\\.net\\buronet-service\\buronet-service\\models\\dtos\\user\\sendconnectionrequestdto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{0A2E1032-2B84-47A9-A588-0B6797EEE74E}|buronet-service\\buronet-service.csproj|solutionrelative:buronet-service\\models\\dtos\\user\\sendconnectionrequestdto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{F37FCEA6-281A-4C72-9292-52A3B5D53880}|buronet_messaging_service\\buronet_messaging_service.csproj|e:\\devonix\\buronet\\.net\\buronet-service\\buronet_messaging_service\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{F37FCEA6-281A-4C72-9292-52A3B5D53880}|buronet_messaging_service\\buronet_messaging_service.csproj|solutionrelative:buronet_messaging_service\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{0A2E1032-2B84-47A9-A588-0B6797EEE74E}|buronet-service\\buronet-service.csproj|e:\\devonix\\buronet\\.net\\buronet-service\\buronet-service\\models\\dtos\\user\\suggesteduserdto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{0A2E1032-2B84-47A9-A588-0B6797EEE74E}|buronet-service\\buronet-service.csproj|solutionrelative:buronet-service\\models\\dtos\\user\\suggesteduserdto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{0A2E1032-2B84-47A9-A588-0B6797EEE74E}|buronet-service\\buronet-service.csproj|e:\\devonix\\buronet\\.net\\buronet-service\\buronet-service\\services\\iuserservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{0A2E1032-2B84-47A9-A588-0B6797EEE74E}|buronet-service\\buronet-service.csproj|solutionrelative:buronet-service\\services\\iuserservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{0A2E1032-2B84-47A9-A588-0B6797EEE74E}|buronet-service\\buronet-service.csproj|e:\\devonix\\buronet\\.net\\buronet-service\\buronet-service\\controllers\\usercontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{0A2E1032-2B84-47A9-A588-0B6797EEE74E}|buronet-service\\buronet-service.csproj|solutionrelative:buronet-service\\controllers\\usercontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{0A2E1032-2B84-47A9-A588-0B6797EEE74E}|buronet-service\\buronet-service.csproj|e:\\devonix\\buronet\\.net\\buronet-service\\buronet-service\\services\\postservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{0A2E1032-2B84-47A9-A588-0B6797EEE74E}|buronet-service\\buronet-service.csproj|solutionrelative:buronet-service\\services\\postservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{0A2E1032-2B84-47A9-A588-0B6797EEE74E}|buronet-service\\buronet-service.csproj|e:\\devonix\\buronet\\.net\\buronet-service\\buronet-service\\models\\dtos\\user\\postdto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{0A2E1032-2B84-47A9-A588-0B6797EEE74E}|buronet-service\\buronet-service.csproj|solutionrelative:buronet-service\\models\\dtos\\user\\postdto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{0A2E1032-2B84-47A9-A588-0B6797EEE74E}|buronet-service\\buronet-service.csproj|e:\\devonix\\buronet\\.net\\buronet-service\\buronet-service\\models\\user\\post.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{0A2E1032-2B84-47A9-A588-0B6797EEE74E}|buronet-service\\buronet-service.csproj|solutionrelative:buronet-service\\models\\user\\post.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{0A2E1032-2B84-47A9-A588-0B6797EEE74E}|buronet-service\\buronet-service.csproj|e:\\devonix\\buronet\\.net\\buronet-service\\buronet-service\\models\\dtos\\tagwithtotalcountdto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{0A2E1032-2B84-47A9-A588-0B6797EEE74E}|buronet-service\\buronet-service.csproj|solutionrelative:buronet-service\\models\\dtos\\tagwithtotalcountdto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{0A2E1032-2B84-47A9-A588-0B6797EEE74E}|buronet-service\\buronet-service.csproj|e:\\devonix\\buronet\\.net\\buronet-service\\buronet-service\\controllers\\postcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{0A2E1032-2B84-47A9-A588-0B6797EEE74E}|buronet-service\\buronet-service.csproj|solutionrelative:buronet-service\\controllers\\postcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{0A2E1032-2B84-47A9-A588-0B6797EEE74E}|buronet-service\\buronet-service.csproj|e:\\devonix\\buronet\\.net\\buronet-service\\buronet-service\\data\\appdbcontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{0A2E1032-2B84-47A9-A588-0B6797EEE74E}|buronet-service\\buronet-service.csproj|solutionrelative:buronet-service\\data\\appdbcontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{0A2E1032-2B84-47A9-A588-0B6797EEE74E}|buronet-service\\buronet-service.csproj|e:\\devonix\\buronet\\.net\\buronet-service\\buronet-service\\services\\ipostservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{0A2E1032-2B84-47A9-A588-0B6797EEE74E}|buronet-service\\buronet-service.csproj|solutionrelative:buronet-service\\services\\ipostservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{0A2E1032-2B84-47A9-A588-0B6797EEE74E}|buronet-service\\buronet-service.csproj|e:\\devonix\\buronet\\.net\\buronet-service\\buronet-service\\migrations\\20250806104211_addtagmanagementtables.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{0A2E1032-2B84-47A9-A588-0B6797EEE74E}|buronet-service\\buronet-service.csproj|solutionrelative:buronet-service\\migrations\\20250806104211_addtagmanagementtables.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{F37FCEA6-281A-4C72-9292-52A3B5D53880}|buronet_messaging_service\\buronet_messaging_service.csproj|e:\\devonix\\buronet\\.net\\buronet-service\\buronet_messaging_service\\hubs\\chathub.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{F37FCEA6-281A-4C72-9292-52A3B5D53880}|buronet_messaging_service\\buronet_messaging_service.csproj|solutionrelative:buronet_messaging_service\\hubs\\chathub.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{F37FCEA6-281A-4C72-9292-52A3B5D53880}|buronet_messaging_service\\buronet_messaging_service.csproj|e:\\devonix\\buronet\\.net\\buronet-service\\buronet_messaging_service\\services\\messageservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{F37FCEA6-281A-4C72-9292-52A3B5D53880}|buronet_messaging_service\\buronet_messaging_service.csproj|solutionrelative:buronet_messaging_service\\services\\messageservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{F37FCEA6-281A-4C72-9292-52A3B5D53880}|buronet_messaging_service\\buronet_messaging_service.csproj|e:\\devonix\\buronet\\.net\\buronet-service\\buronet_messaging_service\\services\\interfaces\\imessageservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{F37FCEA6-281A-4C72-9292-52A3B5D53880}|buronet_messaging_service\\buronet_messaging_service.csproj|solutionrelative:buronet_messaging_service\\services\\interfaces\\imessageservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{F37FCEA6-281A-4C72-9292-52A3B5D53880}|buronet_messaging_service\\buronet_messaging_service.csproj|e:\\devonix\\buronet\\.net\\buronet-service\\buronet_messaging_service\\profiles\\messagingprofile.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{F37FCEA6-281A-4C72-9292-52A3B5D53880}|buronet_messaging_service\\buronet_messaging_service.csproj|solutionrelative:buronet_messaging_service\\profiles\\messagingprofile.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{F37FCEA6-281A-4C72-9292-52A3B5D53880}|buronet_messaging_service\\buronet_messaging_service.csproj|e:\\devonix\\buronet\\.net\\buronet-service\\buronet_messaging_service\\models\\dtos\\messagedto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{F37FCEA6-281A-4C72-9292-52A3B5D53880}|buronet_messaging_service\\buronet_messaging_service.csproj|solutionrelative:buronet_messaging_service\\models\\dtos\\messagedto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{F37FCEA6-281A-4C72-9292-52A3B5D53880}|buronet_messaging_service\\buronet_messaging_service.csproj|e:\\devonix\\buronet\\.net\\buronet-service\\buronet_messaging_service\\models\\message.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{F37FCEA6-281A-4C72-9292-52A3B5D53880}|buronet_messaging_service\\buronet_messaging_service.csproj|solutionrelative:buronet_messaging_service\\models\\message.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{F37FCEA6-281A-4C72-9292-52A3B5D53880}|buronet_messaging_service\\buronet_messaging_service.csproj|e:\\devonix\\buronet\\.net\\buronet-service\\buronet_messaging_service\\controllers\\messagescontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{F37FCEA6-281A-4C72-9292-52A3B5D53880}|buronet_messaging_service\\buronet_messaging_service.csproj|solutionrelative:buronet_messaging_service\\controllers\\messagescontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{F37FCEA6-281A-4C72-9292-52A3B5D53880}|buronet_messaging_service\\buronet_messaging_service.csproj|e:\\devonix\\buronet\\.net\\buronet-service\\buronet_messaging_service\\services\\conversationservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{F37FCEA6-281A-4C72-9292-52A3B5D53880}|buronet_messaging_service\\buronet_messaging_service.csproj|solutionrelative:buronet_messaging_service\\services\\conversationservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{F37FCEA6-281A-4C72-9292-52A3B5D53880}|buronet_messaging_service\\buronet_messaging_service.csproj|e:\\devonix\\buronet\\.net\\buronet-service\\buronet_messaging_service\\data\\messagingdbcontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{F37FCEA6-281A-4C72-9292-52A3B5D53880}|buronet_messaging_service\\buronet_messaging_service.csproj|solutionrelative:buronet_messaging_service\\data\\messagingdbcontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{F37FCEA6-281A-4C72-9292-52A3B5D53880}|buronet_messaging_service\\buronet_messaging_service.csproj|e:\\devonix\\buronet\\.net\\buronet-service\\buronet_messaging_service\\models\\conversationparticipant.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{F37FCEA6-281A-4C72-9292-52A3B5D53880}|buronet_messaging_service\\buronet_messaging_service.csproj|solutionrelative:buronet_messaging_service\\models\\conversationparticipant.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{F37FCEA6-281A-4C72-9292-52A3B5D53880}|buronet_messaging_service\\buronet_messaging_service.csproj|e:\\devonix\\buronet\\.net\\buronet-service\\buronet_messaging_service\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
+      "RelativeMoniker": "D:0:0:{F37FCEA6-281A-4C72-9292-52A3B5D53880}|buronet_messaging_service\\buronet_messaging_service.csproj|solutionrelative:buronet_messaging_service\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{F37FCEA6-281A-4C72-9292-52A3B5D53880}|buronet_messaging_service\\buronet_messaging_service.csproj|e:\\devonix\\buronet\\.net\\buronet-service\\buronet_messaging_service\\controllers\\conversationscontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{F37FCEA6-281A-4C72-9292-52A3B5D53880}|buronet_messaging_service\\buronet_messaging_service.csproj|solutionrelative:buronet_messaging_service\\controllers\\conversationscontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{F37FCEA6-281A-4C72-9292-52A3B5D53880}|buronet_messaging_service\\buronet_messaging_service.csproj|e:\\devonix\\buronet\\.net\\buronet-service\\buronet_messaging_service\\models\\dtos\\conversationparticipantdto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{F37FCEA6-281A-4C72-9292-52A3B5D53880}|buronet_messaging_service\\buronet_messaging_service.csproj|solutionrelative:buronet_messaging_service\\models\\dtos\\conversationparticipantdto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{F37FCEA6-281A-4C72-9292-52A3B5D53880}|buronet_messaging_service\\buronet_messaging_service.csproj|e:\\devonix\\buronet\\.net\\buronet-service\\buronet_messaging_service\\models\\conversation.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{F37FCEA6-281A-4C72-9292-52A3B5D53880}|buronet_messaging_service\\buronet_messaging_service.csproj|solutionrelative:buronet_messaging_service\\models\\conversation.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{F37FCEA6-281A-4C72-9292-52A3B5D53880}|buronet_messaging_service\\buronet_messaging_service.csproj|e:\\devonix\\buronet\\.net\\buronet-service\\buronet_messaging_service\\services\\interfaces\\iconversationservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{F37FCEA6-281A-4C72-9292-52A3B5D53880}|buronet_messaging_service\\buronet_messaging_service.csproj|solutionrelative:buronet_messaging_service\\services\\interfaces\\iconversationservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{F37FCEA6-281A-4C72-9292-52A3B5D53880}|buronet_messaging_service\\buronet_messaging_service.csproj|e:\\devonix\\buronet\\.net\\buronet-service\\buronet_messaging_service\\controllers\\weatherforecastcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{F37FCEA6-281A-4C72-9292-52A3B5D53880}|buronet_messaging_service\\buronet_messaging_service.csproj|solutionrelative:buronet_messaging_service\\controllers\\weatherforecastcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{F37FCEA6-281A-4C72-9292-52A3B5D53880}|buronet_messaging_service\\buronet_messaging_service.csproj|e:\\devonix\\buronet\\.net\\buronet-service\\buronet_messaging_service\\properties\\launchsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
+      "RelativeMoniker": "D:0:0:{F37FCEA6-281A-4C72-9292-52A3B5D53880}|buronet_messaging_service\\buronet_messaging_service.csproj|solutionrelative:buronet_messaging_service\\properties\\launchsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{0A2E1032-2B84-47A9-A588-0B6797EEE74E}|buronet-service\\buronet-service.csproj|e:\\devonix\\buronet\\.net\\buronet-service\\buronet-service\\properties\\launchsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
+      "RelativeMoniker": "D:0:0:{0A2E1032-2B84-47A9-A588-0B6797EEE74E}|buronet-service\\buronet-service.csproj|solutionrelative:buronet-service\\properties\\launchsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|D:\\Visual Studio\\MSBuild\\Current\\Bin\\amd64\\Microsoft.Common.CurrentVersion.targets||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{0A2E1032-2B84-47A9-A588-0B6797EEE74E}|buronet-service\\buronet-service.csproj|e:\\devonix\\buronet\\.net\\buronet-service\\buronet-service\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
+      "RelativeMoniker": "D:0:0:{0A2E1032-2B84-47A9-A588-0B6797EEE74E}|buronet-service\\buronet-service.csproj|solutionrelative:buronet-service\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{F37FCEA6-281A-4C72-9292-52A3B5D53880}|buronet_messaging_service\\buronet_messaging_service.csproj|e:\\devonix\\buronet\\.net\\buronet-service\\buronet_messaging_service\\models\\dtos\\conversationdto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{F37FCEA6-281A-4C72-9292-52A3B5D53880}|buronet_messaging_service\\buronet_messaging_service.csproj|solutionrelative:buronet_messaging_service\\models\\dtos\\conversationdto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{F37FCEA6-281A-4C72-9292-52A3B5D53880}|buronet_messaging_service\\buronet_messaging_service.csproj|e:\\devonix\\buronet\\.net\\buronet-service\\buronet_messaging_service\\models\\dtos\\createconversationdto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{F37FCEA6-281A-4C72-9292-52A3B5D53880}|buronet_messaging_service\\buronet_messaging_service.csproj|solutionrelative:buronet_messaging_service\\models\\dtos\\createconversationdto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{F37FCEA6-281A-4C72-9292-52A3B5D53880}|buronet_messaging_service\\buronet_messaging_service.csproj|e:\\devonix\\buronet\\.net\\buronet-service\\buronet_messaging_service\\models\\dtos\\createmessagedto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{F37FCEA6-281A-4C72-9292-52A3B5D53880}|buronet_messaging_service\\buronet_messaging_service.csproj|solutionrelative:buronet_messaging_service\\models\\dtos\\createmessagedto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{F37FCEA6-281A-4C72-9292-52A3B5D53880}|buronet_messaging_service\\buronet_messaging_service.csproj|e:\\devonix\\buronet\\.net\\buronet-service\\buronet_messaging_service\\models\\dtos\\chatuserdto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{F37FCEA6-281A-4C72-9292-52A3B5D53880}|buronet_messaging_service\\buronet_messaging_service.csproj|solutionrelative:buronet_messaging_service\\models\\dtos\\chatuserdto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 9,
+          "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 10,
+              "Title": "Program.cs",
+              "DocumentMoniker": "E:\\Devonix\\Buronet\\.NET\\buronet-service\\buronet-service\\Program.cs",
+              "RelativeDocumentMoniker": "buronet-service\\Program.cs",
+              "ToolTip": "E:\\Devonix\\Buronet\\.NET\\buronet-service\\buronet-service\\Program.cs",
+              "RelativeToolTip": "buronet-service\\Program.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABYAAAAEAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-07-27T08:23:49.416Z",
+              "IsPinned": true,
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 12,
+              "Title": "Program.cs",
+              "DocumentMoniker": "E:\\Devonix\\Buronet\\.NET\\buronet-service\\buronet_messaging_service\\Program.cs",
+              "RelativeDocumentMoniker": "buronet_messaging_service\\Program.cs",
+              "ToolTip": "E:\\Devonix\\Buronet\\.NET\\buronet-service\\buronet_messaging_service\\Program.cs",
+              "RelativeToolTip": "buronet_messaging_service\\Program.cs",
+              "ViewState": "AgIAAA4AAAAAAAAAAAAwwCcAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-07-26T19:25:45.879Z",
+              "IsPinned": true,
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 8,
+              "Title": "ConnectionRequestDto.cs",
+              "DocumentMoniker": "E:\\Devonix\\Buronet\\.NET\\buronet-service\\buronet-service\\Models\\DTOs\\User\\ConnectionRequestDto.cs",
+              "RelativeDocumentMoniker": "buronet-service\\Models\\DTOs\\User\\ConnectionRequestDto.cs",
+              "ToolTip": "E:\\Devonix\\Buronet\\.NET\\buronet-service\\buronet-service\\Models\\DTOs\\User\\ConnectionRequestDto.cs",
+              "RelativeToolTip": "buronet-service\\Models\\DTOs\\User\\ConnectionRequestDto.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAqwAYAAAAlAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-08-10T07:06:08.896Z",
+              "IsPinned": true,
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 23,
+              "Title": "20250806104211_AddTagManagementTables.cs",
+              "DocumentMoniker": "E:\\Devonix\\Buronet\\.NET\\buronet-service\\buronet-service\\Migrations\\20250806104211_AddTagManagementTables.cs",
+              "RelativeDocumentMoniker": "buronet-service\\Migrations\\20250806104211_AddTagManagementTables.cs",
+              "ToolTip": "E:\\Devonix\\Buronet\\.NET\\buronet-service\\buronet-service\\Migrations\\20250806104211_AddTagManagementTables.cs",
+              "RelativeToolTip": "buronet-service\\Migrations\\20250806104211_AddTagManagementTables.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA4AAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-08-06T10:43:04.854Z",
+              "IsPinned": true
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "ConnectionDto.cs",
+              "DocumentMoniker": "E:\\Devonix\\Buronet\\.NET\\buronet-service\\buronet-service\\Models\\DTOs\\User\\ConnectionDto.cs",
+              "RelativeDocumentMoniker": "buronet-service\\Models\\DTOs\\User\\ConnectionDto.cs",
+              "ToolTip": "E:\\Devonix\\Buronet\\.NET\\buronet-service\\buronet-service\\Models\\DTOs\\User\\ConnectionDto.cs",
+              "RelativeToolTip": "buronet-service\\Models\\DTOs\\User\\ConnectionDto.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA8AAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-08-10T07:35:21.24Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 14,
+              "Title": "IUserService.cs",
+              "DocumentMoniker": "E:\\Devonix\\Buronet\\.NET\\buronet-service\\buronet-service\\Services\\IUserService.cs",
+              "RelativeDocumentMoniker": "buronet-service\\Services\\IUserService.cs",
+              "ToolTip": "E:\\Devonix\\Buronet\\.NET\\buronet-service\\buronet-service\\Services\\IUserService.cs",
+              "RelativeToolTip": "buronet-service\\Services\\IUserService.cs",
+              "ViewState": "AgIAABwAAAAAAAAAAAAYwDgAAABWAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-08-09T17:08:47.036Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 16,
+              "Title": "PostService.cs",
+              "DocumentMoniker": "E:\\Devonix\\Buronet\\.NET\\buronet-service\\buronet-service\\Services\\PostService.cs",
+              "RelativeDocumentMoniker": "buronet-service\\Services\\PostService.cs",
+              "ToolTip": "E:\\Devonix\\Buronet\\.NET\\buronet-service\\buronet-service\\Services\\PostService.cs",
+              "RelativeToolTip": "buronet-service\\Services\\PostService.cs",
+              "ViewState": "AgIAAOwAAAAAAAAAAAAgwF4BAAAhAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-08-06T10:36:58.585Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 18,
+              "Title": "Post.cs",
+              "DocumentMoniker": "E:\\Devonix\\Buronet\\.NET\\buronet-service\\buronet-service\\Models\\User\\Post.cs",
+              "RelativeDocumentMoniker": "buronet-service\\Models\\User\\Post.cs",
+              "ToolTip": "E:\\Devonix\\Buronet\\.NET\\buronet-service\\buronet-service\\Models\\User\\Post.cs",
+              "RelativeToolTip": "buronet-service\\Models\\User\\Post.cs",
+              "ViewState": "AgIAACgAAAAAAAAAAAAYwCkAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-08-06T10:27:24.659Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
+              "Title": "User.cs",
+              "DocumentMoniker": "E:\\Devonix\\Buronet\\.NET\\buronet-service\\buronet-service\\Models\\User\\User.cs",
+              "RelativeDocumentMoniker": "buronet-service\\Models\\User\\User.cs",
+              "ToolTip": "E:\\Devonix\\Buronet\\.NET\\buronet-service\\buronet-service\\Models\\User\\User.cs",
+              "RelativeToolTip": "buronet-service\\Models\\User\\User.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAACEAAAAaAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-07-26T20:04:01.649Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "ConnectionService.cs",
+              "DocumentMoniker": "E:\\Devonix\\Buronet\\.NET\\buronet-service\\buronet-service\\Services\\ConnectionService.cs",
+              "RelativeDocumentMoniker": "buronet-service\\Services\\ConnectionService.cs",
+              "ToolTip": "E:\\Devonix\\Buronet\\.NET\\buronet-service\\buronet-service\\Services\\ConnectionService.cs",
+              "RelativeToolTip": "buronet-service\\Services\\ConnectionService.cs",
+              "ViewState": "AgIAAGUAAAAAAAAAAAAqwIMAAAA3AAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-08-10T06:23:59Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "UserProfileDto.cs",
+              "DocumentMoniker": "E:\\Devonix\\Buronet\\.NET\\buronet-service\\buronet-service\\Models\\DTOs\\User\\UserProfileDto.cs",
+              "RelativeDocumentMoniker": "buronet-service\\Models\\DTOs\\User\\UserProfileDto.cs",
+              "ToolTip": "E:\\Devonix\\Buronet\\.NET\\buronet-service\\buronet-service\\Models\\DTOs\\User\\UserProfileDto.cs",
+              "RelativeToolTip": "buronet-service\\Models\\DTOs\\User\\UserProfileDto.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAoAAAAiAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-08-10T07:41:14.954Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "UserProfile.cs",
+              "DocumentMoniker": "E:\\Devonix\\Buronet\\.NET\\buronet-service\\buronet-service\\Models\\User\\UserProfile.cs",
+              "RelativeDocumentMoniker": "buronet-service\\Models\\User\\UserProfile.cs",
+              "ToolTip": "E:\\Devonix\\Buronet\\.NET\\buronet-service\\buronet-service\\Models\\User\\UserProfile.cs",
+              "RelativeToolTip": "buronet-service\\Models\\User\\UserProfile.cs",
+              "ViewState": "AgIAABQAAAAAAAAAAAAwwAcAAAARAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-07-27T07:32:28.222Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "IConnectionService.cs",
+              "DocumentMoniker": "E:\\Devonix\\Buronet\\.NET\\buronet-service\\buronet-service\\Services\\IConnectionService.cs",
+              "RelativeDocumentMoniker": "buronet-service\\Services\\IConnectionService.cs",
+              "ToolTip": "E:\\Devonix\\Buronet\\.NET\\buronet-service\\buronet-service\\Services\\IConnectionService.cs",
+              "RelativeToolTip": "buronet-service\\Services\\IConnectionService.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAqwA8AAABAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-08-10T06:23:35.333Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 7,
+              "Title": "UserProfileMappingProfile.cs",
+              "DocumentMoniker": "E:\\Devonix\\Buronet\\.NET\\buronet-service\\buronet-service\\Mappings\\UserProfileMappingProfile.cs",
+              "RelativeDocumentMoniker": "buronet-service\\Mappings\\UserProfileMappingProfile.cs",
+              "ToolTip": "E:\\Devonix\\Buronet\\.NET\\buronet-service\\buronet-service\\Mappings\\UserProfileMappingProfile.cs",
+              "RelativeToolTip": "buronet-service\\Mappings\\UserProfileMappingProfile.cs",
+              "ViewState": "AgIAAFgAAAAAAAAAAAAowIoAAABeAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-08-06T12:37:56.578Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "Connection.cs",
+              "DocumentMoniker": "E:\\Devonix\\Buronet\\.NET\\buronet-service\\buronet-service\\Models\\User\\Connection.cs",
+              "RelativeDocumentMoniker": "buronet-service\\Models\\User\\Connection.cs",
+              "ToolTip": "E:\\Devonix\\Buronet\\.NET\\buronet-service\\buronet-service\\Models\\User\\Connection.cs",
+              "RelativeToolTip": "buronet-service\\Models\\User\\Connection.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA8AAAApAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-07-26T20:05:07.634Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 15,
+              "Title": "UserController.cs",
+              "DocumentMoniker": "E:\\Devonix\\Buronet\\.NET\\buronet-service\\buronet-service\\Controllers\\UserController.cs",
+              "RelativeDocumentMoniker": "buronet-service\\Controllers\\UserController.cs",
+              "ToolTip": "E:\\Devonix\\Buronet\\.NET\\buronet-service\\buronet-service\\Controllers\\UserController.cs",
+              "RelativeToolTip": "buronet-service\\Controllers\\UserController.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABAAAAAxAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-08-09T17:12:42.623Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 9,
+              "Title": "ConnectionRequest.cs",
+              "DocumentMoniker": "E:\\Devonix\\Buronet\\.NET\\buronet-service\\buronet-service\\Models\\User\\ConnectionRequest.cs",
+              "RelativeDocumentMoniker": "buronet-service\\Models\\User\\ConnectionRequest.cs",
+              "ToolTip": "E:\\Devonix\\Buronet\\.NET\\buronet-service\\buronet-service\\Models\\User\\ConnectionRequest.cs",
+              "RelativeToolTip": "buronet-service\\Models\\User\\ConnectionRequest.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAqwB4AAAAHAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-07-26T20:06:12.43Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 13,
+              "Title": "SuggestedUserDto.cs",
+              "DocumentMoniker": "E:\\Devonix\\Buronet\\.NET\\buronet-service\\buronet-service\\Models\\DTOs\\User\\SuggestedUserDto.cs",
+              "RelativeDocumentMoniker": "buronet-service\\Models\\DTOs\\User\\SuggestedUserDto.cs",
+              "ToolTip": "E:\\Devonix\\Buronet\\.NET\\buronet-service\\buronet-service\\Models\\DTOs\\User\\SuggestedUserDto.cs",
+              "RelativeToolTip": "buronet-service\\Models\\DTOs\\User\\SuggestedUserDto.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA8AAAAtAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-08-10T06:27:37.731Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 11,
+              "Title": "SendConnectionRequestDto.cs",
+              "DocumentMoniker": "E:\\Devonix\\Buronet\\.NET\\buronet-service\\buronet-service\\Models\\DTOs\\User\\SendConnectionRequestDto.cs",
+              "RelativeDocumentMoniker": "buronet-service\\Models\\DTOs\\User\\SendConnectionRequestDto.cs",
+              "ToolTip": "E:\\Devonix\\Buronet\\.NET\\buronet-service\\buronet-service\\Models\\DTOs\\User\\SendConnectionRequestDto.cs",
+              "RelativeToolTip": "buronet-service\\Models\\DTOs\\User\\SendConnectionRequestDto.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAqwAsAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-08-09T17:57:39.365Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 19,
+              "Title": "TagWithTotalCountDto.cs",
+              "DocumentMoniker": "E:\\Devonix\\Buronet\\.NET\\buronet-service\\buronet-service\\Models\\DTOs\\TagWithTotalCountDto.cs",
+              "RelativeDocumentMoniker": "buronet-service\\Models\\DTOs\\TagWithTotalCountDto.cs",
+              "ToolTip": "E:\\Devonix\\Buronet\\.NET\\buronet-service\\buronet-service\\Models\\DTOs\\TagWithTotalCountDto.cs",
+              "RelativeToolTip": "buronet-service\\Models\\DTOs\\TagWithTotalCountDto.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAqwA4AAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-08-06T12:17:10.83Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 25,
+              "Title": "MessageService.cs",
+              "DocumentMoniker": "E:\\Devonix\\Buronet\\.NET\\buronet-service\\buronet_messaging_service\\Services\\MessageService.cs",
+              "RelativeDocumentMoniker": "buronet_messaging_service\\Services\\MessageService.cs",
+              "ToolTip": "E:\\Devonix\\Buronet\\.NET\\buronet-service\\buronet_messaging_service\\Services\\MessageService.cs",
+              "RelativeToolTip": "buronet_messaging_service\\Services\\MessageService.cs",
+              "ViewState": "AgIAADsAAAAAAAAAAAAewDQAAAAwAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-07-26T19:30:52.782Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 17,
+              "Title": "PostDto.cs",
+              "DocumentMoniker": "E:\\Devonix\\Buronet\\.NET\\buronet-service\\buronet-service\\Models\\DTOs\\User\\PostDto.cs",
+              "RelativeDocumentMoniker": "buronet-service\\Models\\DTOs\\User\\PostDto.cs",
+              "ToolTip": "E:\\Devonix\\Buronet\\.NET\\buronet-service\\buronet-service\\Models\\DTOs\\User\\PostDto.cs",
+              "RelativeToolTip": "buronet-service\\Models\\DTOs\\User\\PostDto.cs",
+              "ViewState": "AgIAABAAAAAAAAAAAIA4wB4AAAASAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-08-06T12:23:51.871Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 20,
+              "Title": "PostController.cs",
+              "DocumentMoniker": "E:\\Devonix\\Buronet\\.NET\\buronet-service\\buronet-service\\Controllers\\PostController.cs",
+              "RelativeDocumentMoniker": "buronet-service\\Controllers\\PostController.cs",
+              "ToolTip": "E:\\Devonix\\Buronet\\.NET\\buronet-service\\buronet-service\\Controllers\\PostController.cs",
+              "RelativeToolTip": "buronet-service\\Controllers\\PostController.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABIAAAA4AAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-08-06T11:32:49.629Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 30,
+              "Title": "MessagesController.cs",
+              "DocumentMoniker": "E:\\Devonix\\Buronet\\.NET\\buronet-service\\buronet_messaging_service\\Controllers\\MessagesController.cs",
+              "RelativeDocumentMoniker": "buronet_messaging_service\\Controllers\\MessagesController.cs",
+              "ToolTip": "E:\\Devonix\\Buronet\\.NET\\buronet-service\\buronet_messaging_service\\Controllers\\MessagesController.cs",
+              "RelativeToolTip": "buronet_messaging_service\\Controllers\\MessagesController.cs",
+              "ViewState": "AgIAAE0AAAAAAAAAAAAewEQAAAAIAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-07-27T08:31:44.562Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 21,
+              "Title": "AppDbContext.cs",
+              "DocumentMoniker": "E:\\Devonix\\Buronet\\.NET\\buronet-service\\buronet-service\\Data\\AppDbContext.cs",
+              "RelativeDocumentMoniker": "buronet-service\\Data\\AppDbContext.cs",
+              "ToolTip": "E:\\Devonix\\Buronet\\.NET\\buronet-service\\buronet-service\\Data\\AppDbContext.cs",
+              "RelativeToolTip": "buronet-service\\Data\\AppDbContext.cs",
+              "ViewState": "AgIAABEAAAAAAAAAAADwvx0AAAAxAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-07-26T20:02:40.461Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 22,
+              "Title": "IPostService.cs",
+              "DocumentMoniker": "E:\\Devonix\\Buronet\\.NET\\buronet-service\\buronet-service\\Services\\IPostService.cs",
+              "RelativeDocumentMoniker": "buronet-service\\Services\\IPostService.cs",
+              "ToolTip": "E:\\Devonix\\Buronet\\.NET\\buronet-service\\buronet-service\\Services\\IPostService.cs",
+              "RelativeToolTip": "buronet-service\\Services\\IPostService.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAqwAwAAAAmAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-08-06T11:35:05.323Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 24,
+              "Title": "ChatHub.cs",
+              "DocumentMoniker": "E:\\Devonix\\Buronet\\.NET\\buronet-service\\buronet_messaging_service\\Hubs\\ChatHub.cs",
+              "RelativeDocumentMoniker": "buronet_messaging_service\\Hubs\\ChatHub.cs",
+              "ToolTip": "E:\\Devonix\\Buronet\\.NET\\buronet-service\\buronet_messaging_service\\Hubs\\ChatHub.cs",
+              "RelativeToolTip": "buronet_messaging_service\\Hubs\\ChatHub.cs",
+              "ViewState": "AgIAAFYAAAAAAAAAAAAIwFwAAAA7AAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-07-26T19:28:12.164Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 29,
+              "Title": "Message.cs",
+              "DocumentMoniker": "E:\\Devonix\\Buronet\\.NET\\buronet-service\\buronet_messaging_service\\Models\\Message.cs",
+              "RelativeDocumentMoniker": "buronet_messaging_service\\Models\\Message.cs",
+              "ToolTip": "E:\\Devonix\\Buronet\\.NET\\buronet-service\\buronet_messaging_service\\Models\\Message.cs",
+              "RelativeToolTip": "buronet_messaging_service\\Models\\Message.cs",
+              "ViewState": "AgIAAAgAAAAAAAAAAAAxwBsAAAAtAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-07-27T09:45:26.856Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 33,
+              "Title": "ConversationParticipant.cs",
+              "DocumentMoniker": "E:\\Devonix\\Buronet\\.NET\\buronet-service\\buronet_messaging_service\\Models\\ConversationParticipant.cs",
+              "RelativeDocumentMoniker": "buronet_messaging_service\\Models\\ConversationParticipant.cs",
+              "ToolTip": "E:\\Devonix\\Buronet\\.NET\\buronet-service\\buronet_messaging_service\\Models\\ConversationParticipant.cs",
+              "RelativeToolTip": "buronet_messaging_service\\Models\\ConversationParticipant.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAB8AAAASAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-07-27T09:18:12.841Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 31,
+              "Title": "ConversationService.cs",
+              "DocumentMoniker": "E:\\Devonix\\Buronet\\.NET\\buronet-service\\buronet_messaging_service\\Services\\ConversationService.cs",
+              "RelativeDocumentMoniker": "buronet_messaging_service\\Services\\ConversationService.cs",
+              "ToolTip": "E:\\Devonix\\Buronet\\.NET\\buronet-service\\buronet_messaging_service\\Services\\ConversationService.cs",
+              "RelativeToolTip": "buronet_messaging_service\\Services\\ConversationService.cs",
+              "ViewState": "AgIAABEAAAAAAAAAAIAwwB8AAAAIAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-07-26T19:29:37.119Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 35,
+              "Title": "ConversationsController.cs",
+              "DocumentMoniker": "E:\\Devonix\\Buronet\\.NET\\buronet-service\\buronet_messaging_service\\Controllers\\ConversationsController.cs",
+              "RelativeDocumentMoniker": "buronet_messaging_service\\Controllers\\ConversationsController.cs",
+              "ToolTip": "E:\\Devonix\\Buronet\\.NET\\buronet-service\\buronet_messaging_service\\Controllers\\ConversationsController.cs",
+              "RelativeToolTip": "buronet_messaging_service\\Controllers\\ConversationsController.cs",
+              "ViewState": "AgIAAFQAAAAAAAAAAAAQwGsAAAAjAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-07-27T08:31:21.055Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 28,
+              "Title": "MessageDto.cs",
+              "DocumentMoniker": "E:\\Devonix\\Buronet\\.NET\\buronet-service\\buronet_messaging_service\\Models\\DTOs\\MessageDto.cs",
+              "RelativeDocumentMoniker": "buronet_messaging_service\\Models\\DTOs\\MessageDto.cs",
+              "ToolTip": "E:\\Devonix\\Buronet\\.NET\\buronet-service\\buronet_messaging_service\\Models\\DTOs\\MessageDto.cs",
+              "RelativeToolTip": "buronet_messaging_service\\Models\\DTOs\\MessageDto.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAwAAAAtAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-07-26T19:32:21.916Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 27,
+              "Title": "MessagingProfile.cs",
+              "DocumentMoniker": "E:\\Devonix\\Buronet\\.NET\\buronet-service\\buronet_messaging_service\\Profiles\\MessagingProfile.cs",
+              "RelativeDocumentMoniker": "buronet_messaging_service\\Profiles\\MessagingProfile.cs",
+              "ToolTip": "E:\\Devonix\\Buronet\\.NET\\buronet-service\\buronet_messaging_service\\Profiles\\MessagingProfile.cs",
+              "RelativeToolTip": "buronet_messaging_service\\Profiles\\MessagingProfile.cs",
+              "ViewState": "AgIAAAkAAAAAAAAAAAAswBcAAABbAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-07-26T19:33:50.077Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 26,
+              "Title": "IMessageService.cs",
+              "DocumentMoniker": "E:\\Devonix\\Buronet\\.NET\\buronet-service\\buronet_messaging_service\\Services\\Interfaces\\IMessageService.cs",
+              "RelativeDocumentMoniker": "buronet_messaging_service\\Services\\Interfaces\\IMessageService.cs",
+              "ToolTip": "E:\\Devonix\\Buronet\\.NET\\buronet-service\\buronet_messaging_service\\Services\\Interfaces\\IMessageService.cs",
+              "RelativeToolTip": "buronet_messaging_service\\Services\\Interfaces\\IMessageService.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAoAAABzAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-07-26T19:30:36.323Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 34,
+              "Title": "appsettings.json",
+              "DocumentMoniker": "E:\\Devonix\\Buronet\\.NET\\buronet-service\\buronet_messaging_service\\appsettings.json",
+              "RelativeDocumentMoniker": "buronet_messaging_service\\appsettings.json",
+              "ToolTip": "E:\\Devonix\\Buronet\\.NET\\buronet-service\\buronet_messaging_service\\appsettings.json",
+              "RelativeToolTip": "buronet_messaging_service\\appsettings.json",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABEAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
+              "WhenOpened": "2025-07-26T19:26:24.822Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 32,
+              "Title": "MessagingDbContext.cs",
+              "DocumentMoniker": "E:\\Devonix\\Buronet\\.NET\\buronet-service\\buronet_messaging_service\\Data\\MessagingDbContext.cs",
+              "RelativeDocumentMoniker": "buronet_messaging_service\\Data\\MessagingDbContext.cs",
+              "ToolTip": "E:\\Devonix\\Buronet\\.NET\\buronet-service\\buronet_messaging_service\\Data\\MessagingDbContext.cs",
+              "RelativeToolTip": "buronet_messaging_service\\Data\\MessagingDbContext.cs",
+              "ViewState": "AgIAAB8AAAAAAAAAAAAuwD0AAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-07-26T20:00:51.107Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 38,
+              "Title": "IConversationService.cs",
+              "DocumentMoniker": "E:\\Devonix\\Buronet\\.NET\\buronet-service\\buronet_messaging_service\\Services\\Interfaces\\IConversationService.cs",
+              "RelativeDocumentMoniker": "buronet_messaging_service\\Services\\Interfaces\\IConversationService.cs",
+              "ToolTip": "E:\\Devonix\\Buronet\\.NET\\buronet-service\\buronet_messaging_service\\Services\\Interfaces\\IConversationService.cs",
+              "RelativeToolTip": "buronet_messaging_service\\Services\\Interfaces\\IConversationService.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAqwAgAAAApAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-07-26T19:29:07.202Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 43,
+              "Title": "appsettings.json",
+              "DocumentMoniker": "E:\\Devonix\\Buronet\\.NET\\buronet-service\\buronet-service\\appsettings.json",
+              "RelativeDocumentMoniker": "buronet-service\\appsettings.json",
+              "ToolTip": "E:\\Devonix\\Buronet\\.NET\\buronet-service\\buronet-service\\appsettings.json",
+              "RelativeToolTip": "buronet-service\\appsettings.json",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAkAAAAEAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
+              "WhenOpened": "2025-07-26T19:55:24.931Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 42,
+              "Title": "Microsoft.Common.CurrentVersion.targets",
+              "DocumentMoniker": "D:\\Visual Studio\\MSBuild\\Current\\Bin\\amd64\\Microsoft.Common.CurrentVersion.targets",
+              "ToolTip": "D:\\Visual Studio\\MSBuild\\Current\\Bin\\amd64\\Microsoft.Common.CurrentVersion.targets",
+              "ViewState": "AgIAACITAAAAAAAAAAAYwDQTAAAEAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003801|",
+              "WhenOpened": "2025-07-26T19:57:50.897Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 36,
+              "Title": "ConversationParticipantDto.cs",
+              "DocumentMoniker": "E:\\Devonix\\Buronet\\.NET\\buronet-service\\buronet_messaging_service\\Models\\DTOs\\ConversationParticipantDto.cs",
+              "RelativeDocumentMoniker": "buronet_messaging_service\\Models\\DTOs\\ConversationParticipantDto.cs",
+              "ToolTip": "E:\\Devonix\\Buronet\\.NET\\buronet-service\\buronet_messaging_service\\Models\\DTOs\\ConversationParticipantDto.cs",
+              "RelativeToolTip": "buronet_messaging_service\\Models\\DTOs\\ConversationParticipantDto.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAwAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-07-26T19:32:34.539Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 37,
+              "Title": "Conversation.cs",
+              "DocumentMoniker": "E:\\Devonix\\Buronet\\.NET\\buronet-service\\buronet_messaging_service\\Models\\Conversation.cs",
+              "RelativeDocumentMoniker": "buronet_messaging_service\\Models\\Conversation.cs",
+              "ToolTip": "E:\\Devonix\\Buronet\\.NET\\buronet-service\\buronet_messaging_service\\Models\\Conversation.cs",
+              "RelativeToolTip": "buronet_messaging_service\\Models\\Conversation.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAqwAkAAAARAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-07-27T09:15:41.285Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 40,
+              "Title": "launchSettings.json",
+              "DocumentMoniker": "E:\\Devonix\\Buronet\\.NET\\buronet-service\\buronet_messaging_service\\Properties\\launchSettings.json",
+              "RelativeDocumentMoniker": "buronet_messaging_service\\Properties\\launchSettings.json",
+              "ToolTip": "E:\\Devonix\\Buronet\\.NET\\buronet-service\\buronet_messaging_service\\Properties\\launchSettings.json",
+              "RelativeToolTip": "buronet_messaging_service\\Properties\\launchSettings.json",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAC8AAAAnAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
+              "WhenOpened": "2025-07-27T08:20:02.75Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 41,
+              "Title": "launchSettings.json",
+              "DocumentMoniker": "E:\\Devonix\\Buronet\\.NET\\buronet-service\\buronet-service\\Properties\\launchSettings.json",
+              "RelativeDocumentMoniker": "buronet-service\\Properties\\launchSettings.json",
+              "ToolTip": "E:\\Devonix\\Buronet\\.NET\\buronet-service\\buronet-service\\Properties\\launchSettings.json",
+              "RelativeToolTip": "buronet-service\\Properties\\launchSettings.json",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
+              "WhenOpened": "2025-07-27T08:28:07.939Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 39,
+              "Title": "WeatherForecastController.cs",
+              "DocumentMoniker": "E:\\Devonix\\Buronet\\.NET\\buronet-service\\buronet_messaging_service\\Controllers\\WeatherForecastController.cs",
+              "RelativeDocumentMoniker": "buronet_messaging_service\\Controllers\\WeatherForecastController.cs",
+              "ToolTip": "E:\\Devonix\\Buronet\\.NET\\buronet-service\\buronet_messaging_service\\Controllers\\WeatherForecastController.cs",
+              "RelativeToolTip": "buronet_messaging_service\\Controllers\\WeatherForecastController.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-07-27T08:30:16.965Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 45,
+              "Title": "CreateConversationDto.cs",
+              "DocumentMoniker": "E:\\Devonix\\Buronet\\.NET\\buronet-service\\buronet_messaging_service\\Models\\DTOs\\CreateConversationDto.cs",
+              "RelativeDocumentMoniker": "buronet_messaging_service\\Models\\DTOs\\CreateConversationDto.cs",
+              "ToolTip": "E:\\Devonix\\Buronet\\.NET\\buronet-service\\buronet_messaging_service\\Models\\DTOs\\CreateConversationDto.cs",
+              "RelativeToolTip": "buronet_messaging_service\\Models\\DTOs\\CreateConversationDto.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA0AAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-07-26T19:33:18.465Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 44,
+              "Title": "ConversationDto.cs",
+              "DocumentMoniker": "E:\\Devonix\\Buronet\\.NET\\buronet-service\\buronet_messaging_service\\Models\\DTOs\\ConversationDto.cs",
+              "RelativeDocumentMoniker": "buronet_messaging_service\\Models\\DTOs\\ConversationDto.cs",
+              "ToolTip": "E:\\Devonix\\Buronet\\.NET\\buronet-service\\buronet_messaging_service\\Models\\DTOs\\ConversationDto.cs",
+              "RelativeToolTip": "buronet_messaging_service\\Models\\DTOs\\ConversationDto.cs",
+              "ViewState": "AgIAAAYAAAAAAAAAAAAxwA8AAAAFAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-07-26T19:32:49.212Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 46,
+              "Title": "CreateMessageDto.cs",
+              "DocumentMoniker": "E:\\Devonix\\Buronet\\.NET\\buronet-service\\buronet_messaging_service\\Models\\DTOs\\CreateMessageDto.cs",
+              "RelativeDocumentMoniker": "buronet_messaging_service\\Models\\DTOs\\CreateMessageDto.cs",
+              "ToolTip": "E:\\Devonix\\Buronet\\.NET\\buronet-service\\buronet_messaging_service\\Models\\DTOs\\CreateMessageDto.cs",
+              "RelativeToolTip": "buronet_messaging_service\\Models\\DTOs\\CreateMessageDto.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAkAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-07-26T19:33:04.326Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 47,
+              "Title": "ChatUserDto.cs",
+              "DocumentMoniker": "E:\\Devonix\\Buronet\\.NET\\buronet-service\\buronet_messaging_service\\Models\\DTOs\\ChatUserDto.cs",
+              "RelativeDocumentMoniker": "buronet_messaging_service\\Models\\DTOs\\ChatUserDto.cs",
+              "ToolTip": "E:\\Devonix\\Buronet\\.NET\\buronet-service\\buronet_messaging_service\\Models\\DTOs\\ChatUserDto.cs",
+              "RelativeToolTip": "buronet_messaging_service\\Models\\DTOs\\ChatUserDto.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA0AAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-07-26T19:32:06.672Z"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
