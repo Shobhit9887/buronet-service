@@ -198,5 +198,18 @@ namespace buronet_service.Controllers // Ensure this namespace is correct
             var suggestions = await _connectionService.GetSuggestedUsersAsync(currentUserId, limit);
             return Ok(suggestions);
         }
+
+        [HttpGet("popular")] // GET /api/connections/suggestions
+        public async Task<ActionResult<IEnumerable<SuggestedUserDto>>> GetPopularUsers([FromQuery] int limit = 10)
+        {
+            var currentUserIdString = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(currentUserIdString) || !Guid.TryParse(currentUserIdString, out Guid currentUserId))
+            {
+                //_logger.LogWarning("GetSuggestedUsers: User ID claim missing or invalid for authorized user.");
+                return Unauthorized("User ID not found or invalid in token.");
+            }
+            var suggestions = await _connectionService.GetPopularUsersAsync(currentUserId, limit);
+            return Ok(suggestions);
+        }
     }
 }
