@@ -14,10 +14,10 @@ namespace buronet_service.Controllers // Ensure this namespace is correct
     [Authorize] // All actions in this controller require authentication
     public class UsersController : ControllerBase
     {
-        private readonly UserService _userService;
+        private readonly IUserService _userService;
         // private readonly AuthService _authService; // You might inject AuthService here if ProvisionUserAndProfileAsync moves to it.
 
-        public UsersController(UserService userService /*, AuthService authService */)
+        public UsersController(IUserService userService /*, AuthService authService */)
         {
             _userService = userService;
             // _authService = authService;
