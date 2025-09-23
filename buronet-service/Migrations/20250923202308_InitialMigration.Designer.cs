@@ -12,8 +12,8 @@ using buronet_service.Data;
 namespace buronet_service.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250811053236_AddedPollVotes")]
-    partial class AddedPollVotes
+    [Migration("20250923202308_InitialMigration")]
+    partial class InitialMigration
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -331,6 +331,9 @@ namespace buronet_service.Migrations
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("varchar(100)");
+
+                    b.Property<bool>("isAdmin")
+                        .HasColumnType("tinyint(1)");
 
                     b.HasKey("Id");
 

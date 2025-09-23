@@ -3,8 +3,8 @@
   "WorkspaceRootPath": "E:\\Devonix\\Buronet\\.NET\\buronet-service\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{0A2E1032-2B84-47A9-A588-0B6797EEE74E}|buronet-service\\buronet-service.csproj|e:\\devonix\\buronet\\.net\\buronet-service\\buronet-service\\services\\connectionservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{0A2E1032-2B84-47A9-A588-0B6797EEE74E}|buronet-service\\buronet-service.csproj|solutionrelative:buronet-service\\services\\connectionservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{0A2E1032-2B84-47A9-A588-0B6797EEE74E}|buronet-service\\buronet-service.csproj|e:\\devonix\\buronet\\.net\\buronet-service\\buronet-service\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
+      "RelativeMoniker": "D:0:0:{0A2E1032-2B84-47A9-A588-0B6797EEE74E}|buronet-service\\buronet-service.csproj|solutionrelative:buronet-service\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{0A2E1032-2B84-47A9-A588-0B6797EEE74E}|buronet-service\\buronet-service.csproj|e:\\devonix\\buronet\\.net\\buronet-service\\buronet-service\\services\\authservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
@@ -13,14 +13,6 @@
     {
       "AbsoluteMoniker": "D:0:0:{0A2E1032-2B84-47A9-A588-0B6797EEE74E}|buronet-service\\buronet-service.csproj|e:\\devonix\\buronet\\.net\\buronet-service\\buronet-service\\controllers\\authcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{0A2E1032-2B84-47A9-A588-0B6797EEE74E}|buronet-service\\buronet-service.csproj|solutionrelative:buronet-service\\controllers\\authcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{0A2E1032-2B84-47A9-A588-0B6797EEE74E}|buronet-service\\buronet-service.csproj|e:\\devonix\\buronet\\.net\\buronet-service\\buronet-service\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
-      "RelativeMoniker": "D:0:0:{0A2E1032-2B84-47A9-A588-0B6797EEE74E}|buronet-service\\buronet-service.csproj|solutionrelative:buronet-service\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{0A2E1032-2B84-47A9-A588-0B6797EEE74E}|buronet-service\\buronet-service.csproj|e:\\devonix\\buronet\\.net\\buronet-service\\buronet-service\\controllers\\connectioncontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{0A2E1032-2B84-47A9-A588-0B6797EEE74E}|buronet-service\\buronet-service.csproj|solutionrelative:buronet-service\\controllers\\connectioncontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{0A2E1032-2B84-47A9-A588-0B6797EEE74E}|buronet-service\\buronet-service.csproj|e:\\devonix\\buronet\\.net\\buronet-service\\buronet-service\\models\\dtos\\user\\userdto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
@@ -90,45 +82,19 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 1,
+          "SelectedChildIndex": 0,
           "Children": [
             {
               "$type": "Document",
-              "DocumentIndex": 3,
+              "DocumentIndex": 0,
               "Title": "appsettings.json",
               "DocumentMoniker": "E:\\Devonix\\Buronet\\.NET\\buronet-service\\buronet-service\\appsettings.json",
               "RelativeDocumentMoniker": "buronet-service\\appsettings.json",
               "ToolTip": "E:\\Devonix\\Buronet\\.NET\\buronet-service\\buronet-service\\appsettings.json",
               "RelativeToolTip": "buronet-service\\appsettings.json",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAwAAAAMAAAAAAAAAA==",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAkAAABfAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
-              "WhenOpened": "2025-09-21T13:29:35.472Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 0,
-              "Title": "ConnectionService.cs",
-              "DocumentMoniker": "E:\\Devonix\\Buronet\\.NET\\buronet-service\\buronet-service\\Services\\ConnectionService.cs",
-              "RelativeDocumentMoniker": "buronet-service\\Services\\ConnectionService.cs",
-              "ToolTip": "E:\\Devonix\\Buronet\\.NET\\buronet-service\\buronet-service\\Services\\ConnectionService.cs",
-              "RelativeToolTip": "buronet-service\\Services\\ConnectionService.cs",
-              "ViewState": "AgIAADQBAAAAAAAAAAAowFQBAAAIAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-09-21T13:27:48.007Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 4,
-              "Title": "ConnectionController.cs",
-              "DocumentMoniker": "E:\\Devonix\\Buronet\\.NET\\buronet-service\\buronet-service\\Controllers\\ConnectionController.cs",
-              "RelativeDocumentMoniker": "buronet-service\\Controllers\\ConnectionController.cs",
-              "ToolTip": "E:\\Devonix\\Buronet\\.NET\\buronet-service\\buronet-service\\Controllers\\ConnectionController.cs",
-              "RelativeToolTip": "buronet-service\\Controllers\\ConnectionController.cs",
-              "ViewState": "AgIAAK4AAAAAAAAAAAAkwMYAAAAMAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-09-21T13:20:56.522Z",
+              "WhenOpened": "2025-09-23T20:09:04.753Z",
               "EditorCaption": ""
             },
             {
@@ -139,14 +105,14 @@
               "RelativeDocumentMoniker": "buronet-service\\Services\\AuthService.cs",
               "ToolTip": "E:\\Devonix\\Buronet\\.NET\\buronet-service\\buronet-service\\Services\\AuthService.cs",
               "RelativeToolTip": "buronet-service\\Services\\AuthService.cs",
-              "ViewState": "AgIAADYAAAAAAAAAAAAowCkAAABnAAAAAAAAAA==",
+              "ViewState": "AgIAAEkAAAAAAAAAAAAiwGMAAAAjAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-09-21T11:40:34.535Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 5,
+              "DocumentIndex": 3,
               "Title": "UserDto.cs",
               "DocumentMoniker": "E:\\Devonix\\Buronet\\.NET\\buronet-service\\buronet-service\\Models\\DTOs\\User\\UserDto.cs",
               "RelativeDocumentMoniker": "buronet-service\\Models\\DTOs\\User\\UserDto.cs",
@@ -164,14 +130,13 @@
               "RelativeDocumentMoniker": "buronet-service\\Controllers\\AuthController.cs",
               "ToolTip": "E:\\Devonix\\Buronet\\.NET\\buronet-service\\buronet-service\\Controllers\\AuthController.cs",
               "RelativeToolTip": "buronet-service\\Controllers\\AuthController.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAABMAAAAJAAAAAAAAAA==",
+              "ViewState": "AgIAACEAAAAAAAAAAIAywD0AAAAQAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-09-21T11:37:49.383Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-09-21T11:37:49.383Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 6,
+              "DocumentIndex": 4,
               "Title": "User.cs",
               "DocumentMoniker": "E:\\Devonix\\Buronet\\.NET\\buronet-service\\buronet-service\\Models\\User\\User.cs",
               "RelativeDocumentMoniker": "buronet-service\\Models\\User\\User.cs",
@@ -183,7 +148,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 8,
+              "DocumentIndex": 6,
               "Title": "ApplyLink.cs",
               "DocumentMoniker": "E:\\Devonix\\Buronet\\.NET\\buronet-service\\Buronet.JobService\\Models\\ApplyLink.cs",
               "RelativeDocumentMoniker": "Buronet.JobService\\Models\\ApplyLink.cs",
@@ -195,7 +160,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 10,
+              "DocumentIndex": 8,
               "Title": "JobDBSettings.cs",
               "DocumentMoniker": "E:\\Devonix\\Buronet\\.NET\\buronet-service\\Buronet.JobService\\Settings\\JobDBSettings.cs",
               "RelativeDocumentMoniker": "Buronet.JobService\\Settings\\JobDBSettings.cs",
@@ -207,7 +172,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 12,
+              "DocumentIndex": 10,
               "Title": "Program.cs",
               "DocumentMoniker": "E:\\Devonix\\Buronet\\.NET\\buronet-service\\Buronet.JobService\\Program.cs",
               "RelativeDocumentMoniker": "Buronet.JobService\\Program.cs",
@@ -219,7 +184,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 9,
+              "DocumentIndex": 7,
               "Title": "JobsService.cs",
               "DocumentMoniker": "E:\\Devonix\\Buronet\\.NET\\buronet-service\\Buronet.JobService\\Services\\JobsService.cs",
               "RelativeDocumentMoniker": "Buronet.JobService\\Services\\JobsService.cs",
@@ -231,7 +196,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 11,
+              "DocumentIndex": 9,
               "Title": "IJobsService.cs",
               "DocumentMoniker": "E:\\Devonix\\Buronet\\.NET\\buronet-service\\Buronet.JobService\\Services\\Interfaces\\IJobsService.cs",
               "RelativeDocumentMoniker": "Buronet.JobService\\Services\\Interfaces\\IJobsService.cs",
@@ -243,7 +208,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 7,
+              "DocumentIndex": 5,
               "Title": "Job.cs",
               "DocumentMoniker": "E:\\Devonix\\Buronet\\.NET\\buronet-service\\Buronet.JobService\\Models\\Job.cs",
               "RelativeDocumentMoniker": "Buronet.JobService\\Models\\Job.cs",
@@ -255,7 +220,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 14,
+              "DocumentIndex": 12,
               "Title": "JobsController.cs",
               "DocumentMoniker": "E:\\Devonix\\Buronet\\.NET\\buronet-service\\Buronet.JobService\\Controllers\\JobsController.cs",
               "RelativeDocumentMoniker": "Buronet.JobService\\Controllers\\JobsController.cs",
@@ -267,7 +232,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 13,
+              "DocumentIndex": 11,
               "Title": "appsettings.json",
               "DocumentMoniker": "E:\\Devonix\\Buronet\\.NET\\buronet-service\\Buronet.JobService\\appsettings.json",
               "RelativeDocumentMoniker": "Buronet.JobService\\appsettings.json",
@@ -279,7 +244,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 16,
+              "DocumentIndex": 14,
               "Title": "BytePostService.cs",
               "DocumentMoniker": "E:\\Devonix\\Buronet\\.NET\\buronet-service\\Buronet.Bytes.API\\Services\\BytePostService.cs",
               "RelativeDocumentMoniker": "Buronet.Bytes.API\\Services\\BytePostService.cs",
@@ -291,7 +256,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 17,
+              "DocumentIndex": 15,
               "Title": "appsettings.json",
               "DocumentMoniker": "E:\\Devonix\\Buronet\\.NET\\buronet-service\\Buronet.Bytes.API\\appsettings.json",
               "RelativeDocumentMoniker": "Buronet.Bytes.API\\appsettings.json",
@@ -303,7 +268,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 15,
+              "DocumentIndex": 13,
               "Title": "Program.cs",
               "DocumentMoniker": "E:\\Devonix\\Buronet\\.NET\\buronet-service\\Buronet.Bytes.API\\Program.cs",
               "RelativeDocumentMoniker": "Buronet.Bytes.API\\Program.cs",
@@ -315,7 +280,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 18,
+              "DocumentIndex": 16,
               "Title": "BytesController.cs",
               "DocumentMoniker": "E:\\Devonix\\Buronet\\.NET\\buronet-service\\Buronet.Bytes.API\\Controllers\\BytesController.cs",
               "RelativeDocumentMoniker": "Buronet.Bytes.API\\Controllers\\BytesController.cs",
@@ -327,7 +292,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 19,
+              "DocumentIndex": 17,
               "Title": "BytePost.cs",
               "DocumentMoniker": "E:\\Devonix\\Buronet\\.NET\\buronet-service\\Buronet.Bytes.API\\Models\\BytePost.cs",
               "RelativeDocumentMoniker": "Buronet.Bytes.API\\Models\\BytePost.cs",
