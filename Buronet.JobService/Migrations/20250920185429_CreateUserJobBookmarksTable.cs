@@ -4,45 +4,41 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace buronet_service.Migrations
+namespace Buronet.JobService.Migrations
 {
     /// <inheritdoc />
-    public partial class AddTagManagementTables : Migration
+    public partial class CreateUserJobBookmarksTable : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.AlterDatabase()
+                .Annotation("MySql:CharSet", "utf8mb4");
 
             migrationBuilder.CreateTable(
-                name: "TagFrequencies",
+                name: "UserJobBookmarks",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
-                    TagName = table.Column<string>(type: "varchar(50)", maxLength: 50, nullable: false)
+                    UserId = table.Column<string>(type: "longtext", nullable: false)
                         .Annotation("MySql:CharSet", "utf8mb4"),
-                    Frequency = table.Column<int>(type: "int", nullable: false),
-                    LastUpdated = table.Column<DateTime>(type: "datetime(6)", nullable: false)
+                    JobId = table.Column<string>(type: "longtext", nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    SavedDate = table.Column<DateTime>(type: "datetime(6)", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_TagFrequencies", x => x.Id);
+                    table.PrimaryKey("PK_UserJobBookmarks", x => x.Id);
                 })
                 .Annotation("MySql:CharSet", "utf8mb4");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_TagFrequencies_TagName",
-                table: "TagFrequencies",
-                column: "TagName",
-                unique: true);
-
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "TagFrequencies");
+                name: "UserJobBookmarks");
         }
     }
 }

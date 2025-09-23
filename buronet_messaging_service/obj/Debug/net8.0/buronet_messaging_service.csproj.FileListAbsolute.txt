@@ -129,3 +129,4 @@ E:\Devonix\Buronet\.NET\buronet-service\buronet_messaging_service\obj\Debug\net8
 E:\Devonix\Buronet\.NET\buronet-service\buronet_messaging_service\obj\Debug\net8.0\buronet_messaging_service.genruntimeconfig.cache
 E:\Devonix\Buronet\.NET\buronet-service\buronet_messaging_service\obj\Debug\net8.0\ref\buronet_messaging_service.dll
 E:\Devonix\Buronet\.NET\buronet-service\buronet_messaging_service\obj\Debug\net8.0\staticwebassets.upToDateCheck.txt
+E:\Devonix\Buronet\.NET\buronet-service\buronet_messaging_service\obj\Debug\net8.0\buronet_messaging_service.sourcelink.json

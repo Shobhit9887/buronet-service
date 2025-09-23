@@ -356,7 +356,7 @@ namespace buronet_service.Services // Ensure this namespace is correct
 
             // STEP 2: Get connections-of-connections (both directions in one query)
             var connectionsOfConnections = await _context.Connections
-                .Where(coc => usersToExcludeQuery.Contains(coc.UserId1) || usersToExcludeQuery.Contains(coc.UserId2))
+                .Where(coc => !usersToExcludeQuery.Contains(coc.UserId1) && !usersToExcludeQuery.Contains(coc.UserId2))
                 .Select(coc => usersToExcludeQuery.Contains(coc.UserId1) ? coc.UserId2 : coc.UserId1)
                 .Distinct()
                 .ToListAsync();
@@ -379,23 +379,23 @@ namespace buronet_service.Services // Ensure this namespace is correct
                 .ToListAsync();
 
             // STEP 4: Similar headline
-            string? headlineKeyword = currentUserHeadline?
-                .Split(' ', StringSplitOptions.RemoveEmptyEntries)
-                .FirstOrDefault();
+            string? headlineKeyword = currentUserHeadline ;
+                //.Split(' ', StringSplitOptions.RemoveEmptyEntries)
+                //.FirstOrDefault();
 
             var similarHeadlineUsers = await _context.Users
                 .AsNoTracking()
                 .Include(u => u.Profile)
                 .Where(u =>
-                    connectionsOfConnections.Contains(u.Id) &&
+                    //connectionsOfConnections.Contains(u.Id) &&
                     !usersToExcludeQuery.Contains(u.Id) &&
-                    (string.IsNullOrEmpty(headlineKeyword) ||
-                     (u.Profile!.Headline != null && u.Profile.Headline.Contains(headlineKeyword))))
+                    ((string.IsNullOrEmpty(headlineKeyword) ||
+                     (u.Profile!.Headline != null && u.Profile.Headline.Contains(headlineKeyword)))))
                 .OrderByDescending(u => u.Profile!.UpdatedAt)
                 .Take(limit)
                 .ToListAsync();
 
-            result.Add(_mapper.Map<IEnumerable<SuggestedUserDto>>(similarHeadlineUsers));
+            if (similarHeadlineUsers.Count() > 0) result.Add(_mapper.Map<IEnumerable<SuggestedUserDto>>(similarHeadlineUsers));
 
             // STEP 5: Similar title
             if (!string.IsNullOrEmpty(currentUserTitle))
@@ -404,7 +404,7 @@ namespace buronet_service.Services // Ensure this namespace is correct
                     .AsNoTracking()
                     .Include(u => u.Profile)
                     .Where(u =>
-                        connectionsOfConnections.Contains(u.Id) &&
+                        //connectionsOfConnections.Contains(u.Id) &&
                         !usersToExcludeQuery.Contains(u.Id) &&
                         _context.UserExperiences.Any(e =>
                             e.UserProfileId == u.Id &&
@@ -413,7 +413,7 @@ namespace buronet_service.Services // Ensure this namespace is correct
                     .Take(limit)
                     .ToListAsync();
 
-                result.Add(_mapper.Map<IEnumerable<SuggestedUserDto>>(similarTitleUsers));
+                if(similarTitleUsers.Count() > 0) result.Add(_mapper.Map<IEnumerable<SuggestedUserDto>>(similarTitleUsers));
             }
             else
             {
@@ -425,7 +425,7 @@ namespace buronet_service.Services // Ensure this namespace is correct
                 .AsNoTracking()
                 .Include(u => u.Profile)
                 .Where(u =>
-                    connectionsOfConnections.Contains(u.Id) &&
+                    //connectionsOfConnections.Contains(u.Id) &&
                     !usersToExcludeQuery.Contains(u.Id))
                 .OrderByDescending(u => u.Profile!.UpdatedAt)
                 .Take(limit * 3) // extra for filtering
@@ -454,7 +454,7 @@ namespace buronet_service.Services // Ensure this namespace is correct
                 .Take(limit)
                 .ToList();
 
-            result.Add(_mapper.Map<IEnumerable<SuggestedUserDto>>(similarEducationUsers));
+            if (similarEducationUsers.Count() > 0) result.Add(_mapper.Map<IEnumerable<SuggestedUserDto>>(similarEducationUsers));
 
             return result;
         }

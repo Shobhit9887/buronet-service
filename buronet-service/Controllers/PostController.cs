@@ -217,5 +217,13 @@ namespace buronet_service.Controllers
             var trendingTags = await _postService.GetTrendingTagsAsync(limit);
             return Ok(trendingTags);
         }
+
+        [HttpPost("toggle-poll-vote")]
+        public async Task<ActionResult<IEnumerable<TagWithTotalCountDto>>> TogglePollVoteAsync([FromBody] PollVoteDto pollVote) // Changed return type
+        {
+            //_logger.LogInformation("Fetching top {Limit} trending tags.", limit);
+            var toggleVote = await _postService.TogglePollVoteAsync(pollVote);
+            return Ok(toggleVote);
+        }
     }
 }

@@ -150,6 +150,82 @@ namespace buronet_service.Migrations
                     b.ToTable("Likes");
                 });
 
+            modelBuilder.Entity("buronet_service.Models.User.Poll", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<int>("PostId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PostId")
+                        .IsUnique();
+
+                    b.ToTable("Polls");
+                });
+
+            modelBuilder.Entity("buronet_service.Models.User.PollOption", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("PollId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Text")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PollId");
+
+                    b.ToTable("PollOptions");
+                });
+
+            modelBuilder.Entity("buronet_service.Models.User.PollVote", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("PollId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("PollOptionId")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<DateTime>("VotedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PollOptionId");
+
+                    b.HasIndex("UserId");
+
+                    b.HasIndex("PollId", "UserId")
+                        .IsUnique();
+
+                    b.ToTable("PollVotes");
+                });
+
             modelBuilder.Entity("buronet_service.Models.User.Post", b =>
                 {
                     b.Property<int>("Id")
@@ -168,6 +244,12 @@ namespace buronet_service.Migrations
                     b.Property<string>("ImageUrl")
                         .HasMaxLength(500)
                         .HasColumnType("varchar(500)");
+
+                    b.Property<bool>("IsPoll")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<int?>("PollId")
+                        .HasColumnType("int");
 
                     b.Property<string>("TagsJson")
                         .HasColumnType("TEXT");
@@ -246,6 +328,9 @@ namespace buronet_service.Migrations
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("varchar(100)");
+
+                    b.Property<bool>("isAdmin")
+                        .HasColumnType("tinyint(1)");
 
                     b.HasKey("Id");
 
@@ -674,6 +759,55 @@ namespace buronet_service.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("buronet_service.Models.User.Poll", b =>
+                {
+                    b.HasOne("buronet_service.Models.User.Post", "Post")
+                        .WithOne("Poll")
+                        .HasForeignKey("buronet_service.Models.User.Poll", "PostId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Post");
+                });
+
+            modelBuilder.Entity("buronet_service.Models.User.PollOption", b =>
+                {
+                    b.HasOne("buronet_service.Models.User.Poll", "Poll")
+                        .WithMany("Options")
+                        .HasForeignKey("PollId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Poll");
+                });
+
+            modelBuilder.Entity("buronet_service.Models.User.PollVote", b =>
+                {
+                    b.HasOne("buronet_service.Models.User.Poll", "Poll")
+                        .WithMany()
+                        .HasForeignKey("PollId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("buronet_service.Models.User.PollOption", "PollOption")
+                        .WithMany("PollVotes")
+                        .HasForeignKey("PollOptionId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("buronet_service.Models.User.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Poll");
+
+                    b.Navigation("PollOption");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("buronet_service.Models.User.Post", b =>
                 {
                     b.HasOne("buronet_service.Models.User.User", "User")
@@ -784,11 +918,23 @@ namespace buronet_service.Migrations
                     b.Navigation("UserProfile");
                 });
 
+            modelBuilder.Entity("buronet_service.Models.User.Poll", b =>
+                {
+                    b.Navigation("Options");
+                });
+
+            modelBuilder.Entity("buronet_service.Models.User.PollOption", b =>
+                {
+                    b.Navigation("PollVotes");
+                });
+
             modelBuilder.Entity("buronet_service.Models.User.Post", b =>
                 {
                     b.Navigation("Comments");
 
                     b.Navigation("Likes");
+
+                    b.Navigation("Poll");
                 });
 
             modelBuilder.Entity("buronet_service.Models.User.User", b =>

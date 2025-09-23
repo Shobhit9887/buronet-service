@@ -24,6 +24,8 @@ namespace buronet_service.Models.DTOs.User // All DTOs share this namespace
         public List<CommentDto> Comments { get; set; } = new List<CommentDto>(); // For single post view
         public List<LikeDto> Likes { get; set; } = new List<LikeDto>();
         public List<string> Tags { get; set; } = new List<string>();
+        public bool IsPoll { get; set; }
+        public PollDto? Poll { get; set; }
     }
 
     public class CreatePostDto
@@ -38,6 +40,10 @@ namespace buronet_service.Models.DTOs.User // All DTOs share this namespace
         [MaxLength(500)]
         public string? ImageUrl { get; set; }
         public string? TagsJson{ get; set; } // Internal property for DB storage
+        public bool IsPoll { get; set; } = false;
+
+        // --- NEW: Add poll options ---
+        public List<string> Options { get; set; } = new List<string>();
     }
 
     public class UpdatePostDto

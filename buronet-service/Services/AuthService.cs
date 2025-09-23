@@ -39,7 +39,7 @@ namespace buronet_service.Services
             // Ensure UserProfile model also has a Guid Id and other default properties
             var newProfile = new UserProfile
             {
-                Id = user.Id, // CRITICAL: Use the SAME ID for the shared primary key 1:1 relationship
+                Id = user.Id, // CRITICAL: Use the SAME ID for the shared primary key 1:1 relationship 
                 FirstName = "", // Use username as initial first name or a placeholder
                 LastName = "", // Default empty
                 //Email = dtoemail, // Copy email to profile if applicable
@@ -97,7 +97,8 @@ namespace buronet_service.Services
             {
                 Id = user.Id,
                 Username = user.Username,
-                Email = user.Email
+                Email = user.Email,
+                IsAdmin = user.isAdmin
             };
         }
     }
