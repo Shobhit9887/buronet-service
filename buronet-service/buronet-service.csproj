@@ -36,4 +36,10 @@
     </Content>
   </ItemGroup>
 
+  <ItemGroup>
+    <Content Update="DigiCertGlobalRootG2.crt.pem">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
 </Project>
