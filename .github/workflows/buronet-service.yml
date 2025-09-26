@@ -29,6 +29,12 @@ jobs:
       - name: dotnet publish
         run: dotnet publish -c Release buronet-service -o ${{env.DOTNET_ROOT}}/myapp
 
+        # --- ADD THIS STEP ---
+      - name: Copy SSL Certificate to Publish Folder
+      # Adjust 'Certs/DigiCertGlobalRootG2.crt.pem' to match the actual path in your repo.
+      # This copies the file from the root of the checked-out repo to the publish folder.
+        run: cp ./DigiCertGlobalRootG2.crt.pem ${{env.DOTNET_ROOT}}/myapp/DigiCertGlobalRootG2.crt.pem
+
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
         with:
