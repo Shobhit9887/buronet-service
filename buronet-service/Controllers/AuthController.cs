@@ -1,4 +1,5 @@
 ﻿using buronet_service.Models.DTOs;
+using buronet_service.Models.DTOs.User;
 using buronet_service.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -46,6 +47,31 @@ namespace buronet_service.Controllers
 
             //_logger.LogInformation("User {UserId} successfully processed logout request.", userId);
             return Ok(new { message = "Logged out successfully." });
+        }
+
+        [HttpPost("forgot-password")]
+        [AllowAnonymous]
+        public async Task<IActionResult> ForgotPassword(ForgotPasswordDto forgotDto)
+        {
+            var success = await _auth.ForgotPasswordAsync(forgotDto.Email);
+            if (success)
+            {
+                // Always return OK even if the email doesn't exist to prevent user enumeration attacks
+                return Ok("If an account with that email exists, a password reset link has been sent.");
+            }
+            return Ok("If an account with that email exists, a password reset link has been sent.");
+        }
+
+        [HttpPost("reset-password")]
+        [AllowAnonymous]
+        public async Task<IActionResult> ResetPassword(ResetPasswordDto resetDto)
+        {
+            var success = await _auth.ResetPasswordAsync(resetDto);
+            if (!success)
+            {
+                return BadRequest("Invalid or expired token.");
+            }
+            return Ok("Password has been reset successfully.");
         }
 
         [Authorize]

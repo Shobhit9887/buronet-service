@@ -31,26 +31,106 @@ namespace buronet_service.Services // Ensure this namespace is correct
         }
 
         // --- Network Metrics ---
+        //public async Task<NetworkMetricsDto> GetNetworkMetricsAsync(Guid userIdGuid)
+        //{
+        //    var oneMonthAgo = DateTime.UtcNow.AddMonths(-1);
+
+        //    string userIdString = userIdGuid.ToString();
+
+        //    var totalConnections = await _context.Connections
+        //                                        .CountAsync(c => c.UserId1 == userIdGuid || c.UserId2 == userIdGuid);
+
+        //    var joinedGroups = await _context.UserCommunityGroups // UserCommunityGroups is a user's joined groups
+        //                                    .CountAsync(ucg => ucg.UserProfileId == userIdGuid);
+
+        //    var pendingRequests = await _context.ConnectionRequests
+        //                                        .CountAsync(cr => cr.ReceiverId == userIdGuid && cr.Status == "Pending");
+
+        //    var networkGrowth = await _context.Connections
+        //                                        .CountAsync(ng => (ng.UserId1 == userIdGuid || ng.UserId2 == userIdGuid) && ng.CreatedAt >= oneMonthAgo);
+
+        //    // Network Growth Percentage is a placeholder for now, would need historical data
+        //    return new NetworkMetricsDto
+        //    {
+        //        TotalConnections = totalConnections,
+        //        JoinedGroups = joinedGroups,
+        //        PendingRequests = pendingRequests,
+        //        NetworkGrowthPercentage = 0.0, // Placeholder
+        //        NetworkGrowth = networkGrowth
+        //    };
+        //}
+
         public async Task<NetworkMetricsDto> GetNetworkMetricsAsync(Guid userIdGuid)
         {
-            string userIdString = userIdGuid.ToString();
+            // Define time frames for comparison
+            var oneMonthAgo = DateTime.UtcNow.AddMonths(-1);
+            var lastMonthStart = DateTime.UtcNow.AddMonths(-2); // For previous month's connections
+            var oneWeekAgo = DateTime.UtcNow.AddDays(-7);
 
+            // 1. Total Connections and its trend vs. 1 month ago
             var totalConnections = await _context.Connections
-                                                .CountAsync(c => c.UserId1 == userIdGuid || c.UserId2 == userIdGuid);
+                                                 .CountAsync(c => c.UserId1 == userIdGuid || c.UserId2 == userIdGuid);
 
-            var joinedGroups = await _context.UserCommunityGroups // UserCommunityGroups is a user's joined groups
-                                            .CountAsync(ucg => ucg.UserProfileId == userIdGuid);
+            var totalConnectionsLastMonth = await _context.Connections
+                                                          .CountAsync(c => (c.UserId1 == userIdGuid || c.UserId2 == userIdGuid) && c.CreatedAt < oneMonthAgo);
 
-            var pendingRequests = await _context.ConnectionRequests
-                                                .CountAsync(cr => cr.ReceiverId == userIdGuid && cr.Status == "Pending");
+            double totalConnectionsTrend = 0.0;
+            if (totalConnectionsLastMonth > 0)
+            {
+                totalConnectionsTrend = ((double)totalConnections - totalConnectionsLastMonth) / totalConnectionsLastMonth * 100;
+            } else
+            {
+                totalConnectionsTrend = 100;
+            }
 
-            // Network Growth Percentage is a placeholder for now, would need historical data
+                // 2. Joined Groups in the current month
+                var newGroupsThisMonth = await _context.UserCommunityGroups
+                                                       .CountAsync(ucg => ucg.UserProfileId == userIdGuid && ucg.CreatedAt >= oneMonthAgo);
+
+            // 3. New Pending Requests in the last 1 week
+            var newPendingRequestsThisWeek = await _context.ConnectionRequests
+                                                           .CountAsync(cr => cr.ReceiverId == userIdGuid && cr.Status == "Pending" && cr.CreatedAt >= oneWeekAgo);
+
+            var pendingRequestsThisWeekTrend = await _context.ConnectionRequests
+                                                              .CountAsync(cr => cr.ReceiverId == userIdGuid && cr.Status == "Pending" && cr.CreatedAt < oneWeekAgo);
+
+            double pendingRequestsTrend = 0.0;
+            if (pendingRequestsThisWeekTrend > 0)
+            {
+                pendingRequestsTrend = ((double)newPendingRequestsThisWeek - pendingRequestsThisWeekTrend) / pendingRequestsThisWeekTrend * 100;
+            }
+            else if (newPendingRequestsThisWeek > 0)
+            {
+                pendingRequestsTrend = 100.0;
+            }
+
+            // 4. Network Growth (new connections) and its trend vs. 1 month ago
+            var networkGrowthCurrentMonth = await _context.Connections
+                                                          .CountAsync(c => (c.UserId1 == userIdGuid || c.UserId2 == userIdGuid) && c.CreatedAt >= oneMonthAgo);
+
+            var networkGrowthPreviousMonth = await _context.Connections
+                                                           .CountAsync(c => (c.UserId1 == userIdGuid || c.UserId2 == userIdGuid) && c.CreatedAt >= lastMonthStart && c.CreatedAt < oneMonthAgo);
+
+            double networkGrowthPercentage = 0.0;
+            if (networkGrowthPreviousMonth > 0)
+            {
+                networkGrowthPercentage = ((double)networkGrowthCurrentMonth - networkGrowthPreviousMonth) / networkGrowthPreviousMonth * 100;
+            }
+            else if (networkGrowthCurrentMonth > 0)
+            {
+                networkGrowthPercentage = 100.0;
+            }
+
             return new NetworkMetricsDto
             {
                 TotalConnections = totalConnections,
-                JoinedGroups = joinedGroups,
-                PendingRequests = pendingRequests,
-                NetworkGrowthPercentage = 0.0 // Placeholder
+                TotalConnectionsTrend = totalConnectionsTrend,
+                JoinedGroups = newGroupsThisMonth,
+                JoinedGroupsTrend = (newGroupsThisMonth > 0) ? 100.0 : 0.0, // Assuming 100% growth if there were no groups last month
+                PendingRequests = newPendingRequestsThisWeek,
+                PendingRequestsTrend = pendingRequestsTrend,
+                NetworkGrowth = networkGrowthCurrentMonth,
+                NetworkGrowthPercentage = networkGrowthPercentage
             };
         }
 
@@ -337,179 +417,393 @@ namespace buronet_service.Services // Ensure this namespace is correct
         //}
 
 
-        public async Task<List<IEnumerable<SuggestedUserDto>>> GetSuggestedUsersAsync(Guid currentUserId, int limit)
+        //public async Task<List<IEnumerable<SuggestedUserDto>>> GetSuggestedUsersAsync(Guid currentUserId, int limit)
+        //{
+        //    var result = new List<IEnumerable<SuggestedUserDto>>();
+
+        //    // STEP 1: Build exclusion list (already connected, pending requests, yourself)
+        //    var usersToExcludeQuery =
+        //        from u in _context.Users
+        //        where
+        //            _context.Connections.Any(c =>
+        //                (c.UserId1 == currentUserId && c.UserId2 == u.Id) ||
+        //                (c.UserId2 == currentUserId && c.UserId1 == u.Id))
+        //            || _context.ConnectionRequests.Any(cr =>
+        //                (cr.SenderId == currentUserId && cr.ReceiverId == u.Id) ||
+        //                (cr.ReceiverId == currentUserId && cr.SenderId == u.Id))
+        //            || u.Id == currentUserId
+        //        select u.Id;
+
+        //    // STEP 2: Get connections-of-connections (both directions in one query)
+        //    var connectionsOfConnections = await _context.Connections
+        //        .Where(coc => !usersToExcludeQuery.Contains(coc.UserId1) && !usersToExcludeQuery.Contains(coc.UserId2))
+        //        .Select(coc => usersToExcludeQuery.Contains(coc.UserId1) ? coc.UserId2 : coc.UserId1)
+        //        .Distinct()
+        //        .ToListAsync();
+
+        //    // STEP 3: Get current user's data sequentially (to avoid DbContext concurrency issues)
+        //    var currentUserHeadline = await _context.Users
+        //        .Where(u => u.Id == currentUserId)
+        //        .Select(u => u.Profile!.Headline)
+        //        .FirstOrDefaultAsync();
+
+        //    var currentUserTitle = await _context.UserExperiences
+        //        .Where(e => e.UserProfileId == currentUserId)
+        //        .OrderByDescending(e => e.EndDate ?? DateTime.MaxValue)
+        //        .Select(e => e.Title)
+        //        .FirstOrDefaultAsync();
+
+        //    var currentUserEducation = await _context.UserEducation
+        //        .Where(e => e.UserProfileId == currentUserId)
+        //        .Select(e => new { e.Institution, e.Degree, e.Major })
+        //        .ToListAsync();
+
+        //    // STEP 4: Similar headline
+        //    string? headlineKeyword = currentUserHeadline ;
+        //        //.Split(' ', StringSplitOptions.RemoveEmptyEntries)
+        //        //.FirstOrDefault();
+
+        //    var similarHeadlineUsers = await _context.Users
+        //        .AsNoTracking()
+        //        .Include(u => u.Profile)
+        //        .Where(u =>
+        //            //connectionsOfConnections.Contains(u.Id) &&
+        //            !usersToExcludeQuery.Contains(u.Id) &&
+        //            ((string.IsNullOrEmpty(headlineKeyword) ||
+        //             (u.Profile!.Headline != null && u.Profile.Headline.Contains(headlineKeyword)))))
+        //        .OrderByDescending(u => u.Profile!.UpdatedAt)
+        //        .Take(limit)
+        //        .ToListAsync();
+
+        //    if (similarHeadlineUsers.Count() > 0) result.Add(_mapper.Map<IEnumerable<SuggestedUserDto>>(similarHeadlineUsers));
+
+        //    // STEP 5: Similar title
+        //    if (!string.IsNullOrEmpty(currentUserTitle))
+        //    {
+        //        var similarTitleUsers = await _context.Users
+        //            .AsNoTracking()
+        //            .Include(u => u.Profile)
+        //            .Where(u =>
+        //                //connectionsOfConnections.Contains(u.Id) &&
+        //                !usersToExcludeQuery.Contains(u.Id) &&
+        //                _context.UserExperiences.Any(e =>
+        //                    e.UserProfileId == u.Id &&
+        //                    e.Title == currentUserTitle))
+        //            .OrderByDescending(u => u.Profile!.UpdatedAt)
+        //            .Take(limit)
+        //            .ToListAsync();
+
+        //        if(similarTitleUsers.Count() > 0) result.Add(_mapper.Map<IEnumerable<SuggestedUserDto>>(similarTitleUsers));
+        //    }
+        //    else
+        //    {
+        //        result.Add(Enumerable.Empty<SuggestedUserDto>());
+        //    }
+
+        //    // STEP 6: Similar education
+        //    var possibleUsers = await _context.Users
+        //        .AsNoTracking()
+        //        .Include(u => u.Profile)
+        //        .Where(u =>
+        //            //connectionsOfConnections.Contains(u.Id) &&
+        //            !usersToExcludeQuery.Contains(u.Id))
+        //        .OrderByDescending(u => u.Profile!.UpdatedAt)
+        //        .Take(limit * 3) // extra for filtering
+        //        .ToListAsync();
+
+        //    var possibleUserIds = possibleUsers.Select(u => u.Id).ToList();
+
+        //    var possibleUserEducations = await _context.UserEducation
+        //        .Where(e => possibleUserIds.Contains(e.UserProfileId))
+        //        .Select(e => new { e.UserProfileId, e.Institution, e.Degree, e.Major })
+        //        .ToListAsync();
+
+        //    // In-memory parallel filtering for speed
+        //    var similarEducationUsers = possibleUsers
+        //        .AsParallel()
+        //        .Where(u =>
+        //            possibleUserEducations.Any(e =>
+        //                e.UserProfileId == u.Id &&
+        //                currentUserEducation.Any(edu =>
+        //                    (edu.Institution != null && e.Institution == edu.Institution) ||
+        //                    (edu.Degree != null && e.Degree == edu.Degree) ||
+        //                    (edu.Major != null && e.Major == edu.Major)
+        //                )
+        //            )
+        //        )
+        //        .Take(limit)
+        //        .ToList();
+
+        //    if (similarEducationUsers.Count() > 0) result.Add(_mapper.Map<IEnumerable<SuggestedUserDto>>(similarEducationUsers));
+
+        //    return result;
+        //}
+
+        //public async Task<IEnumerable<SuggestedUserDto>> GetSuggestedUsersAsync(Guid currentUserId, int limit)
+        public async Task<Dictionary<string, List<SuggestedUserDto>>> GetSuggestedUsersAsync(Guid currentUserId, int limit)
         {
-            var result = new List<IEnumerable<SuggestedUserDto>>();
+            //_logger.LogInformation("Fetching categorized suggested users for user {UserId} with limit {Limit}.", currentUserId, limit);
 
-            // STEP 1: Build exclusion list (already connected, pending requests, yourself)
-            var usersToExcludeQuery =
-                from u in _context.Users
-                where
-                    _context.Connections.Any(c =>
-                        (c.UserId1 == currentUserId && c.UserId2 == u.Id) ||
-                        (c.UserId2 == currentUserId && c.UserId1 == u.Id))
-                    || _context.ConnectionRequests.Any(cr =>
-                        (cr.SenderId == currentUserId && cr.ReceiverId == u.Id) ||
-                        (cr.ReceiverId == currentUserId && cr.SenderId == u.Id))
-                    || u.Id == currentUserId
-                select u.Id;
+            var suggestions = new Dictionary<string, List<SuggestedUserDto>>
+            {
+                { "People With Similar Headline", new List<SuggestedUserDto>() },
+                { "People With Similar Title", new List<SuggestedUserDto>() },
+                { "People With Similar Education", new List<SuggestedUserDto>() }
+            };
 
-            // STEP 2: Get connections-of-connections (both directions in one query)
-            var connectionsOfConnections = await _context.Connections
-                .Where(coc => !usersToExcludeQuery.Contains(coc.UserId1) && !usersToExcludeQuery.Contains(coc.UserId2))
-                .Select(coc => usersToExcludeQuery.Contains(coc.UserId1) ? coc.UserId2 : coc.UserId1)
-                .Distinct()
+            // Get all excluded users in one go
+            var excludedUsers = await _context.Connections
+                .Where(c => c.UserId1 == currentUserId || c.UserId2 == currentUserId)
+                .Select(c => c.UserId1 == currentUserId ? c.UserId2 : c.UserId1)
                 .ToListAsync();
 
-            // STEP 3: Get current user's data sequentially (to avoid DbContext concurrency issues)
-            var currentUserHeadline = await _context.Users
+            excludedUsers.AddRange(await _context.ConnectionRequests
+                .Where(cr => cr.SenderId == currentUserId || cr.ReceiverId == currentUserId)
+                .Select(cr => cr.SenderId == currentUserId ? cr.ReceiverId : cr.SenderId)
+                .ToListAsync());
+
+            excludedUsers.Add(currentUserId);
+            var excludedUserIds = excludedUsers.Distinct().ToHashSet();
+
+            // Get current user's profile data
+            var currentUserProfileData = await _context.Users
+                .AsNoTracking()
                 .Where(u => u.Id == currentUserId)
-                .Select(u => u.Profile!.Headline)
+                .Select(u => new
+                {
+                    Headline = u.Profile!.Headline,
+                    JobTitle = _context.UserExperiences.Where(e => e.UserProfileId == u.Id).OrderByDescending(e => e.EndDate ?? DateTime.MaxValue).Select(e => e.Title).FirstOrDefault(),
+                    Education = _context.UserEducation.Where(e => e.UserProfileId == u.Id).Select(e => new { e.Institution, e.Degree, e.Major }).ToList(),
+                })
                 .FirstOrDefaultAsync();
 
-            var currentUserTitle = await _context.UserExperiences
-                .Where(e => e.UserProfileId == currentUserId)
-                .OrderByDescending(e => e.EndDate ?? DateTime.MaxValue)
-                .Select(e => e.Title)
-                .FirstOrDefaultAsync();
+            if (currentUserProfileData == null) return suggestions;
 
-            var currentUserEducation = await _context.UserEducation
-                .Where(e => e.UserProfileId == currentUserId)
-                .Select(e => new { e.Institution, e.Degree, e.Major })
-                .ToListAsync();
-
-            // STEP 4: Similar headline
-            string? headlineKeyword = currentUserHeadline ;
-                //.Split(' ', StringSplitOptions.RemoveEmptyEntries)
-                //.FirstOrDefault();
-
-            var similarHeadlineUsers = await _context.Users
+            // Fetch potential suggestions to filter in memory
+            var allPotentialSuggestions = await _context.Users
                 .AsNoTracking()
                 .Include(u => u.Profile)
-                .Where(u =>
-                    //connectionsOfConnections.Contains(u.Id) &&
-                    !usersToExcludeQuery.Contains(u.Id) &&
-                    ((string.IsNullOrEmpty(headlineKeyword) ||
-                     (u.Profile!.Headline != null && u.Profile.Headline.Contains(headlineKeyword)))))
+                .Include(u => u.Profile.Experiences)
+                .Include(u => u.Profile.Education)
+                .Where(u => !excludedUserIds.Contains(u.Id))
                 .OrderByDescending(u => u.Profile!.UpdatedAt)
-                .Take(limit)
+                .Take(limit * 3) // Fetch more than needed to ensure we have enough suggestions after filtering
                 .ToListAsync();
 
-            if (similarHeadlineUsers.Count() > 0) result.Add(_mapper.Map<IEnumerable<SuggestedUserDto>>(similarHeadlineUsers));
-
-            // STEP 5: Similar title
-            if (!string.IsNullOrEmpty(currentUserTitle))
-            {
-                var similarTitleUsers = await _context.Users
-                    .AsNoTracking()
-                    .Include(u => u.Profile)
-                    .Where(u =>
-                        //connectionsOfConnections.Contains(u.Id) &&
-                        !usersToExcludeQuery.Contains(u.Id) &&
-                        _context.UserExperiences.Any(e =>
-                            e.UserProfileId == u.Id &&
-                            e.Title == currentUserTitle))
-                    .OrderByDescending(u => u.Profile!.UpdatedAt)
-                    .Take(limit)
-                    .ToListAsync();
-
-                if(similarTitleUsers.Count() > 0) result.Add(_mapper.Map<IEnumerable<SuggestedUserDto>>(similarTitleUsers));
-            }
-            else
-            {
-                result.Add(Enumerable.Empty<SuggestedUserDto>());
-            }
-
-            // STEP 6: Similar education
-            var possibleUsers = await _context.Users
-                .AsNoTracking()
-                .Include(u => u.Profile)
-                .Where(u =>
-                    //connectionsOfConnections.Contains(u.Id) &&
-                    !usersToExcludeQuery.Contains(u.Id))
-                .OrderByDescending(u => u.Profile!.UpdatedAt)
-                .Take(limit * 3) // extra for filtering
-                .ToListAsync();
-
-            var possibleUserIds = possibleUsers.Select(u => u.Id).ToList();
-
-            var possibleUserEducations = await _context.UserEducation
-                .Where(e => possibleUserIds.Contains(e.UserProfileId))
-                .Select(e => new { e.UserProfileId, e.Institution, e.Degree, e.Major })
-                .ToListAsync();
-
-            // In-memory parallel filtering for speed
-            var similarEducationUsers = possibleUsers
-                .AsParallel()
-                .Where(u =>
-                    possibleUserEducations.Any(e =>
-                        e.UserProfileId == u.Id &&
-                        currentUserEducation.Any(edu =>
-                            (edu.Institution != null && e.Institution == edu.Institution) ||
-                            (edu.Degree != null && e.Degree == edu.Degree) ||
-                            (edu.Major != null && e.Major == edu.Major)
-                        )
-                    )
-                )
+            // Filter and categorize in memory
+            var similarHeadlineUsers = allPotentialSuggestions
+                .Where(u => !string.IsNullOrEmpty(currentUserProfileData.Headline) &&
+                            !string.IsNullOrEmpty(u.Profile?.Headline) &&
+                            u.Profile.Headline.Contains(currentUserProfileData.Headline))
                 .Take(limit)
                 .ToList();
 
-            if (similarEducationUsers.Count() > 0) result.Add(_mapper.Map<IEnumerable<SuggestedUserDto>>(similarEducationUsers));
+            var similarTitleUsers = allPotentialSuggestions
+                .Where(u => !string.IsNullOrEmpty(currentUserProfileData.JobTitle) &&
+                            u.Profile.Experiences.Any(e => e.Title == currentUserProfileData.JobTitle))
+                .Take(limit)
+                .ToList();
 
-            return result;
+            var similarEducationUsers = allPotentialSuggestions
+                .Where(u => currentUserProfileData.Education.Any(edu =>
+                            u.Profile.Education.Any(sugEdu =>
+                                (edu.Institution != null && sugEdu.Institution == edu.Institution) ||
+                                (edu.Degree != null && sugEdu.Degree == edu.Degree) ||
+                                (edu.Major != null && sugEdu.Major == edu.Major))))
+                .Take(limit)
+                .ToList();
+
+            suggestions["People With Similar Headline"] = _mapper.Map<List<SuggestedUserDto>>(similarHeadlineUsers);
+            suggestions["People With Similar Title"] = _mapper.Map<List<SuggestedUserDto>>(similarTitleUsers);
+            suggestions["People With Similar Education"] = _mapper.Map<List<SuggestedUserDto>>(similarEducationUsers);
+
+            //_logger.LogInformation("Found {Count} total categorized suggestions.", similarHeadlineUsers.Count + similarTitleUsers.Count + similarEducationUsers.Count);
+
+            return suggestions;
+        }
+
+        public async Task<IEnumerable<SuggestedUserDto>> GetGeneralSuggestedUsersAsync(Guid currentUserId, int limit)
+        {
+            //_logger.LogInformation("Fetching general suggested users for user {UserId} with limit {Limit}.", currentUserId, limit);
+
+            // Fetch all excluded users in one go
+            var excludedUsers = await _context.Connections
+                .Where(c => c.UserId1 == currentUserId || c.UserId2 == currentUserId)
+                .Select(c => c.UserId1 == currentUserId ? c.UserId2 : c.UserId1)
+                .ToListAsync();
+
+            excludedUsers.AddRange(await _context.ConnectionRequests
+                .Where(cr => cr.SenderId == currentUserId || cr.ReceiverId == currentUserId)
+                .Select(cr => cr.SenderId == currentUserId ? cr.ReceiverId : cr.SenderId)
+                .ToListAsync());
+
+            excludedUsers.Add(currentUserId);
+            var excludedUserIds = excludedUsers.Distinct().ToHashSet();
+
+            // Fetch current user's data
+            var currentUserProfileData = await _context.Users
+                .AsNoTracking()
+                .Where(u => u.Id == currentUserId)
+                .Select(u => new
+                {
+                    Headline = u.Profile!.Headline,
+                    JobTitle = _context.UserExperiences.Where(e => e.UserProfileId == u.Id).OrderByDescending(e => e.EndDate ?? DateTime.MaxValue).Select(e => e.Title).FirstOrDefault(),
+                    Educations = _context.UserEducation.Where(e => e.UserProfileId == u.Id).Select(e => new { e.Institution, e.Degree, e.Major }).ToList(),
+                })
+                .FirstOrDefaultAsync();
+
+            if (currentUserProfileData == null) return Enumerable.Empty<SuggestedUserDto>();
+
+            // Fetch a larger pool of potential users to score in memory
+            var potentialUsers = await _context.Users
+                .AsNoTracking()
+                .Include(u => u.Profile)
+                .Include(u => u.Profile.Experiences)
+                .Include(u => u.Profile.Education)
+                .Where(u => !excludedUserIds.Contains(u.Id))
+                .ToListAsync();
+
+            var scoredUsers = potentialUsers
+                .Select(user =>
+                {
+                    int score = 0;
+                    // Score for similar headline
+                    if (!string.IsNullOrEmpty(currentUserProfileData.Headline) &&
+                        !string.IsNullOrEmpty(user.Profile?.Headline) &&
+                        user.Profile.Headline.Contains(currentUserProfileData.Headline))
+                    {
+                        score += 3;
+                    }
+                    // Score for similar job title
+                    if (!string.IsNullOrEmpty(currentUserProfileData.JobTitle) &&
+                        user.Profile.Experiences.Any(e => e.Title == currentUserProfileData.JobTitle))
+                    {
+                        score += 2;
+                    }
+                    // Score for similar education
+                    if (currentUserProfileData.Educations.Any() &&
+                        user.Profile.Education.Any(sugEdu =>
+                            currentUserProfileData.Educations.Any(edu =>
+                                (edu.Institution != null && sugEdu.Institution == edu.Institution) ||
+                                (edu.Degree != null && sugEdu.Degree == edu.Degree) ||
+                                (edu.Major != null && sugEdu.Major == edu.Major))))
+                    {
+                        score += 1;
+                    }
+
+                    return new { User = user, Score = score };
+                })
+                .Where(x => x.Score > 0) // Only include users with at least one match
+                .OrderByDescending(x => x.Score)
+                .Take(limit)
+                .ToList();
+
+            return _mapper.Map<IEnumerable<SuggestedUserDto>>(scoredUsers.Select(x => x.User));
         }
 
 
+
+        //public async Task<IEnumerable<PopularUserDto>> GetPopularUsersAsync(Guid currentUserId, int limit)
+        //{
+        //    var twoWeeksAgo = DateTime.UtcNow.AddDays(-14);
+
+        //    // Fetch all excluded users in one go
+        //    var excludedUserIds = new HashSet<Guid>();
+        //    excludedUserIds.Add(currentUserId);
+        //    var connectionUserIds = await _context.Connections
+        //        .Where(c => c.UserId1 == currentUserId || c.UserId2 == currentUserId)
+        //        .Select(c => c.UserId1 == currentUserId ? c.UserId2 : c.UserId1)
+        //        .ToListAsync();
+        //    excludedUserIds.UnionWith(connectionUserIds);
+
+        //    var popularUsersQuery =
+        //        from u in _context.Users.AsNoTracking().Include(u => u.Profile)
+        //        where !excludedUserIds.Contains(u.Id)
+        //        let recentConnectionCount = _context.Connections.Count(c =>
+        //            (c.UserId1 == u.Id || c.UserId2 == u.Id) &&
+        //            c.CreatedAt >= twoWeeksAgo)
+        //        let mutualCount = _context.Connections.Count(c =>
+        //            (c.UserId1 == u.Id && connectionUserIds.Contains(c.UserId2)) ||
+        //            (c.UserId2 == u.Id && connectionUserIds.Contains(c.UserId1)))
+        //        where recentConnectionCount > 0
+        //        orderby recentConnectionCount descending, mutualCount descending, u.Profile!.UpdatedAt descending
+        //        select new PopularUserDto
+        //        {
+        //            Id = u.Id,
+        //            Username = u.Username,
+        //            FirstName = u.Profile!.FirstName,
+        //            LastName = u.Profile!.LastName,
+        //            ProfilePictureUrl = u.Profile!.ProfilePictureUrl,
+        //            Headline = u.Profile!.Headline,
+        //            MutualConnections = mutualCount
+        //        };
+
+        //    return await popularUsersQuery.Take(limit).ToListAsync();
+        //}
 
         public async Task<IEnumerable<PopularUserDto>> GetPopularUsersAsync(Guid currentUserId, int limit)
         {
             var twoWeeksAgo = DateTime.UtcNow.AddDays(-14);
 
-            // STEP 1: Build the exclusion list (already connected + yourself)
-            var usersToExclude =
-                from u in _context.Users
-                where
-                    _context.Connections.Any(c => (c.UserId1 == currentUserId && c.UserId2 == u.Id) ||
-                                                  (c.UserId2 == currentUserId && c.UserId1 == u.Id))
-                    || u.Id == currentUserId
-                select u.Id;
+            // Fetch all excluded users in one go
+            var excludedUserIds = await _context.Connections
+                .Where(c => c.UserId1 == currentUserId || c.UserId2 == currentUserId)
+                .Select(c => c.UserId1 == currentUserId ? c.UserId2 : c.UserId1)
+                .ToListAsync();
 
-            // STEP 2: Get all your direct connections (used for mutual connections calculation)
-            var myConnections =
-                from c in _context.Connections
-                where c.UserId1 == currentUserId || c.UserId2 == currentUserId
-                select c.UserId1 == currentUserId ? c.UserId2 : c.UserId1;
+            excludedUserIds.Add(currentUserId);
+            var excludedUserIdsSet = excludedUserIds.Distinct().ToHashSet();
 
-            // STEP 3: Find unconnected users ranked by recent connections and mutual connections
-            var popularUsersQuery =
-                from u in _context.Users
-                where !usersToExclude.Contains(u.Id)
-                let recentConnectionCount = _context.Connections.Count(c =>
-                    (c.UserId1 == u.Id || c.UserId2 == u.Id) &&
-                    c.CreatedAt >= twoWeeksAgo)
-                let mutualCount =
-                    (from c in _context.Connections
-                     where (c.UserId1 == u.Id && myConnections.Contains(c.UserId2))
-                        || (c.UserId2 == u.Id && myConnections.Contains(c.UserId1))
-                     select c).Count()
-                where recentConnectionCount > 0 // must have at least one recent connection in last 2 weeks
-                orderby recentConnectionCount descending, mutualCount descending, u.Profile!.UpdatedAt descending
-                select new PopularUserDto
-                {
-                    Id = u.Id,
-                    Username = u.Username,
-                    FirstName = u.Profile!.FirstName,
-                    LastName = u.Profile!.LastName,
-                    ProfilePictureUrl = u.Profile!.ProfilePictureUrl,
-                    Headline = u.Profile!.Headline,
-                    MutualConnections = mutualCount
-                };
-
-            // STEP 4: Return top 'limit' users
-            return await popularUsersQuery
+            // Query for users popular by recent connections
+            var popularByRecentConnections = await _context.Users
                 .AsNoTracking()
+                .Include(u => u.Profile)
+                .Where(u => !excludedUserIdsSet.Contains(u.Id) && _context.Connections.Any(c =>
+                    (c.UserId1 == u.Id || c.UserId2 == u.Id) && c.CreatedAt >= twoWeeksAgo))
+                .ToListAsync();
+
+            // Query for users popular by mutual connections
+            var popularByMutualConnections = await _context.Users
+                .AsNoTracking()
+                .Include(u => u.Profile)
+                .Where(u => !excludedUserIdsSet.Contains(u.Id) && _context.Connections.Any(c =>
+                    (c.UserId1 == u.Id && excludedUserIds.Contains(c.UserId2)) ||
+                    (c.UserId2 == u.Id && excludedUserIds.Contains(c.UserId1))))
+                .ToListAsync();
+
+            // Query for users popular by profile updates
+            var popularByProfileUpdates = await _context.Users
+                .AsNoTracking()
+                .Include(u => u.Profile)
+                .Where(u => !excludedUserIdsSet.Contains(u.Id))
+                .OrderByDescending(u => u.Profile!.UpdatedAt)
                 .Take(limit)
                 .ToListAsync();
+
+            // Combine all results into a single list of unique users
+            var combinedUsers = popularByRecentConnections
+                .Union(popularByMutualConnections)
+                .Union(popularByProfileUpdates)
+                .DistinctBy(u => u.Id)
+                .ToList();
+
+            // Manually map to DTOs and calculate MutualConnections in memory
+            var finalSuggestions = combinedUsers.Select(u => new PopularUserDto
+            {
+                Id = u.Id,
+                Username = u.Username,
+                FirstName = u.Profile!.FirstName,
+                LastName = u.Profile!.LastName,
+                ProfilePictureUrl = u.Profile!.ProfilePictureUrl,
+                Headline = u.Profile!.Headline,
+                MutualConnections = _context.Connections.Count(c =>
+                    (c.UserId1 == u.Id && excludedUserIds.Contains(c.UserId2)) ||
+                    (c.UserId2 == u.Id && excludedUserIds.Contains(c.UserId1)))
+            })
+            .OrderByDescending(u => u.MutualConnections) // You can add custom ordering here
+            .Take(limit);
+
+            return finalSuggestions;
         }
 
     }

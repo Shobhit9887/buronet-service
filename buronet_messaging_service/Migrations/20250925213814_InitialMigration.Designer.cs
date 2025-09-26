@@ -3,17 +3,20 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using buronet_service.Data;
+using buronet_messaging_service.Data;
 
 #nullable disable
 
-namespace buronet_service.Migrations
+namespace buronet_messaging_service.Migrations
 {
-    [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [DbContext(typeof(MessagingDbContext))]
+    [Migration("20250925213814_InitialMigration")]
+    partial class InitialMigration
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -21,6 +24,87 @@ namespace buronet_service.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 64);
 
             MySqlModelBuilderExtensions.AutoIncrementColumns(modelBuilder);
+
+            modelBuilder.Entity("buronet_messaging_service.Models.Conversation", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("varchar(255)");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Conversations");
+                });
+
+            modelBuilder.Entity("buronet_messaging_service.Models.ConversationParticipant", b =>
+                {
+                    b.Property<int>("ConversationId")
+                        .HasColumnType("int")
+                        .HasColumnOrder(1);
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("char(36)")
+                        .HasColumnOrder(2);
+
+                    b.Property<DateTime>("JoinedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<DateTime>("LastReadMessageAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.HasKey("ConversationId", "UserId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("ConversationParticipants");
+                });
+
+            modelBuilder.Entity("buronet_messaging_service.Models.Message", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("ClientId")
+                        .HasMaxLength(40)
+                        .HasColumnType("varchar(40)");
+
+                    b.Property<string>("Content")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<int>("ConversationId")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("SenderId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<DateTime>("SentAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ConversationId");
+
+                    b.HasIndex("SenderId");
+
+                    b.ToTable("Messages");
+                });
 
             modelBuilder.Entity("buronet_service.Models.User.Comment", b =>
                 {
@@ -77,10 +161,9 @@ namespace buronet_service.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("UserId2");
+                    b.HasIndex("UserId1");
 
-                    b.HasIndex("UserId1", "UserId2")
-                        .IsUnique();
+                    b.HasIndex("UserId2");
 
                     b.ToTable("Connections");
                 });
@@ -114,8 +197,7 @@ namespace buronet_service.Migrations
 
                     b.HasIndex("ReceiverId");
 
-                    b.HasIndex("SenderId", "ReceiverId")
-                        .IsUnique();
+                    b.HasIndex("SenderId");
 
                     b.ToTable("ConnectionRequests");
                 });
@@ -142,37 +224,11 @@ namespace buronet_service.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("UserId");
+                    b.HasIndex("PostId");
 
-                    b.HasIndex("PostId", "UserId")
-                        .IsUnique();
+                    b.HasIndex("UserId");
 
                     b.ToTable("Likes");
-                });
-
-            modelBuilder.Entity("buronet_service.Models.User.PasswordResetToken", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("ExpiresAt")
-                        .HasColumnType("datetime(6)");
-
-                    b.Property<string>("Token")
-                        .IsRequired()
-                        .HasColumnType("longtext");
-
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("char(36)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("PasswordResetTokens");
                 });
 
             modelBuilder.Entity("buronet_service.Models.User.Poll", b =>
@@ -190,9 +246,6 @@ namespace buronet_service.Migrations
                         .HasColumnType("int");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("PostId")
-                        .IsUnique();
 
                     b.ToTable("Polls");
                 });
@@ -241,12 +294,11 @@ namespace buronet_service.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("PollId");
+
                     b.HasIndex("PollOptionId");
 
                     b.HasIndex("UserId");
-
-                    b.HasIndex("PollId", "UserId")
-                        .IsUnique();
 
                     b.ToTable("PollVotes");
                 });
@@ -292,36 +344,12 @@ namespace buronet_service.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("PollId")
+                        .IsUnique();
+
                     b.HasIndex("UserId");
 
                     b.ToTable("Posts");
-                });
-
-            modelBuilder.Entity("buronet_service.Models.User.TagFrequency", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("Frequency")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("LastUpdated")
-                        .HasColumnType("datetime(6)");
-
-                    b.Property<string>("TagName")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("varchar(50)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("TagName")
-                        .IsUnique();
-
-                    b.ToTable("TagFrequencies");
                 });
 
             modelBuilder.Entity("buronet_service.Models.User.User", b =>
@@ -365,13 +393,7 @@ namespace buronet_service.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("Email")
-                        .IsUnique();
-
-                    b.HasIndex("Username")
-                        .IsUnique();
-
-                    b.ToTable("Users");
+                    b.ToTable("Users", (string)null);
                 });
 
             modelBuilder.Entity("buronet_service.Models.User.UserCoaching", b =>
@@ -415,9 +437,6 @@ namespace buronet_service.Migrations
 
                     MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime(6)");
-
                     b.Property<string>("Description")
                         .HasColumnType("longtext");
 
@@ -425,9 +444,6 @@ namespace buronet_service.Migrations
                         .IsRequired()
                         .HasMaxLength(255)
                         .HasColumnType("varchar(255)");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("datetime(6)");
 
                     b.Property<string>("Url")
                         .HasMaxLength(500)
@@ -577,8 +593,7 @@ namespace buronet_service.Migrations
                         .HasColumnType("varchar(100)");
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime(6)")
-                        .HasColumnName("CreatedAt");
+                        .HasColumnType("datetime(6)");
 
                     b.Property<DateTime?>("DateOfBirth")
                         .HasColumnType("datetime(6)");
@@ -608,8 +623,7 @@ namespace buronet_service.Migrations
                         .HasColumnType("varchar(100)");
 
                     b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("datetime(6)")
-                        .HasColumnName("UpdatedAt");
+                        .HasColumnType("datetime(6)");
 
                     b.Property<string>("ZipCode")
                         .HasMaxLength(20)
@@ -720,6 +734,44 @@ namespace buronet_service.Migrations
                     b.ToTable("UserSkills");
                 });
 
+            modelBuilder.Entity("buronet_messaging_service.Models.ConversationParticipant", b =>
+                {
+                    b.HasOne("buronet_messaging_service.Models.Conversation", "Conversation")
+                        .WithMany("Participants")
+                        .HasForeignKey("ConversationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("buronet_service.Models.User.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("Conversation");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("buronet_messaging_service.Models.Message", b =>
+                {
+                    b.HasOne("buronet_messaging_service.Models.Conversation", "Conversation")
+                        .WithMany("Messages")
+                        .HasForeignKey("ConversationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("buronet_service.Models.User.User", "Sender")
+                        .WithMany()
+                        .HasForeignKey("SenderId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("Conversation");
+
+                    b.Navigation("Sender");
+                });
+
             modelBuilder.Entity("buronet_service.Models.User.Comment", b =>
                 {
                     b.HasOne("buronet_service.Models.User.Post", "Post")
@@ -731,7 +783,7 @@ namespace buronet_service.Migrations
                     b.HasOne("buronet_service.Models.User.User", "User")
                         .WithMany("Comments")
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.NoAction)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Post");
@@ -744,13 +796,13 @@ namespace buronet_service.Migrations
                     b.HasOne("buronet_service.Models.User.User", "User1")
                         .WithMany("ConnectionsMade")
                         .HasForeignKey("UserId1")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("buronet_service.Models.User.User", "User2")
                         .WithMany("ConnectionsReceived")
                         .HasForeignKey("UserId2")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("User1");
@@ -763,13 +815,13 @@ namespace buronet_service.Migrations
                     b.HasOne("buronet_service.Models.User.User", "Receiver")
                         .WithMany("ReceivedConnectionRequests")
                         .HasForeignKey("ReceiverId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("buronet_service.Models.User.User", "Sender")
                         .WithMany("SentConnectionRequests")
                         .HasForeignKey("SenderId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Receiver");
@@ -788,34 +840,12 @@ namespace buronet_service.Migrations
                     b.HasOne("buronet_service.Models.User.User", "User")
                         .WithMany("Likes")
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.NoAction)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Post");
 
                     b.Navigation("User");
-                });
-
-            modelBuilder.Entity("buronet_service.Models.User.PasswordResetToken", b =>
-                {
-                    b.HasOne("buronet_service.Models.User.User", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("User");
-                });
-
-            modelBuilder.Entity("buronet_service.Models.User.Poll", b =>
-                {
-                    b.HasOne("buronet_service.Models.User.Post", "Post")
-                        .WithOne("Poll")
-                        .HasForeignKey("buronet_service.Models.User.Poll", "PostId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Post");
                 });
 
             modelBuilder.Entity("buronet_service.Models.User.PollOption", b =>
@@ -840,7 +870,7 @@ namespace buronet_service.Migrations
                     b.HasOne("buronet_service.Models.User.PollOption", "PollOption")
                         .WithMany("PollVotes")
                         .HasForeignKey("PollOptionId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("buronet_service.Models.User.User", "User")
@@ -858,11 +888,17 @@ namespace buronet_service.Migrations
 
             modelBuilder.Entity("buronet_service.Models.User.Post", b =>
                 {
+                    b.HasOne("buronet_service.Models.User.Poll", "Poll")
+                        .WithOne("Post")
+                        .HasForeignKey("buronet_service.Models.User.Post", "PollId");
+
                     b.HasOne("buronet_service.Models.User.User", "User")
                         .WithMany("Posts")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Poll");
 
                     b.Navigation("User");
                 });
@@ -966,9 +1002,19 @@ namespace buronet_service.Migrations
                     b.Navigation("UserProfile");
                 });
 
+            modelBuilder.Entity("buronet_messaging_service.Models.Conversation", b =>
+                {
+                    b.Navigation("Messages");
+
+                    b.Navigation("Participants");
+                });
+
             modelBuilder.Entity("buronet_service.Models.User.Poll", b =>
                 {
                     b.Navigation("Options");
+
+                    b.Navigation("Post")
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("buronet_service.Models.User.PollOption", b =>
@@ -981,8 +1027,6 @@ namespace buronet_service.Migrations
                     b.Navigation("Comments");
 
                     b.Navigation("Likes");
-
-                    b.Navigation("Poll");
                 });
 
             modelBuilder.Entity("buronet_service.Models.User.User", b =>

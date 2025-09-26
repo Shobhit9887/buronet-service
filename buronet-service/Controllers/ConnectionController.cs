@@ -38,6 +38,7 @@ namespace buronet_service.Controllers // Ensure this namespace is correct
 
         // GET api/connections/metrics
         // Returns the total connections, joined groups, pending requests, etc. for the current user.
+        [Authorize]
         [HttpGet("metrics")]
         public async Task<ActionResult<NetworkMetricsDto>> GetNetworkMetrics()
         {
@@ -196,6 +197,19 @@ namespace buronet_service.Controllers // Ensure this namespace is correct
                 return Unauthorized("User ID not found or invalid in token.");
             }
             var suggestions = await _connectionService.GetSuggestedUsersAsync(currentUserId, limit);
+            return Ok(suggestions);
+        }
+
+        [HttpGet("general-suggestions")] // GET /api/connections/suggestions
+        public async Task<ActionResult<IEnumerable<SuggestedUserDto>>> GetGeneralSuggestedUsers([FromQuery] int limit = 10)
+        {
+            var currentUserIdString = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(currentUserIdString) || !Guid.TryParse(currentUserIdString, out Guid currentUserId))
+            {
+                //_logger.LogWarning("GetSuggestedUsers: User ID claim missing or invalid for authorized user.");
+                return Unauthorized("User ID not found or invalid in token.");
+            }
+            var suggestions = await _connectionService.GetGeneralSuggestedUsersAsync(currentUserId, limit);
             return Ok(suggestions);
         }
 

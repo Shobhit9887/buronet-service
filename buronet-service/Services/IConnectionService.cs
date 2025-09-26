@@ -20,7 +20,8 @@ namespace buronet_service.Services // Ensure this namespace is correct
         Task<ConnectionRequestDto?> SendConnectionRequestAsync(Guid senderId, SendConnectionRequestDto sendDto);
         Task<bool> UpdateConnectionRequestStatusAsync(Guid receiverId, int requestId, UpdateConnectionRequestStatusDto updateDto);
         Task<bool> RemoveConnectionAsync(Guid currentUserId, Guid connectedUserId); // Remove an established connection
-        Task<List<IEnumerable<SuggestedUserDto>>> GetSuggestedUsersAsync(Guid currentUserId, int limit);
+        Task<Dictionary<string, List<SuggestedUserDto>>> GetSuggestedUsersAsync(Guid currentUserId, int limit);
+        Task<IEnumerable<SuggestedUserDto>> GetGeneralSuggestedUsersAsync(Guid currentUserId, int limit);
         Task<IEnumerable<PopularUserDto>> GetPopularUsersAsync(Guid currentUserId, int limit);
     }
 }

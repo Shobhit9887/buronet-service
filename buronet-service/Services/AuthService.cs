@@ -4,6 +4,7 @@ using buronet_service.Models.User;
 using buronet_service.Models.DTOs;
 using buronet_service.Models.DTOs.User;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Cryptography;
 
 namespace buronet_service.Services
 {
@@ -85,6 +86,121 @@ namespace buronet_service.Services
 
             //_logger.LogInformation("User {UserId} logged out successfully (server-side logic completed).", userId);
             await Task.CompletedTask; // Ensure it's an async method
+        }
+
+        //public async Task<bool> ForgotPasswordAsync(string email)
+        //{
+        //    var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
+        //    if (user == null)
+        //    {
+        //        //_logger.LogWarning("Forgot password attempt for non-existent email: {Email}", email);
+        //        return false;
+        //    }
+
+        //    // Generate a unique, secure token
+        //    var tokenBytes = new byte[32];
+        //    using (var rng = RandomNumberGenerator.Create())
+        //    {
+        //        rng.GetBytes(tokenBytes);
+        //    }
+        //    var resetToken = Convert.ToBase64String(tokenBytes);
+        //    var tokenExpiration = DateTime.UtcNow.AddHours(1); // Token expires in 1 hour
+
+        //    // Store the token and expiration date in the database
+        //    // Note: You would need to add PasswordResetToken and TokenExpiration properties to your User model
+        //    user.PasswordResetToken = resetToken;
+        //    user.ResetTokenExpires = tokenExpiration;
+        //    await _context.SaveChangesAsync();
+
+        //    // *** In a real application, you would send an email here ***
+        //    //_logger.LogInformation("Password reset link for {Email}: /reset-password?token={Token}", email, resetToken);
+        //    return true;
+        //}
+
+        //public async Task<bool> ResetPasswordAsync(ResetPasswordDto resetDto)
+        //{
+        //    var user = await _context.Users.FirstOrDefaultAsync(u => u.PasswordResetToken == resetDto.Token);
+
+        //    if (user == null || user.ResetTokenExpires == null || user.ResetTokenExpires < DateTime.UtcNow)
+        //    {
+        //        //_logger.LogWarning("Invalid or expired password reset token received.");
+        //        return false;
+        //    }
+
+        //    // Hash the new password and update the user record
+        //    byte[] passwordHash, passwordSalt;
+        //    //AuthService.CreatePasswordHash(resetDto.NewPassword, out passwordHash, out passwordSalt);
+        //    PasswordHasher.CreateHash(resetDto.NewPassword, out passwordHash, out passwordSalt);
+        //    user.PasswordHash = passwordHash;
+        //    user.PasswordSalt = passwordSalt;
+
+        //    // Clear the password reset token and expiration
+        //    user.PasswordResetToken = null;
+        //    user.ResetTokenExpires = null;
+        //    await _context.SaveChangesAsync();
+
+        //    //_logger.LogInformation("Password successfully reset for user with token.");
+        //    return true;
+        //}
+
+        public async Task<bool> ForgotPasswordAsync(string email)
+        {
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
+            if (user == null)
+            {
+                // This is a security measure to prevent user enumeration
+                return true;
+            }
+
+            // Generate a unique, secure token
+            var tokenBytes = new byte[32];
+            using (var rng = RandomNumberGenerator.Create())
+            {
+                rng.GetBytes(tokenBytes);
+            }
+            var resetToken = Convert.ToBase64String(tokenBytes).Replace('+', '-').Replace('/', '_'); // Make URL-safe
+            var tokenExpiration = DateTime.UtcNow.AddHours(1);
+
+            // Create a new token record in the dedicated table
+            var newResetToken = new PasswordResetToken
+            {
+                UserId = user.Id,
+                Token = resetToken,
+                ExpiresAt = tokenExpiration
+            };
+
+            _context.PasswordResetTokens.Add(newResetToken);
+            await _context.SaveChangesAsync();
+
+            //_logger.LogInformation("Password reset link for {Email}: /reset-password?token={Token}", email, resetToken);
+            return true;
+        }
+
+        public async Task<bool> ResetPasswordAsync(ResetPasswordDto resetDto)
+        {
+            var resetTokenRecord = await _context.PasswordResetTokens
+                .Include(t => t.User)
+                .FirstOrDefaultAsync(t => t.Token == resetDto.Token);
+
+            if (resetTokenRecord == null || resetTokenRecord.ExpiresAt < DateTime.UtcNow)
+            {
+                // Token is invalid or expired
+                return false;
+            }
+
+            var user = resetTokenRecord.User;
+            byte[] passwordHash, passwordSalt;
+            // Assuming you have an AuthService with a CreatePasswordHash method
+            PasswordHasher.CreateHash(resetDto.NewPassword, out passwordHash, out passwordSalt);            
+            user.PasswordHash = passwordHash;
+            user.PasswordSalt = passwordSalt;
+
+            // Remove the used token to prevent reuse
+            _context.PasswordResetTokens.Remove(resetTokenRecord);
+            await _context.SaveChangesAsync();
+
+            //_logger.LogInformation("Password successfully reset for user.");
+            return true;
         }
 
         public async Task<UserDto> GetProfileAsync(Guid userId)

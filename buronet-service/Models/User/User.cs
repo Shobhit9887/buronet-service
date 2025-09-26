@@ -33,6 +33,9 @@ namespace buronet_service.Models.User
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 
+        public string? PasswordResetToken { get; set; }
+        public DateTime? ResetTokenExpires { get; set; }
+
         // Navigation property to the rich UserProfile data (one-to-one relationship)
         // UserProfile is in the same namespace
         public UserProfile? Profile { get; set; } = null;

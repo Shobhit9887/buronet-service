@@ -18,6 +18,7 @@ namespace buronet_service.Data
 
         // All DbSets (assuming all corresponding models are correctly defined)
         public DbSet<User> Users { get; set; } = null!;
+        public DbSet<PasswordResetToken> PasswordResetTokens { get; set; } = null!;
         public DbSet<UserProfile> UserProfiles { get; set; } = null!;
         public DbSet<UserExperience> UserExperiences { get; set; } = null!;
         public DbSet<UserSkill> UserSkills { get; set; } = null!;
