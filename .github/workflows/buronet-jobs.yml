@@ -1,0 +1,71 @@
+# Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
+# More GitHub Actions for Azure: https://github.com/Azure/actions
+
+name: Build and deploy buronet-joba to Azure Web App - buronet
+
+on:
+  push:
+    branches:
+      - feature/create-poll
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read #This is required for actions/checkout
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up .NET Core
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.x'
+
+      - name: Build with dotnet
+        run: dotnet build --configuration Release
+
+      - name: dotnet publish
+        run: dotnet publish -c Release Buronet.JobService -o ${{env.DOTNET_ROOT}}/myapp
+
+        # --- ADD THIS STEP ---
+      - name: Copy SSL Certificate to Publish Folder
+      # Adjust 'Certs/DigiCertGlobalRootG2.crt.pem' to match the actual path in your repo.
+      # This copies the file from the root of the checked-out repo to the publish folder.
+        run: cp Buronet.JobService/DigiCertGlobalRootG2.crt.pem ${{env.DOTNET_ROOT}}/myapp/DigiCertGlobalRootG2.crt.pem
+
+      - name: Upload artifact for deployment job
+        uses: actions/upload-artifact@v4
+        with:
+          name: .net-app
+          path: ${{env.DOTNET_ROOT}}/myapp
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build
+    permissions:
+      id-token: write #This is required for requesting the JWT
+      contents: read #This is required for actions/checkout
+
+    steps:
+      - name: Download artifact from build job
+        uses: actions/download-artifact@v4
+        with:
+          name: .net-app
+      
+      - name: Login to Azure
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_3BCD4A3E253B4EA68D3F8FB1BD3AD931 }}
+          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_F708BDE6F74548CA82A6D8611A3A8842 }}
+          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_0916C286E5D14CC9A130A8C16DA90239 }}
+
+      - name: Deploy to Azure Web App
+        id: deploy-to-webapp
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: 'buronet-jobs'
+          slot-name: 'Production'
+          package: .
+          
