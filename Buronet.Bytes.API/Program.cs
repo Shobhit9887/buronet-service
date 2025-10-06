@@ -1,4 +1,7 @@
 using Buronet.Bytes.API.Services;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,9 +18,34 @@ builder.Services.AddCors(options =>
     });
 });
 
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        //options.Authority = $"https://{builder.Configuration["Auth0:Domain"]}"; // Your Auth0 Domain
+        //options.Audience = builder.Configuration["Auth0:Audience"];             // Your API Identifier
+        //// Optional: for stricter validation (e.g., against specific audiences in token)
+        //// options.TokenValidationParameters = new TokenValidationParameters
+        //// {
+        ////     ValidAudience = builder.Configuration["Auth0:Audience"],
+        ////     ValidIssuer = $"https://{builder.Configuration["Auth0:Domain"]}/" // Note the trailing slash
+        //// };
+
+
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!)),
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidIssuer = builder.Configuration["Jwt:Issuer"],
+            ValidAudience = builder.Configuration["Jwt:Audience"]
+        };
+    });
+
+
 // Configure MongoDB settings and service
 builder.Services.Configure<MongoDbSettings>(builder.Configuration.GetSection("MongoDbSettings"));
-builder.Services.AddSingleton<BytePostService>();
+builder.Services.AddScoped<BytePostService>();
 
 builder.Services.AddControllers();
 
@@ -37,7 +65,7 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseCors(MyAllowSpecificOrigins); // Apply CORS policy
 
-// TODO: app.UseAuthentication();
+app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 app.Run();

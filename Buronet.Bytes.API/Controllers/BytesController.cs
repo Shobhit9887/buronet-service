@@ -46,7 +46,7 @@ public class BytesController : ControllerBase
         // --- Upload to Cloud & Get URL ---
         // TODO: Replace this with your actual cloud storage upload logic (e.g., to AWS S3)
         var mediaUrl = request.MediaUrl;
-        var thumbnailUrl = request.ThumbnailUrl;
+        var thumbnailUrl = request.Thumbnail;
 
         // --- Create DB Document ---
         var newPost = new BytePost
@@ -56,6 +56,32 @@ public class BytesController : ControllerBase
         };
 
         await _bytePostService.CreateAsync(newPost);
-        return CreatedAtAction(nameof(Get), new { id = newPost.PostId }, newPost);
+        return CreatedAtAction(nameof(Get), new { id = newPost.Id }, newPost);
     }
+
+    [HttpGet("feed")]
+    //[Authorize]
+    public async Task<IActionResult> GetFeed([FromQuery] string filter = "For You")
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+
+        switch (filter)
+        {
+            case "Connections":
+                var mockConnectionIds = new List<string> { "mock-user-id-2", "mock-user-id-3" };
+                var connectionFeed = await _bytePostService.GetConnectionsFeedAsync(mockConnectionIds);
+                return Ok(connectionFeed);
+
+            case "Popular":
+                var popularFeed = await _bytePostService.GetPopularFeedAsync();
+                return Ok(popularFeed);
+
+            case "For You":
+            default:
+                var forYouFeed = await _bytePostService.GetForYouFeedAsync(userId);
+                return Ok(forYouFeed);
+        }
+    }
+
+
 }

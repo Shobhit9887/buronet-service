@@ -58,6 +58,9 @@ public class Job
     [BsonElement("apply_link")]
     public ApplyLinkInfo? ApplyLink { get; set; }
 
+    [BsonElement("content_hash")]
+    public string? ContentHash { get; set; }
+
     [BsonElement("last_date_to_apply")]
     //[BsonDateTimeOptions(Kind = DateTimeKind.Utc)]
     public string LastDateToApply { get; set; }
@@ -66,10 +69,10 @@ public class Job
     public string? Status { get; set; } = null!;
 
     [BsonElement("createdDate")]
-    public DateTime CreatedDate { get; set; }
+    public string CreatedDate { get; set; }
 
     [BsonElement("updatedDate")]
-    public DateTime UpdatedDate { get; set; }
+    public string UpdatedDate { get; set; }
 
 
     [BsonElement("original_extraction")]

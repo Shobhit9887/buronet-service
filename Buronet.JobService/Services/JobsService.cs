@@ -18,7 +18,7 @@ public class JobsService : IJobsService
     {
         var mongoClient = new MongoClient(mongoDbSettings.Value.ConnectionString);
         var mongoDatabase = mongoClient.GetDatabase(mongoDbSettings.Value.DatabaseName);
-        _jobsCollection = mongoDatabase.GetCollection<Job>(mongoDbSettings.Value.CollectionName);
+        _jobsCollection = mongoDatabase.GetCollection<Job>(mongoDbSettings.Value.JobsCollectionName);
 
         _dbContext = dbContext;
     }
@@ -44,7 +44,7 @@ public class JobsService : IJobsService
 
         // Using FilterDefinitionBuilder for more complex queries
         var activeJobsFilter = Builders<Job>.Filter.Eq(j => j.Status, "active");
-        var newJobsTodayFilter = Builders<Job>.Filter.Gte(j => j.CreatedDate, today);
+        var newJobsTodayFilter = Builders<Job>.Filter.Gte(j => DateTime.Parse(j.CreatedDate), today);
 
         // Run counts in parallel for efficiency
         var totalActiveJobsTask = _jobsCollection.CountDocumentsAsync(activeJobsFilter);
@@ -100,7 +100,7 @@ public class JobsService : IJobsService
         updatedJob.Id = id;
 
         // Set the updated date to the current UTC time.
-        updatedJob.UpdatedDate = DateTime.UtcNow;
+        updatedJob.UpdatedDate = DateTime.UtcNow.ToString();
 
         // The ReplaceOneAsync method finds a document matching the filter 
         // and replaces it with the new object.

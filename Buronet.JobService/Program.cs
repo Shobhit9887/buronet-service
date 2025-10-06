@@ -33,6 +33,7 @@ builder.Services.AddScoped<IBookmarkService, BookmarkService>();
 // 2. Add services to the container.
 // This registers your JobsService for dependency injection.
 builder.Services.AddScoped<IJobsService, JobsService>();
+builder.Services.AddScoped<IExamsService, ExamsService>();
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
