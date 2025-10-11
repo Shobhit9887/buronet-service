@@ -12,6 +12,7 @@ namespace JobService.Services;
 public class JobsService : IJobsService
 {
     private readonly IMongoCollection<Job> _jobsCollection;
+    private readonly IMongoCollection<Exam> _examsCollection;
     private readonly JobDbContext _dbContext;
 
     public JobsService(IOptions<JobDBSettings> mongoDbSettings, JobDbContext dbContext)
@@ -19,7 +20,7 @@ public class JobsService : IJobsService
         var mongoClient = new MongoClient(mongoDbSettings.Value.ConnectionString);
         var mongoDatabase = mongoClient.GetDatabase(mongoDbSettings.Value.DatabaseName);
         _jobsCollection = mongoDatabase.GetCollection<Job>(mongoDbSettings.Value.JobsCollectionName);
-
+        _examsCollection = mongoDatabase.GetCollection<Exam>(mongoDbSettings.Value.ExamsCollectionName);
         _dbContext = dbContext;
     }
 
@@ -38,7 +39,7 @@ public class JobsService : IJobsService
     public async Task CreateAsync(Job newJob) =>
         await _jobsCollection.InsertOneAsync(newJob);
 
-    public async Task<DashboardStatsDto> GetDashboardStatsAsync(string userId)
+    public async Task<JobDashboardStatsDto> GetJobDashboardStatsAsync(string userId)
     {
         var today = DateTime.UtcNow.Date.ToString();
 
@@ -55,11 +56,36 @@ public class JobsService : IJobsService
 
         await Task.WhenAll(totalActiveJobsTask, newJobsTodayTask, totalBookmarkedJobsTask);
 
-        return new DashboardStatsDto
+        return new JobDashboardStatsDto
         {
             TotalActiveJobs = await totalActiveJobsTask,
             NewJobsToday = await newJobsTodayTask,
             TotalBookmarkedJobs = await totalBookmarkedJobsTask
+        };
+    }
+
+    public async Task<ExamDashboardStatsDto> GetExamDashboardStatsAsync(string userId)
+    {
+        var today = DateTime.UtcNow.Date.ToString();
+
+        // Using FilterDefinitionBuilder for more complex queries
+        var activeExamsFilter = Builders<Exam>.Filter.Eq(j => j.Status, "active");
+        var newExamsTodayFilter = Builders<Exam>.Filter.Gte(j => j.CreatedDate, today);
+
+        // Run counts in parallel for efficiency
+        var totalActiveExamsTask = _examsCollection.CountDocumentsAsync(activeExamsFilter);
+        var newExamsTodayTask = _examsCollection.CountDocumentsAsync(newExamsTodayFilter);
+
+        // We also need the bookmark count, which requires the DbContext for MySQL
+        var totalBookmarkedExamsTask = _dbContext.UserJobBookmarks.CountAsync(b => b.UserId == userId);
+
+        await Task.WhenAll(totalActiveExamsTask, newExamsTodayTask, totalBookmarkedExamsTask);
+
+        return new ExamDashboardStatsDto
+        {
+            TotalActiveExams = await totalActiveExamsTask,
+            NewExamsToday = await newExamsTodayTask,
+            TotalBookmarkedExams = await totalBookmarkedExamsTask
         };
     }
 

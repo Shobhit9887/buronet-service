@@ -7,7 +7,8 @@ namespace Buronet.JobService.Services;
 /// </summary>
 public interface IBookmarkService
 {
-    Task<List<UserJobBookmark>> GetByUserIdAsync(string userId);
-    Task CreateAsync(string userId, string jobId);
-    Task RemoveAsync(string userId, string jobId);
+    Task<List<UserJobBookmark>> GetJobBookmarksByUserIdAsync(string userId);
+    Task<List<UserExamBookmark>> GetExamBookmarksByUserIdAsync(string userId);
+    Task CreateAsync(string userId, string Id, string bookmarkType);
+    Task RemoveAsync(string userId, string Id, string bookmarkType);
 }

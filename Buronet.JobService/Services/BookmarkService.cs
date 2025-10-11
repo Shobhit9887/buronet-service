@@ -16,35 +16,70 @@ public class BookmarkService : IBookmarkService
         _context = context;
     }
 
-    public async Task<List<UserJobBookmark>> GetByUserIdAsync(string userId)
+    public async Task<List<UserJobBookmark>> GetJobBookmarksByUserIdAsync(string userId)
     {
         return await _context.UserJobBookmarks
             .Where(b => b.UserId == userId)
             .ToListAsync();
     }
 
-    public async Task CreateAsync(string userId, string jobId)
+    public async Task<List<UserExamBookmark>> GetExamBookmarksByUserIdAsync(string userId)
     {
-        var existingBookmark = await _context.UserJobBookmarks
-            .FirstOrDefaultAsync(b => b.UserId == userId && b.JobId == jobId);
+        return await _context.UserExamBookmarks
+            .Where(b => b.UserId == userId)
+            .ToListAsync();
+    }
 
-        if (existingBookmark == null)
+    public async Task CreateAsync(string userId, string Id, string bookmarkType)
+    {
+        if (bookmarkType == "job")
         {
-            var newBookmark = new UserJobBookmark { UserId = userId, JobId = jobId };
-            _context.UserJobBookmarks.Add(newBookmark);
-            await _context.SaveChangesAsync();
+            var existingBookmark = await _context.UserJobBookmarks
+                .FirstOrDefaultAsync(b => b.UserId == userId && b.JobId == Id);
+
+            if (existingBookmark == null)
+            {
+                var newBookmark = new UserJobBookmark { UserId = userId, JobId = Id };
+                _context.UserJobBookmarks.Add(newBookmark);
+                await _context.SaveChangesAsync();
+            }
+        } else if (bookmarkType == "exam")
+        {
+            var existingBookmark = await _context.UserExamBookmarks
+                .FirstOrDefaultAsync(b => b.UserId == userId && b.ExamId == Id);
+
+            if (existingBookmark == null)
+            {
+                var newBookmark = new UserExamBookmark { UserId = userId, ExamId = Id };
+                _context.UserExamBookmarks.Add(newBookmark);
+                await _context.SaveChangesAsync();
+            }
         }
     }
 
-    public async Task RemoveAsync(string userId, string jobId)
+    public async Task RemoveAsync(string userId, string Id, string bookmarkType)
     {
-        var bookmarkToRemove = await _context.UserJobBookmarks
-            .FirstOrDefaultAsync(b => b.UserId == userId && b.JobId == jobId);
-
-        if (bookmarkToRemove != null)
+        if (bookmarkType == "job")
         {
-            _context.UserJobBookmarks.Remove(bookmarkToRemove);
-            await _context.SaveChangesAsync();
+            var bookmarkToRemove = await _context.UserJobBookmarks
+            .FirstOrDefaultAsync(b => b.UserId == userId && b.JobId == Id);
+
+            if (bookmarkToRemove != null)
+            {
+                _context.UserJobBookmarks.Remove(bookmarkToRemove);
+                await _context.SaveChangesAsync();
+            }
+        } else if (bookmarkType == "exam")
+        {
+            var bookmarkToRemove = await _context.UserExamBookmarks
+            .FirstOrDefaultAsync(b => b.UserId == userId && b.ExamId == Id);
+
+            if (bookmarkToRemove != null)
+            {
+                _context.UserExamBookmarks.Remove(bookmarkToRemove);
+                await _context.SaveChangesAsync();
+            }
         }
+        
     }
 }

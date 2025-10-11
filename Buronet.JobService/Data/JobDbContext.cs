@@ -14,4 +14,5 @@ public class JobDbContext : DbContext
     }
 
     public DbSet<UserJobBookmark> UserJobBookmarks { get; set; }
+    public DbSet<UserExamBookmark> UserExamBookmarks { get; set; }
 }

@@ -9,7 +9,8 @@ public interface IJobsService
     Task<List<Job>> GetJobsForJobHomeAsync();
     Task<Job?> GetAsync(string id);
     Task CreateAsync(Job newJob);
-    Task<DashboardStatsDto> GetDashboardStatsAsync(string userId);
+    Task<JobDashboardStatsDto> GetJobDashboardStatsAsync(string userId);
+    Task<ExamDashboardStatsDto> GetExamDashboardStatsAsync(string userId);
     Task<List<DepartmentStatsDto>> GetDepartmentStatsAsync();
     Task<bool> UpdateAsync(string id, Job updatedJob);
 }

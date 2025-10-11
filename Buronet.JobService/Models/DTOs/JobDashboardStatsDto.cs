@@ -2,7 +2,7 @@
 
 namespace Buronet.JobService.Models;
 
-public class DashboardStatsDto
+public class JobDashboardStatsDto
 {
     public long TotalActiveJobs { get; set; }
     public long NewJobsToday { get; set; }

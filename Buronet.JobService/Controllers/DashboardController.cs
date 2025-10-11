@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace Buronet.JobService.Controllers;
 
 [ApiController]
-[Route("api/jobs/[controller]")]
+[Route("api/[controller]")]
 public class DashboardController : ControllerBase
 {
     private readonly IJobsService _jobsService;
@@ -19,15 +19,27 @@ public class DashboardController : ControllerBase
         _jobsService = jobsService;
     }
 
-    [HttpGet("stats/{userId}")]
-    public async Task<IActionResult> GetStats(string userId)
+    [HttpGet("job/stats/{userId}")]
+    public async Task<IActionResult> GetJobStats(string userId)
     {
         if (string.IsNullOrEmpty(userId))
         {
             return BadRequest("User ID is required.");
         }
 
-        var stats = await _jobsService.GetDashboardStatsAsync(userId);
+        var stats = await _jobsService.GetJobDashboardStatsAsync(userId);
+        return Ok(stats);
+    }
+
+    [HttpGet("exam/stats/{userId}")]
+    public async Task<IActionResult> GetExamStats(string userId)
+    {
+        if (string.IsNullOrEmpty(userId))
+        {
+            return BadRequest("User ID is required.");
+        }
+
+        var stats = await _jobsService.GetExamDashboardStatsAsync(userId);
         return Ok(stats);
     }
 
@@ -37,4 +49,5 @@ public class DashboardController : ControllerBase
         var stats = await _jobsService.GetDepartmentStatsAsync();
         return Ok(new ApiResponse<List<DepartmentStatsDto>> { Success = true, Data = stats });
     }
+
 }

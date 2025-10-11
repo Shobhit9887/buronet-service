@@ -5,5 +5,5 @@ namespace Buronet.JobService.Controllers;
 public class AddBookmarkRequest
 {
     [Required]
-    public string JobId { get; set; } = null!;
+    public string Id { get; set; } = null!;
 }
