@@ -40,11 +40,11 @@ public class JobsService : IJobsService
 
     public async Task<DashboardStatsDto> GetDashboardStatsAsync(string userId)
     {
-        var today = DateTime.UtcNow.Date;
+        var today = DateTime.UtcNow.Date.ToString();
 
         // Using FilterDefinitionBuilder for more complex queries
         var activeJobsFilter = Builders<Job>.Filter.Eq(j => j.Status, "active");
-        var newJobsTodayFilter = Builders<Job>.Filter.Gte(j => DateTime.Parse(j.CreatedDate), today);
+        var newJobsTodayFilter = Builders<Job>.Filter.Gte(j => j.CreatedDate, today);
 
         // Run counts in parallel for efficiency
         var totalActiveJobsTask = _jobsCollection.CountDocumentsAsync(activeJobsFilter);
