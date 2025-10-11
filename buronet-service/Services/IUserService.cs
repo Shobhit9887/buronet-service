@@ -11,6 +11,7 @@ namespace buronet_service.Services // Ensure this namespace is correct
         Task<UserProfileDto?> GetUserProfileDtoByIdAsync(Guid userIdGuid);
         Task<UserProfileDto?> UpdateUserProfileAsync(Guid userIdGuid, UpdateUserProfileDto updateDto);
 
+
         // Provisioning method (if still needed here, otherwise move to AuthService entirely)
         // This is a simplified fallback for scenarios where a User exists but no Profile.
         Task<UserProfileDto?> ProvisionUserAndProfileAsync(Guid userIdGuid, string email, string username);

@@ -18,6 +18,7 @@ namespace buronet_service.Data
 
         // All DbSets (assuming all corresponding models are correctly defined)
         public DbSet<User> Users { get; set; } = null!;
+        public DbSet<PasswordResetToken> PasswordResetTokens { get; set; } = null!;
         public DbSet<UserProfile> UserProfiles { get; set; } = null!;
         public DbSet<UserExperience> UserExperiences { get; set; } = null!;
         public DbSet<UserSkill> UserSkills { get; set; } = null!;
@@ -31,6 +32,8 @@ namespace buronet_service.Data
         public DbSet<Comment> Comments { get; set; } = null!;
         public DbSet<Like> Likes { get; set; } = null!;
         public DbSet<TagFrequency> TagFrequencies { get; set; } = null!;
+        public DbSet<PollVote> PollVotes { get; set; } = null!;
+        public DbSet<Poll> Polls { get; set; } = null!;
 
         //New DbSets for Connections
         public DbSet<Connection> Connections { get; set; } = null!;
@@ -196,6 +199,41 @@ namespace buronet_service.Data
                     entity.HasKey(e => e.Id);
                     entity.HasIndex(e => e.TagName).IsUnique(); // Ensure tag names are unique
                 });
+            });
+
+            modelBuilder.Entity<Poll>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.HasOne(p => p.Post)
+                      .WithOne(post => post.Poll!)
+                      .HasForeignKey<Poll>(p => p.PostId)
+                      .IsRequired();
+            });
+
+            modelBuilder.Entity<PollOption>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.HasOne(po => po.Poll)
+                      .WithMany(p => p.Options)
+                      .HasForeignKey(po => po.PollId)
+                      .IsRequired()
+                      .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            modelBuilder.Entity<PollVote>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.HasIndex(v => new { v.PollId, v.UserId }).IsUnique(); // Ensure unique vote per user per poll
+
+                entity.HasOne(v => v.Poll)
+                      .WithMany()
+                      .HasForeignKey(v => v.PollId)
+                      .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasOne(v => v.PollOption)
+                      .WithMany(po => po.PollVotes)
+                      .HasForeignKey(v => v.PollOptionId)
+                      .OnDelete(DeleteBehavior.Restrict);
             });
         }
     }

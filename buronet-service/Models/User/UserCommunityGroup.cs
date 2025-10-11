@@ -22,6 +22,8 @@ namespace buronet_service.Models.User
 
         [MaxLength(500)]
         public string? Url { get; set; }
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 
         //[ForeignKey("UserProfileId")]
         public UserProfile UserProfile { get; set; } = null!; // Navigation property. Type is just UserProfile

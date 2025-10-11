@@ -28,6 +28,11 @@ namespace buronet_service.Models.User // All user-related entities share this na
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
+        public bool IsPoll { get; set; } = false;
+        public int? PollId { get; set; }
+
+        [ForeignKey("PollId")]
+        public Poll? Poll { get; set; }
 
         [Column(TypeName = "TEXT")] // Or VARCHAR(MAX) for SQL Server, TEXT for MySQL/PostgreSQL/SQLite
         public string? TagsJson { get; set; } // Internal property for DB storage

@@ -280,14 +280,40 @@
     "Order": 0,
     "Parameters": [
       {
-        "Name": "sendDto",
-        "Type": "buronet_service.Models.DTOs.User.SendConnectionRequestDto",
+        "Name": "receiverId",
+        "Type": "System.Guid",
         "IsRequired": true
       }
     ],
     "ReturnTypes": [
       {
         "Type": "buronet_service.Models.DTOs.User.ConnectionRequestDto",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "buronet_service.Controllers.ConnectionsController",
+    "Method": "GetSuggestedUsers",
+    "RelativePath": "api/Connections/suggestions",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "limit",
+        "Type": "System.Int32",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "System.Collections.Generic.IEnumerable\u00601[[buronet_service.Models.DTOs.User.SuggestedUserDto, buronet-service, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
         "MediaTypes": [
           "text/plain",
           "application/json",

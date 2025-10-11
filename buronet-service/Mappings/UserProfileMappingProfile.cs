@@ -72,7 +72,10 @@ namespace buronet_service.Mappings
                 .ForMember(dest => dest.Likes, opt => opt.MapFrom(src => src.Likes)) // Map Likes collection
                 .ForMember(dest => dest.Tags, opt => opt.MapFrom(src => src.Tags))
                 //.ForMember(dest => dest.TagsJson, opt => opt.MapFrom(src => src.TagsJson))
-                .ForMember(dest => dest.IsLikedByCurrentUser, opt => opt.Ignore()); // Set in service based on current user
+                .ForMember(dest => dest.IsLikedByCurrentUser, opt => opt.Ignore()) // Set in service based on current user
+                .ForMember(dest => dest.IsPoll, opt => opt.MapFrom(src => src.IsPoll))
+                .ForMember(dest => dest.Poll, opt => opt.MapFrom(src => src.Poll));
+
             CreateMap<CreatePostDto, Post>();
             CreateMap<UpdatePostDto, Post>();
 
@@ -148,6 +151,15 @@ namespace buronet_service.Mappings
                 .ForMember(dest => dest.Headline, opt => opt.MapFrom(src => src.Profile != null ? src.Profile.Headline : null))
                 .ForMember(dest => dest.ProfilePictureUrl, opt => opt.MapFrom(src => src.Profile != null ? src.Profile.ProfilePictureUrl : null))
                 .ForMember(dest => dest.MutualConnections, opt => opt.Ignore());
+
+            // Map Poll entity to PollDto
+            CreateMap<Poll, PollDto>()
+                .ForMember(dest => dest.TotalVotes, opt => opt.MapFrom(src => src.Options.Sum(o => o.PollVotes.Count))); // Map from PollOption.Votes
+
+            // Map PollOption entity to PollOptionDto
+            // This mapping is what gets sent to the frontend.
+            CreateMap<PollOption, PollOptionDto>()
+                .ForMember(dest => dest.HasVoted, opt => opt.Ignore());
         }
     }
 }

@@ -46,6 +46,8 @@ namespace buronet_service.Services // Ensure this namespace is correct
                                       .Include(p => p.Comments)
                                           .ThenInclude(c => c.User) // Include User for Comments (for CommentDto.User)
                                               .ThenInclude(u => u.Profile) // Include User's Profile for Comment.User
+                                      .Include(p => p.Poll)
+                                          .ThenInclude(poll => poll!.Options)
                                       .OrderByDescending(p => p.CreatedAt) // Order by latest posts
                                       .ToListAsync();
 
@@ -58,10 +60,49 @@ namespace buronet_service.Services // Ensure this namespace is correct
                 {
                     // Check if any like in the post's Likes collection belongs to the current user
                     dto.IsLikedByCurrentUser = dto.Likes.Any(l => l.UserId == currentUserId.Value.ToString());
+                    if (dto.IsPoll && dto.Poll != null)
+                    {
+                        var userVote = await _context.PollVotes
+                            .AsNoTracking()
+                            .FirstOrDefaultAsync(v => v.PollId == dto.Poll.Id && v.UserId == currentUserId.Value);
+
+                        dto.Poll.TotalVotes = await _context.PollVotes
+                            .Where(v => v.PollId == dto.Poll.Id)
+                            .CountAsync();
+
+                        foreach (var option in dto.Poll.Options)
+                        {
+                            var votes = await _context.PollVotes
+                           .Where(v => v.PollId == dto.Poll.Id && v.PollOptionId == option.Id)
+                           .CountAsync();
+
+                            option.Votes = votes; // Set the total votes for each option
+                        }
+
+                       
+
+                        if (userVote != null)
+                        {
+                            foreach (var option in dto.Poll.Options)
+                            {
+                                if (option.Id == userVote.PollOptionId)
+                                {
+                                    option.HasVoted = true;
+                                }
+                            }
+                        }
+                    }
                 }
                 else
                 {
                     dto.IsLikedByCurrentUser = false; // Not liked if no current user
+                    if (dto.IsPoll && dto.Poll != null)
+                    {
+                        foreach (var option in dto.Poll.Options)
+                        {
+                            option.HasVoted = false; // No vote if not logged in
+                        }
+                    }
                 }
             }
 
@@ -70,83 +111,123 @@ namespace buronet_service.Services // Ensure this namespace is correct
 
         public async Task<PostDto?> GetPostByIdAsync(int postId, Guid? currentUserId)
         {
-            string? currentUserIdString = currentUserId?.ToString();
-
             var post = await _context.Posts
-                //.Include(p => p.User)
+                .Include(p => p.User)
+                    .ThenInclude(u => u.Profile)
                 .Include(p => p.Likes)
+                    .ThenInclude(l => l.User)
+                        .ThenInclude(u => u.Profile)
                 .Include(p => p.Comments)
-                //.ThenInclude(c => c.User) // Include commenter's data for comments
+                    .ThenInclude(c => c.User)
+                        .ThenInclude(u => u.Profile)
+                // --- NEW: Include Poll and PollOptions ---
+                .Include(p => p.Poll)
+                    .ThenInclude(poll => poll!.Options)
+                // --- END NEW ---
                 .FirstOrDefaultAsync(p => p.Id == postId);
 
             if (post == null) return null;
 
             var postDto = _mapper.Map<PostDto>(post);
 
-            if (currentUserIdString != null)
+            if (currentUserId.HasValue)
             {
-                postDto.IsLikedByCurrentUser = await HasUserLikedPostInternalAsync(postDto.Id, (Guid)currentUserId);
-            }
+                postDto.IsLikedByCurrentUser = post.Likes.Any(l => l.UserId == currentUserId.Value);
 
-            // Map comments separately to ensure UserName/Email is populated
-            // and sort them for consistent display
-            postDto.Comments = post.Comments
-                .OrderBy(c => c.CreatedAt)
-                .Select(c => _mapper.Map<CommentDto>(c))
-                .ToList();
+                // --- NEW: Check if the current user has voted on the poll ---
+                if (post.IsPoll && post.Poll != null && post.Poll.Options.Any())
+                {
+                    var userVote = await _context.PollVotes
+                        .AsNoTracking()
+                        .FirstOrDefaultAsync(v => v.PollId == post.Poll.Id && v.UserId == currentUserId.Value);
+
+                    if (userVote != null)
+                    {
+                        foreach (var option in postDto.Poll!.Options)
+                        {
+                            if (option.Id == userVote.PollOptionId)
+                            {
+                                option.HasVoted = true;
+                            }
+                        }
+                    }
+                }
+            }
+            else
+            {
+                postDto.IsLikedByCurrentUser = false;
+            }
 
             return postDto;
         }
 
         public async Task<PostDto?> CreatePostAsync(Guid userIdGuid, CreatePostDto createDto)
         {
-            string userIdString = userIdGuid.ToString();
-
-            // Ensure the user exists before creating a post
-            var userExists = await _context.Users.AnyAsync(u => u.Id == userIdGuid);
-            if (!userExists)
+            var newPost = new Post
             {
-                throw new ApplicationException($"User with ID {userIdString} not found.");
-            }
+                UserId = userIdGuid,
+                Title = createDto.Title,
+                Content = createDto.Content,
+                ImageUrl = createDto.ImageUrl,
+                IsPoll = createDto.IsPoll, // Set the IsPoll flag from the DTO
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow,
+                TagsJson = createDto.TagsJson
+            };
 
-            var post = _mapper.Map<Post>(createDto);
-            post.UserId = userIdGuid;
-            post.CreatedAt = DateTime.UtcNow;
-            post.UpdatedAt = DateTime.UtcNow;
+            _context.Posts.Add(newPost);
+            await _context.SaveChangesAsync(); // Save the Post first to get its ID
 
-            _context.Posts.Add(post);
-            await _context.SaveChangesAsync();
-
-            if (post.Tags != null && post.Tags.Any())
+            // --- NEW: If it's a poll, create the poll entity and link it ---
+            if (createDto.IsPoll && createDto.Options.Any())
             {
-                foreach (var tagName in post.Tags)
+                var newPoll = new Poll
                 {
-                    var existingTag = await _context.TagFrequencies
-                                                    .FirstOrDefaultAsync(tf => tf.TagName.ToLower() == tagName.ToLower());
+                    PostId = newPost.Id, // Link the poll back to the post
+                    CreatedAt = DateTime.UtcNow
+                };
 
-                    if (existingTag == null)
-                    {
-                        _context.TagFrequencies.Add(new TagFrequency
-                        {
-                            TagName = tagName,
-                            Frequency = 1,
-                            LastUpdated = DateTime.UtcNow
-                        });
-                    }
-                    else
-                    {
-                        existingTag.Frequency++;
-                        existingTag.LastUpdated = DateTime.UtcNow;
-                        _context.TagFrequencies.Update(existingTag);
-                    }
+                foreach (var optionText in createDto.Options)
+                {
+                    // FIX: Removed 'Votes = 0' as the PollOption model no longer has a Votes property
+                    newPoll.Options.Add(new PollOption { Text = optionText });
                 }
-                await _context.SaveChangesAsync(); // Save tag frequency updates
-                //_logger.LogInformation("Updated tag frequencies for post {PostId}.", newPost.Id);
-            }
 
-            // Fetch the created post with user data to map to DTO (needed for UserName/Email)
-            var createdPost = await _context.Posts.Include(p => p.User).FirstOrDefaultAsync(p => p.Id == post.Id);
-            return _mapper.Map<PostDto>(createdPost);
+                _context.Polls.Add(newPoll);
+                await _context.SaveChangesAsync();
+
+                newPost.PollId = newPoll.Id; // Link the post to the new poll
+                _context.Posts.Update(newPost); // Update the post with the PollId
+                await _context.SaveChangesAsync();
+            }
+            // --- END NEW ---
+
+            // Load related User and Profile data for the DTO response
+            // This is needed for AutoMapper to map the nested PostUserDto and PollDto
+            await _context.Entry(newPost)
+                          .Reference(p => p.User)
+                          .LoadAsync();
+            if (newPost.User != null)
+            {
+                await _context.Entry(newPost.User)
+                              .Reference(u => u.Profile)
+                              .LoadAsync();
+            }
+            // --- NEW: Load Poll and its Options for DTO mapping ---
+            if (newPost.IsPoll && newPost.PollId.HasValue)
+            {
+                await _context.Entry(newPost)
+                              .Reference(p => p.Poll)
+                              .Query()
+                              .Include(poll => poll!.Options)
+                              .LoadAsync();
+            }
+            // --- END NEW ---
+
+            var createdPostDto = _mapper.Map<PostDto>(newPost);
+
+            //_logger.LogInformation("Post {PostId} created successfully by user {UserId}.", newPost.Id, userId);
+            return createdPostDto;
         }
 
         public async Task<PostDto?> UpdatePostAsync(int postId, Guid userIdGuid, UpdatePostDto updateDto)
@@ -261,39 +342,6 @@ namespace buronet_service.Services // Ensure this namespace is correct
             return await _context.Likes.AnyAsync(l => l.PostId == postId && l.UserId == userIdGuid);
         }
 
-        //public async Task<IEnumerable<TagWithTotalCountDto>> GetTrendingTagsAsync(int limit)
-        //{
-        //    //_logger.LogInformation("Fetching top {Limit} trending tags from TagFrequencies table.", limit);
-
-        //    var recentPostsTagsArrays = await _context.Posts
-        //                                            .OrderByDescending(p => p.CreatedAt)
-        //                                            .Take(100) // Consider "trending" based on recent activity
-        //                                            .Select(p => p.TagsJson) // This will select List<string[]>
-        //                                            .ToListAsync();
-
-
-        //    // Flatten the List<string[]> into a single List<string>
-        //    var allTagsFromRecentPosts = recentPostsTagsArrays
-        //        .Where(tagsArray => tagsArray != null && tagsArray.Any()) // Filter out null or empty arrays
-        //        .SelectMany(tagsArray => tagsArray) // Flatten the array of arrays
-        //        .ToList();
-
-        //    // Group, count, and order the tags
-        //    var trendingTagsWithCounts = allTagsFromRecentPosts
-        //        .GroupBy(tag => tag.ToLower()) // Group by lowercase tag for case-insensitivity
-        //        .Select(group => new TagWithTotalCountDto
-        //        {
-        //            TagName = group.Key,
-        //            TotalPosts = group.Count() // Count occurrences within the recent posts
-        //        })
-        //        .OrderByDescending(dto => dto.TotalPosts)
-        //        .Take(limit)
-        //        .ToList();
-
-        //    //_logger.LogInformation("Found {Count} trending tags with counts.", trendingTagsWithCounts.Count);
-        //    return trendingTagsWithCounts;
-        //}
-
         public async Task<IEnumerable<TagWithTotalCountDto>> GetTrendingTagsAsync(int limit)
         {
             //_logger.LogInformation("Calculating trending tags with a limit of {Limit}.", limit);
@@ -355,6 +403,53 @@ namespace buronet_service.Services // Ensure this namespace is correct
 
             //_logger.LogInformation("Found {Count} trending tags with detailed counts.", trendingTagsWithInfo.Count);
             return trendingTagsWithInfo;
+        }
+
+        public async Task<PollOptionDto> TogglePollVoteAsync(PollVoteDto pollVote)
+        {
+            var existingVote = await _context.PollVotes.FirstOrDefaultAsync(l => l.PollId == pollVote.PollId && l.UserId == pollVote.UserId);
+
+            var hasVoted = true;
+
+            var newVote = new PollVote
+            {
+                PollId = pollVote.PollId,
+                PollOptionId = pollVote.PollOptionId,
+                UserId = pollVote.UserId,
+                VotedAt = DateTime.UtcNow
+            };
+
+            if (existingVote != null)
+            {
+                if (existingVote.PollId == newVote.PollId && existingVote.PollOptionId == newVote.PollOptionId && existingVote.UserId == newVote.UserId)
+                {
+                    _context.PollVotes.Remove(existingVote);
+                } else
+                {
+                    existingVote.PollOptionId = newVote.PollOptionId;
+                    _context.PollVotes.Update(existingVote);
+                    hasVoted = false; // Indicates it was updated
+                }                
+                await _context.SaveChangesAsync();
+                //return true; // Indicates it was unliked
+            }
+            else
+            {
+                _context.PollVotes.Add(newVote);
+                await _context.SaveChangesAsync();
+                //return true; // Indicates it was unliked
+            }
+
+            var votes = await _context.PollVotes
+                .Where(v => v.PollId == newVote.PollId && v.PollOptionId == newVote.PollOptionId)
+                .CountAsync();
+
+            return new PollOptionDto
+            {
+                Id = newVote.PollOptionId,
+                Votes = votes,
+                HasVoted = hasVoted // Set HasVoted based on whether the user has voted or not
+            };
         }
     }
 }
