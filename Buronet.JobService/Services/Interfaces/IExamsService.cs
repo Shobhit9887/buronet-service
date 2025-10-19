@@ -10,5 +10,6 @@ namespace Buronet.JobService.Services.Interfaces
         Task<Exam?> GetAsync(string id);
         Task CreateAsync(Exam newExam);
         Task<bool> UpdateAsync(string id, Exam updatedExam);
+        Task<List<Exam>> SearchAsync(string keyword);
     }
 }

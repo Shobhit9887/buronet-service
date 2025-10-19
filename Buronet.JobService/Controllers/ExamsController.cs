@@ -67,5 +67,22 @@ namespace Buronet.JobService.Controllers
             await _examsService.UpdateAsync(id, updatedExam);
             return NoContent();
         }
+
+        [HttpGet("search")]
+        public async Task<ActionResult<ApiSearchResponse<List<Exam>>>> Search([FromQuery] string keyword)
+        {
+            // 1. Validate that a keyword was provided.
+            if (string.IsNullOrWhiteSpace(keyword))
+                if (string.IsNullOrWhiteSpace(keyword))
+                {
+                    return BadRequest(new ApiSearchResponse<List<Exam>> { Success = false, Message = "A search keyword is required." });
+                }
+
+            // 2. Call the service method to perform the search.
+            var jobs = await _examsService.SearchAsync(keyword);
+
+            // 3. Return the results in a standard API response format.
+            return Ok(new ApiSearchResponse<List<Exam>> { Success = true, Data = jobs });
+        }
     }
 }

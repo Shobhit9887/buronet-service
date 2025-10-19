@@ -47,7 +47,7 @@ public class DashboardController : ControllerBase
     public async Task<IActionResult> GetDepartmentStats()
     {
         var stats = await _jobsService.GetDepartmentStatsAsync();
-        return Ok(new ApiResponse<List<DepartmentStatsDto>> { Success = true, Data = stats });
+        return base.Ok(new global::JobService.Controllers.ApiResponse<List<DepartmentStatsDto>> { Success = true, Data = stats });
     }
 
 }

@@ -5,8 +5,6 @@ name: Build and deploy buronet-joba to Azure Web App - buronet
 
 on:
   push:
-    branches:
-      - master
   workflow_dispatch:
 
 jobs:

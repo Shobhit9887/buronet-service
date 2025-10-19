@@ -15,7 +15,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("buronet_messaging_service")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+f5b7bf6ce797c7230ec8f466b604466a8fc2cd23")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+87a0f18840f70192a47bf1431ec7d0dbb2258efe")]
 [assembly: System.Reflection.AssemblyProductAttribute("buronet_messaging_service")]
 [assembly: System.Reflection.AssemblyTitleAttribute("buronet_messaging_service")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

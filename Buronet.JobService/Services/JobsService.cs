@@ -22,6 +22,20 @@ public class JobsService : IJobsService
         _jobsCollection = mongoDatabase.GetCollection<Job>(mongoDbSettings.Value.JobsCollectionName);
         _examsCollection = mongoDatabase.GetCollection<Exam>(mongoDbSettings.Value.ExamsCollectionName);
         _dbContext = dbContext;
+        // --- THIS IS THE FIX ---
+        // Create a text index on multiple fields to enable text search.
+        // This is an idempotent operation, so it's safe to run on every startup.
+        var indexKeysDefinition = Builders<Job>.IndexKeys
+            .Text(j => j.JobTitle)
+            .Text(j => j.JobDescription)
+            .Text(j => j.CompanyName)
+            .Text(j => j.OrganizationName)
+            .Text(j => j.Sector)
+            .Text(j => j.Location);
+
+        var indexModel = new CreateIndexModel<Job>(indexKeysDefinition);
+        // The driver will check if the index exists and only create it if it doesn't.
+        _jobsCollection.Indexes.CreateOne(indexModel);
     }
 
     public async Task<List<Job>> GetAsync() =>
@@ -77,7 +91,7 @@ public class JobsService : IJobsService
         var newExamsTodayTask = _examsCollection.CountDocumentsAsync(newExamsTodayFilter);
 
         // We also need the bookmark count, which requires the DbContext for MySQL
-        var totalBookmarkedExamsTask = _dbContext.UserJobBookmarks.CountAsync(b => b.UserId == userId);
+        var totalBookmarkedExamsTask = _dbContext.UserExamBookmarks.CountAsync(b => b.UserId == userId);
 
         await Task.WhenAll(totalActiveExamsTask, newExamsTodayTask, totalBookmarkedExamsTask);
 
@@ -137,6 +151,14 @@ public class JobsService : IJobsService
         // The operation is considered successful if the server acknowledged the write
         // and at least one document was actually modified.
         return result.IsAcknowledged && result.ModifiedCount > 0;
+    }
+
+    public async Task<List<Job>> SearchAsync(string keyword)
+    {
+        // Use the $text filter to perform a case-insensitive text search on the indexed fields.
+        var filter = Builders<Job>.Filter.Text(keyword, new TextSearchOptions { CaseSensitive = false });
+        var jobs = await _jobsCollection.Find(filter).ToListAsync();
+        return jobs;
     }
 
 }

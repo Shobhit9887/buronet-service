@@ -17,6 +17,17 @@ namespace Buronet.JobService.Services
             var mongoClient = new MongoClient(settings.Value.ConnectionString);
             var mongoDatabase = mongoClient.GetDatabase(settings.Value.DatabaseName);
             _examsCollection = mongoDatabase.GetCollection<Exam>(settings.Value.ExamsCollectionName);
+            var indexKeysDefinition = Builders<Exam>.IndexKeys
+            .Text(j => j.ExamTitle)
+            .Text(j => j.ConductingBody)
+            .Text(j => j.ExamSummary)
+            .Text(j => j.EligibilityCriteria.EducationalQualification)
+            .Text(j => j.ExamPattern.Preliminary.Summary)
+            .Text(j => j.ExamPattern.Main.Summary);            
+
+            var indexModel = new CreateIndexModel<Exam>(indexKeysDefinition);
+            // The driver will check if the index exists and only create it if it doesn't.
+            _examsCollection.Indexes.CreateOne(indexModel);
         }
 
         public async Task<List<Exam>> GetAsync() =>
@@ -33,6 +44,14 @@ namespace Buronet.JobService.Services
             updatedExam.Id = id;
             var result = await _examsCollection.ReplaceOneAsync(exam => exam.Id == id, updatedExam);
             return result.IsAcknowledged && result.ModifiedCount > 0;
+        }
+
+        public async Task<List<Exam>> SearchAsync(string keyword)
+        {
+            // Use the $text filter to perform a case-insensitive text search on the indexed fields.
+            var filter = Builders<Exam>.Filter.Text(keyword, new TextSearchOptions { CaseSensitive = false });
+            var jobs = await _examsCollection.Find(filter).ToListAsync();
+            return jobs;
         }
     }
 }
