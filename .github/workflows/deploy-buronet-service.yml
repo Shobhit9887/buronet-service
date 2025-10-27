@@ -9,8 +9,8 @@ on:
     branches:
       - main
       - feature/global-search-function
-    paths:
-      - 'services/Api/**'
+    # paths:
+    #   - 'services/Api/**'
 
 jobs:
   deploy-api:
