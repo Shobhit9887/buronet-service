@@ -26,11 +26,11 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '8.0.x' # <-- Use your .NET version
+          dotnet-version: '8.x' # <-- Use your .NET version
 
       # Step 3: Build and publish the specific microservice
       - name: Publish Api
-        run: dotnet publish services/Api/Api.csproj -c Release -o ./publish-output
+        run: dotnet publish -c Release buronet-service -c Release -o ./publish-output
 
       # Step 4: Create the ZIP package from the publish directory
       - name: Generate deployment package
@@ -43,7 +43,7 @@ jobs:
         with:
           aws_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws_secret_key: ${{ secrets.AWS_SECRET_KEY }}
-          region: us-east-1 # <-- Your AWS region
+          region: eu-north-1 # <-- Your AWS region
           
           # This must match your Beanstalk Application name
           application_name: buronet-app
