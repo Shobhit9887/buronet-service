@@ -1,12 +1,16 @@
 ﻿using AutoMapper;
+using buronet_service.Models;
 using buronet_service.Data; // Your DbContext
 using buronet_service.Models.DTOs.User; // DTOs
 using buronet_service.Models.User; // Entities
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Hosting;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq; // For LINQ operations
+using System.Net.Http;
 using System.Threading.Tasks;
 
 namespace buronet_service.Services // Ensure this namespace is correct
@@ -15,11 +19,45 @@ namespace buronet_service.Services // Ensure this namespace is correct
     {
         private readonly AppDbContext _context;
         private readonly IMapper _mapper;
+        private readonly IHttpClientFactory _httpClientFactory;
+        private readonly INotificationsService _notificationsService;
 
-        public PostService(AppDbContext context, IMapper mapper)
+        public PostService(AppDbContext context, IMapper mapper, IHttpClientFactory httpClientFactory, INotificationsService notificationsService)
         {
             _context = context;
             _mapper = mapper;
+            _httpClientFactory = httpClientFactory;
+            _notificationsService = notificationsService;
+        }
+
+        private async Task SendNotificationToService(Guid userId, string title, string message, string type, string redirectUrl, string? targetId = null)
+        {
+            // Implementation of this method goes here (using IHttpClientFactory)
+            if (!Enum.TryParse(type, true, out NotificationType notificationType))
+            {
+                // Handle error: unknown type
+                return;
+            }
+
+            try
+            {
+                await _notificationsService.CreateNotificationAsync(new Notification
+                {
+                    Id = Guid.NewGuid(),
+                    UserId = userId,
+                    Title = title,
+                    Message = message,
+                    Type = notificationType, // <-- Use the converted enum
+                    RedirectUrl = redirectUrl,
+                    TargetId = targetId,
+                    IsRead = false,
+                    CreatedAt = DateTime.UtcNow
+                });
+            }
+            catch (Exception ex)
+            {
+                // Log error
+            }
         }
 
         // Helper to check if a user has liked a post (internal use)
@@ -332,6 +370,24 @@ namespace buronet_service.Services // Ensure this namespace is correct
                 };
                 _context.Likes.Add(newLike);
                 await _context.SaveChangesAsync();
+                var likerUser = await _context.UserProfiles.FindAsync(userIdGuid);
+                var post = await _context.Posts.FindAsync(postId);
+                if(post != null)
+                {
+                    string postSnippet = post.Content.Length > 30 ? post.Content.Substring(0, 30) + "..." : post.Content;
+                    if (likerUser != null)
+                    {
+                        await SendNotificationToService(
+                            userId: post.UserId, // Notify the POST AUTHOR
+                            title: "New Post Like!",
+                            message: $"{likerUser.FirstName} {likerUser.LastName} liked your post: \"{postSnippet}\"",
+                            type: "PostLiked",
+                            redirectUrl: $"/post/{postId}",
+                            targetId: userIdGuid.ToString()
+                        );
+                    }
+                }
+                
                 return true; // Indicates it was liked
             }
         }

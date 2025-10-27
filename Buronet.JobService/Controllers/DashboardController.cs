@@ -43,7 +43,7 @@ public class DashboardController : ControllerBase
         return Ok(stats);
     }
 
-    [HttpGet("departments")]
+    [HttpGet("jobs/departments")]
     public async Task<IActionResult> GetDepartmentStats()
     {
         var stats = await _jobsService.GetDepartmentStatsAsync();

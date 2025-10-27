@@ -6,5 +6,6 @@
         public string DatabaseName { get; set; } = null!;
         public string JobsCollectionName { get; set; } = null!;
         public string ExamsCollectionName { get; set; } = null!;
+        public string ExternalUpdatesCollectionName { get; set; } = null!;
     }
 }

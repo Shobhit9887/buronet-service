@@ -1,0 +1,55 @@
+# .github/workflows/deploy-buronet-service.yml
+
+name: Deploy Buronet API to AWS Elastic Beanstalk
+
+# This workflow is triggered ONLY when a change is pushed
+# inside the 'services/Api/' directory.
+on:
+  push:
+    branches:
+      - main
+      - feature/global-search-function
+    paths:
+      - 'services/Api/**'
+
+jobs:
+  deploy-api:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Check out the repository
+      - name: Checkout source code
+        uses: actions/checkout@v4
+
+      # Step 2: Set up .NET environment
+      # (Add this step if you need to build)
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x' # <-- Use your .NET version
+
+      # Step 3: Build and publish the specific microservice
+      - name: Publish Api
+        run: dotnet publish services/Api/Api.csproj -c Release -o ./publish-output
+
+      # Step 4: Create the ZIP package from the publish directory
+      - name: Generate deployment package
+        run: zip -r deploy.zip .
+        working-directory: ./publish-output # <-- Zip ONLY the publish-output folder
+
+      # Step 5: Deploy to the specific Beanstalk environment
+      - name: Deploy Api to Elastic Beanstalk
+        uses: einaregilsson/beanstalk-deploy@v21
+        with:
+          aws_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws_secret_key: ${{ secrets.AWS_SECRET_KEY }}
+          region: us-east-1 # <-- Your AWS region
+          
+          # This must match your Beanstalk Application name
+          application_name: buronet-app
+          
+          # This is the SPECIFIC environment for this service
+          environment_name: Buronet-service-env 
+          
+          version_label: buronet-api-${{ github.sha }}
+          deployment_package: ./publish-output/deploy.zip # <-- Path to the new zip
