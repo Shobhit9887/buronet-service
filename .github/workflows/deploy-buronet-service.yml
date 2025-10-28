@@ -51,5 +51,6 @@ jobs:
           # This is the SPECIFIC environment for this service
           environment_name: Buronet-service-env 
           
-          version_label: buronet-api-${{ github.sha }}
+          version_label: buronet-api-${{ github.sha }}-${{ github.run_attempt }}
+          use_existing_version_if_available: true
           deployment_package: ./publish-output/deploy.zip # <-- Path to the new zip
