@@ -21,12 +21,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <!-- Exclude appsettings files from referenced projects during publish -->
-    <Content Update="@(ProjectReference->'%(RootDir)%(Directory)appsettings.json')" CopyToPublishDirectory="Never" />
-    <Content Update="@(ProjectReference->'%(RootDir)%(Directory)appsettings.*.json')" CopyToPublishDirectory="Never" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\buronet-service\buronet-service.csproj" />
   </ItemGroup>
 
