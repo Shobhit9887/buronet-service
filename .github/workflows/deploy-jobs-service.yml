@@ -10,7 +10,7 @@ on:
       - main
       - feature/global-search-function
     # paths:
-    #   - 'services/Api/**'
+    #   - 'Buronet.JobService/**'
 
 jobs:
   deploy-api:

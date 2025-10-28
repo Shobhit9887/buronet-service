@@ -10,7 +10,7 @@ on:
       - main
       - feature/global-search-function
     # paths:
-    #   - 'services/Api/**'
+    #   - 'buronet_messaging_service/**'
 
 jobs:
   deploy-api:
@@ -30,7 +30,7 @@ jobs:
 
       # Step 3: Build and publish the specific microservice
       - name: Publish Api
-        run: dotnet publish -c Release buronet_messaging_service -o ./publish-output
+        run: dotnet publish -c Release buronet_messaging_service/buronet_messaging_service.csproj -o ./publish-output
 
       # Step 4: Create the ZIP package from the publish directory
       - name: Generate deployment package
