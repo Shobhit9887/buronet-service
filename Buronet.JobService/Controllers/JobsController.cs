@@ -83,4 +83,22 @@ public class JobsController : ControllerBase
         return NoContent();
     }
 
+
+    [HttpGet("search")]
+    public async Task<ActionResult<ApiSearchResponse<List<Job>>>> Search([FromQuery] string keyword)
+    {
+        // 1. Validate that a keyword was provided.
+        if (string.IsNullOrWhiteSpace(keyword))
+        if (string.IsNullOrWhiteSpace(keyword))
+        {
+            return BadRequest(new ApiSearchResponse<List<Job>> { Success = false, Message = "A search keyword is required." });
+        }
+
+        // 2. Call the service method to perform the search.
+        var jobs = await _jobsService.SearchAsync(keyword);
+
+        // 3. Return the results in a standard API response format.
+        return Ok(new ApiSearchResponse<List<Job>> { Success = true, Data = jobs });
+    }
+
 }

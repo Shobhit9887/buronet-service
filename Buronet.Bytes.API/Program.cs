@@ -12,7 +12,7 @@ builder.Services.AddCors(options =>
     options.AddPolicy(name: MyAllowSpecificOrigins, policy =>
     {
         // TODO: Replace with your frontend's actual URL in production
-        policy.WithOrigins("http://localhost:3000")
+        policy.WithOrigins(["http://ec2-13-48-45-225.eu-north-1.compute.amazonaws.com", "http://localhost:3000"])
               .AllowAnyHeader()
               .AllowAnyMethod();
     });

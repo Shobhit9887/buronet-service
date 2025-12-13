@@ -1,13 +1,15 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using AutoMapper;
+using AutoMapper.QueryableExtensions; // For ProjectTo
 using buronet_service.Data; // Your DbContext
-using buronet_service.Models.User; // Entities
 using buronet_service.Models.DTOs.User; // DTOs
+using buronet_service.Models.User; // Entities
+using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.EntityFrameworkCore;
+using MongoDB.Driver.Core.Servers;
 using System;
 using System.Collections.Generic;
 using System.Linq; // For LINQ operations
 using System.Threading.Tasks;
-using AutoMapper;
-using AutoMapper.QueryableExtensions; // For ProjectTo
 
 namespace buronet_service.Services // Ensure this namespace is correct
 {
@@ -15,11 +17,29 @@ namespace buronet_service.Services // Ensure this namespace is correct
     {
         private readonly AppDbContext _context;
         private readonly IMapper _mapper;
+        private readonly IHttpClientFactory _httpClientFactory;
 
-        public ConnectionService(AppDbContext context, IMapper mapper)
+        public ConnectionService(AppDbContext context, IMapper mapper, IHttpClientFactory httpClientFactory)
         {
             _context = context;
             _mapper = mapper;
+            _httpClientFactory = httpClientFactory;
+        }
+
+        private async Task SendNotificationToService(Guid userId, string title, string message, string type, string redirectUrl, string? targetId = null)
+        {
+            // Implementation of this method goes here (using IHttpClientFactory)
+            var client = _httpClientFactory.CreateClient("NotificationsService");
+            var notificationPayload = new { UserId = userId, Title = title, Message = message, Type = type, RedirectUrl = redirectUrl, TargetId = targetId };
+
+            try
+            {
+                await client.PostAsJsonAsync("/api/notifications/internal-create", notificationPayload);
+            }
+            catch (Exception ex)
+            {
+                // Log error
+            }
         }
 
         // Helper to enforce canonical order for connections (UserId1 < UserId2 alphabetically)
@@ -311,6 +331,18 @@ namespace buronet_service.Services // Ensure this namespace is correct
                 };
             }
 
+            if (senderUser != null)
+            {
+                await SendNotificationToService(
+                    userId: receiverUser.Id, // Notify the RECEIVER
+                    title: "New Connection Request",
+                    message: $"{senderUser.Profile.FirstName} {senderUser.Profile.LastName} sent you a connection request.",
+                    type: "ConnectionRequestReceived",
+                    redirectUrl: "/network/requests",
+                    targetId: senderUser.Id.ToString() // Target is the sender's ID
+                );
+            }
+
             return newRequestDto;
         }
 
@@ -341,6 +373,22 @@ namespace buronet_service.Services // Ensure this namespace is correct
                 };
                 _context.Connections.Add(newConnection);
                 request.Status = ConnectionRequestStatus.Accepted.ToString();
+
+                if (request == null) return false;
+
+                var accepterUser = await _context.UserProfiles.FindAsync(request.ReceiverId);
+
+                if (accepterUser != null)
+                {
+                    await SendNotificationToService(
+                        userId: request.SenderId, // Notify the SENDER
+                        title: "Connection Accepted!",
+                        message: $"{accepterUser.FirstName} {accepterUser.LastName} accepted your connection request.",
+                        type: "ConnectionAccepted",
+                        redirectUrl: $"/profile/{accepterUser.Id}",
+                        targetId: accepterUser.Id.ToString() // Target is the accepter's ID
+                    );
+                }
             }
             else if (updateDto.Status == ConnectionRequestStatus.Rejected.ToString())
             {

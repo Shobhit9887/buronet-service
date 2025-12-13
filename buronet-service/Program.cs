@@ -3,6 +3,7 @@ using buronet_service.Data;
 using buronet_service.Helpers;
 using buronet_service.Mappings;
 using buronet_service.Services;
+using buronet_service.Services.Interfaces;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
@@ -18,6 +19,27 @@ builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+builder.Services.AddHttpClient();
+
+builder.Services.AddHttpClient("JobService", client =>
+{
+    // *** IMPORTANT: Replace this with the actual URL of your JobService microservice ***
+    // If you are using Docker/K8s/API Gateway, this URL will be the internal service name or gateway route.
+    client.BaseAddress = new Uri(builder.Configuration["ServiceUrls:JobService"] ?? "https://localhost:44318");
+
+    // Add any default headers needed for microservice communication, e.g., an internal API key
+    // client.DefaultRequestHeaders.Add("X-Internal-API-Key", "..."); 
+});
+
+builder.Services.AddHttpClient("NotificationsService", client =>
+{
+    // *** IMPORTANT: Replace this with the actual URL of your JobService microservice ***
+    // If you are using Docker/K8s/API Gateway, this URL will be the internal service name or gateway route.
+    client.BaseAddress = new Uri(builder.Configuration["ServiceUrls:NotificationsService"]!);
+
+    // Add any default headers needed for microservice communication, e.g., an internal API key
+    // client.DefaultRequestHeaders.Add("X-Internal-API-Key", "..."); 
+});
 
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseMySql(builder.Configuration.GetConnectionString("DefaultConnection"),
@@ -30,6 +52,8 @@ builder.Services.AddScoped<JwtService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IPostService, PostService>(); // <--- NEW: Register PostService with its interface
 builder.Services.AddScoped<IConnectionService, ConnectionService>();
+builder.Services.AddScoped<ISearchService, SearchService>();
+builder.Services.AddScoped<INotificationsService, NotificationsService>();
 //*********************** Add services to the container end.***********************
 
 // Add AutoMapper
@@ -96,7 +120,7 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("OpenAll", policy =>
     {
-        policy.WithOrigins("http://localhost:3000")  // or your frontend URL
+        policy.WithOrigins(["http://ec2-13-48-45-225.eu-north-1.compute.amazonaws.com","http://localhost:3000"])  // or your frontend URL
             .AllowAnyHeader()
             .AllowAnyMethod()
             .AllowCredentials();

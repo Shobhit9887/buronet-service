@@ -1,10 +1,11 @@
-// File: JobService/Program.cs
+﻿// File: JobService/Program.cs
 using Buronet.JobService.Data;
 using Buronet.JobService.Services;
 using Buronet.JobService.Services.Interfaces;
 using Buronet.JobService.Settings;
 using JobService.Services;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using MongoDB.Driver;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -15,7 +16,7 @@ builder.Services.AddCors(options =>
     options.AddPolicy(name: MyAllowSpecificOrigins, policy =>
     {
         // TODO: Replace with your frontend's actual URL in production
-        policy.WithOrigins("http://localhost:3000")
+        policy.WithOrigins(["http://ec2-13-48-45-225.eu-north-1.compute.amazonaws.com","http://localhost:3000"])
               .AllowAnyHeader()
               .AllowAnyMethod();
     });
@@ -35,9 +36,25 @@ builder.Services.AddScoped<IBookmarkService, BookmarkService>();
 builder.Services.AddScoped<IJobsService, JobsService>();
 builder.Services.AddScoped<IExamsService, ExamsService>();
 
+builder.Services.AddAuthentication(options =>
+{
+    // 🚨 THIS IS THE CRITICAL LINE 🚨
+    // Tells the framework to use the JWT Bearer handler for retrieving tokens 
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+});
+
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddHttpClient();
+
+builder.Services.AddHttpClient("NotificationService", client =>
+{
+    // Ensure you have the ServiceUrls:NotificationService in your appsettings.json
+    client.BaseAddress = new Uri(builder.Configuration["ServiceUrls:NotificationService"]!);
+});
 
 var app = builder.Build();
 

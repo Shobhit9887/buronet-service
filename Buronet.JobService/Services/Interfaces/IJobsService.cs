@@ -13,4 +13,5 @@ public interface IJobsService
     Task<ExamDashboardStatsDto> GetExamDashboardStatsAsync(string userId);
     Task<List<DepartmentStatsDto>> GetDepartmentStatsAsync();
     Task<bool> UpdateAsync(string id, Job updatedJob);
+    Task<List<Job>> SearchAsync(string keyword);
 }

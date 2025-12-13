@@ -1,4 +1,5 @@
 ﻿// buronet_service/Data/AppDbContext.cs
+using buronet_service.Models;
 using buronet_service.Data;
 using buronet_service.Models.User;
 using Microsoft.EntityFrameworkCore;
@@ -38,7 +39,7 @@ namespace buronet_service.Data
         //New DbSets for Connections
         public DbSet<Connection> Connections { get; set; } = null!;
         public DbSet<ConnectionRequest> ConnectionRequests { get; set; } = null!;
-
+        public DbSet<Notification> Notifications { get; set; } = null!;
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -234,6 +235,26 @@ namespace buronet_service.Data
                       .WithMany(po => po.PollVotes)
                       .HasForeignKey(v => v.PollOptionId)
                       .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            modelBuilder.Entity<Notification>(entity =>
+            {
+                // Primary Key configuration (already done via [Key] attribute, but good practice)
+                entity.HasKey(n => n.Id);
+
+                // Indexing the UserId for fast lookups
+                entity.HasIndex(n => n.UserId);
+
+                // Indexing for common queries (e.g., fetching unread notifications)
+                entity.HasIndex(n => new { n.UserId, n.IsRead, n.CreatedAt });
+
+                // Ensure the string properties are mapped to appropriate column types (e.g., VARCHAR)
+                entity.Property(n => n.Title).HasMaxLength(100).IsRequired();
+                entity.Property(n => n.Message).HasMaxLength(500).IsRequired();
+                entity.Property(n => n.RedirectUrl).HasMaxLength(200).IsRequired();
+
+                // Map the C# Enum to a string in the database
+                entity.Property(n => n.Type).HasConversion<string>();
             });
         }
     }

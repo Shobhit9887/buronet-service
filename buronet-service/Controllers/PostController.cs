@@ -187,7 +187,7 @@ namespace buronet_service.Controllers
 
         // POST api/posts/{id}/like
         // Toggles a like on a post (like if not liked, unlike if liked). Requires authentication.
-        [HttpPost("{id}/like")]
+        [HttpPost("{id}/toggle-like")]
         public async Task<IActionResult> ToggleLike(int id)
         {
             var userId = GetCurrentUserId();
