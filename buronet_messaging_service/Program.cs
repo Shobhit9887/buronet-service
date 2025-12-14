@@ -149,4 +149,18 @@ app.MapHub<ChatHub>("/chatHub"); // Endpoint for SignalR clients to connect to
 
 app.MapControllers(); // Map API controllers
 
+app.MapGet("/__debug/controllers", (IEnumerable<EndpointDataSource> endpoints) =>
+{
+    return endpoints
+        .SelectMany(e => e.Endpoints)
+        .OfType<RouteEndpoint>()
+        .Select(e => new
+        {
+            Route = e.RoutePattern.RawText,
+            Order = e.Order,
+            DisplayName = e.DisplayName
+        });
+});
+
+
 app.Run();
