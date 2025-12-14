@@ -130,7 +130,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection(); // Use HTTPS redirection (if configured)
 
-app.UseCors("AllowSpecificOrigin"); // Use CORS policy
+app.UseCors("OpenAll"); // Use CORS policy
 
 app.UseAuthentication(); // MUST be before UseAuthorization and UseRouting
 app.UseAuthorization();
