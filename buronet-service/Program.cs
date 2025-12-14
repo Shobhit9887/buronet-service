@@ -4,6 +4,7 @@ using buronet_service.Helpers;
 using buronet_service.Mappings;
 using buronet_service.Services;
 using buronet_service.Services.Interfaces;
+using buronet_service.Storage;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
@@ -54,6 +55,8 @@ builder.Services.AddScoped<IPostService, PostService>(); // <--- NEW: Register P
 builder.Services.AddScoped<IConnectionService, ConnectionService>();
 builder.Services.AddScoped<ISearchService, SearchService>();
 builder.Services.AddScoped<INotificationsService, NotificationsService>();
+builder.Services.AddScoped<IBlobStorage, LocalBlobStorage>();
+builder.Services.AddScoped<MediaService>();
 //*********************** Add services to the container end.***********************
 
 // Add AutoMapper

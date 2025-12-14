@@ -1,6 +1,7 @@
 ﻿// buronet_service/Data/AppDbContext.cs
 using buronet_service.Models;
 using buronet_service.Data;
+using buronet_service.Entities;
 using buronet_service.Models.User;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
@@ -40,6 +41,8 @@ namespace buronet_service.Data
         public DbSet<Connection> Connections { get; set; } = null!;
         public DbSet<ConnectionRequest> ConnectionRequests { get; set; } = null!;
         public DbSet<Notification> Notifications { get; set; } = null!;
+        public DbSet<MediaFile> MediaFiles { get; set; }
+
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
