@@ -15,11 +15,14 @@ namespace buronet_service.Controllers // Ensure this namespace is correct
     public class UsersController : ControllerBase
     {
         private readonly IUserService _userService;
+        private readonly MediaService _mediaService;
+
         // private readonly AuthService _authService; // You might inject AuthService here if ProvisionUserAndProfileAsync moves to it.
 
-        public UsersController(IUserService userService /*, AuthService authService */)
+        public UsersController(IUserService userService, MediaService mediaService /*, AuthService authService */)
         {
             _userService = userService;
+            _mediaService = mediaService;
             // _authService = authService;
         }
 
@@ -83,6 +86,7 @@ namespace buronet_service.Controllers // Ensure this namespace is correct
                     return StatusCode(500, "Failed to provision user and profile.");
                 }
             }
+            userProfileDto.ProfilePictureUrl = _userService.MapToDo(userProfileDto.ProfilePictureMediaId);
 
             return Ok(userProfileDto);
         }
@@ -459,6 +463,27 @@ namespace buronet_service.Controllers // Ensure this namespace is correct
             bool deleted = await _userService.DeleteUserCommunityGroupAsync(id, userProfileId.Value);
             if (!deleted) return NotFound("Community group not found or does not belong to user.");
             return NoContent();
+        }
+
+        [IgnoreAntiforgeryToken]
+        [HttpPost("profile/upload_picture")]
+        public async Task<IActionResult> UploadProfilePicture(IFormFile file)
+        {
+            var userId = GetCurrentUserId();
+            if (!userId.HasValue || userId.Value == Guid.Empty)
+                return Unauthorized();
+
+            // 1️⃣ Upload to media service (same app)
+            var mediaId = await _mediaService.UploadAsync(file);
+
+            // 2️⃣ Save reference in user profile
+            await _userService.UpdateProfilePictureAsync(userId.Value, mediaId);
+
+            return Ok(new
+            {
+                profilePictureMediaId = mediaId,
+                profilePictureUrl = $"/api/media/{mediaId}"
+            });
         }
     }
 }

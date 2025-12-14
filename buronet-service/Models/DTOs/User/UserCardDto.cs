@@ -10,7 +10,7 @@ namespace buronet_service.Models.DTOs.User
         public string? FirstName { get; set; }
         public string? LastName { get; set; }
         public string? Headline { get; set; } // User's designation
-        public string? ProfilePictureUrl { get; set; }
+        public Guid? ProfilePictureMediaId { get; set; }
         public string? CurrentOrganization { get; set; } // Not directly in schema, placeholder or custom logic
         public bool IsConnected { get; set; } // Is the current authenticated user connected to this user?
         public bool HasPendingRequestFromCurrentUser { get; set; } // Current user sent a request

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using buronet_service.Models.User; // Reference the User model from buronet_service
+using buronet_messaging_service.Models.Users; // Reference the User model from buronet_service
 
 namespace buronet_messaging_service.Models
 {

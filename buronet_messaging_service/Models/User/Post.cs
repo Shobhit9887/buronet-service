@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Newtonsoft.Json;
 
-namespace buronet_service.Models.User // All user-related entities share this namespace
+namespace buronet_messaging_service.Models.Users // All user-related entities share this namespace
 {
     [Table("Posts")]
     public class Post

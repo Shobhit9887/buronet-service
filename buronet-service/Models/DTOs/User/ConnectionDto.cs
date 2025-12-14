@@ -9,7 +9,7 @@ namespace buronet_service.Models.DTOs.User
         public Guid ConnectedUserId { get; set; } // The ID of the connected person (not current user)
         public string ConnectedUserName { get; set; } = string.Empty;
         public string ConnectedUserHeadline { get; set; } = string.Empty;
-        public string? ConnectedUserProfilePictureUrl { get; set; }
+        public Guid? ConnectedUserProfilePictureId { get; set; }
         public DateTime CreatedAt { get; set; }
         public UserProfileDto  ConnectedUser { get; set; }
     }

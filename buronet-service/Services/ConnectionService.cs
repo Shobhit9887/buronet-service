@@ -18,12 +18,14 @@ namespace buronet_service.Services // Ensure this namespace is correct
         private readonly AppDbContext _context;
         private readonly IMapper _mapper;
         private readonly IHttpClientFactory _httpClientFactory;
+        private readonly IUserService _userService;
 
-        public ConnectionService(AppDbContext context, IMapper mapper, IHttpClientFactory httpClientFactory)
+        public ConnectionService(AppDbContext context, IMapper mapper, IHttpClientFactory httpClientFactory, IUserService userService   )
         {
             _context = context;
             _mapper = mapper;
             _httpClientFactory = httpClientFactory;
+            _userService = userService;
         }
 
         private async Task SendNotificationToService(Guid userId, string title, string message, string type, string redirectUrl, string? targetId = null)
@@ -232,7 +234,7 @@ namespace buronet_service.Services // Ensure this namespace is correct
                     ConnectedUserId = connectedUser.Id,
                     ConnectedUserName = connectedUser.Username,
                     ConnectedUserHeadline = connectedUserProfile.Headline ?? string.Empty,
-                    ConnectedUserProfilePictureUrl = connectedUserProfile.ProfilePictureUrl,
+                    ConnectedUserProfilePictureId = connectedUserProfile.ProfilePictureMediaId,
                     CreatedAt = connection.CreatedAt,
                     ConnectedUser = _mapper.Map<UserProfileDto>(connectedUserProfile) // Map to UserDto
                 });
@@ -842,7 +844,7 @@ namespace buronet_service.Services // Ensure this namespace is correct
                 Username = u.Username,
                 FirstName = u.Profile!.FirstName,
                 LastName = u.Profile!.LastName,
-                ProfilePictureUrl = u.Profile!.ProfilePictureUrl,
+                ProfilePictureUrl = _userService.MapToDo(u.Profile.ProfilePictureMediaId),
                 Headline = u.Profile!.Headline,
                 MutualConnections = _context.Connections.Count(c =>
                     (c.UserId1 == u.Id && excludedUserIds.Contains(c.UserId2)) ||

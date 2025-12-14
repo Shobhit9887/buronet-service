@@ -1,4 +1,5 @@
 ﻿using buronet_service.Models.DTOs.User; // DTOs
+using buronet_service.Models.User;
 using System; // For Guid
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -56,5 +57,8 @@ namespace buronet_service.Services // Ensure this namespace is correct
         Task<UserCommunityGroupDto?> AddUserCommunityGroupAsync(Guid userProfileIdGuid, UpdateUserCommunityGroupDto dto);
         Task<bool> UpdateUserCommunityGroupAsync(int groupId, Guid userProfileIdGuid, UpdateUserCommunityGroupDto dto);
         Task<bool> DeleteUserCommunityGroupAsync(int groupId, Guid userProfileIdGuid);
+        Task UpdateProfilePictureAsync(Guid userId, Guid mediaId);
+        string MapToDo(Guid? userProfile);
+
     }
 }

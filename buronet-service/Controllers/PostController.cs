@@ -15,10 +15,12 @@ namespace buronet_service.Controllers
     public class PostsController : ControllerBase
     {
         private readonly IPostService _postService;
+        private readonly MediaService _mediaService;
 
-        public PostsController(IPostService postService)
+        public PostsController(IPostService postService, MediaService mediaService)
         {
             _postService = postService;
+            _mediaService = mediaService;
         }
 
         // Helper to get the current user's ID (Guid) from their authentication claims
@@ -224,6 +226,24 @@ namespace buronet_service.Controllers
             //_logger.LogInformation("Fetching top {Limit} trending tags.", limit);
             var toggleVote = await _postService.TogglePollVoteAsync(pollVote);
             return Ok(toggleVote);
+        }
+
+        [IgnoreAntiforgeryToken]
+        [HttpPost("upload_picture")]
+        public async Task<IActionResult> UploadProfilePicture(IFormFile file)
+        {
+            var userId = GetCurrentUserId();
+            if (!userId.HasValue || userId.Value == Guid.Empty)
+                return Unauthorized();
+
+            // 1️⃣ Upload to media service (same app)
+            var mediaId = await _mediaService.UploadAsync(file);
+
+            return Ok(new
+            {
+                profilePictureMediaId = mediaId,
+                profilePictureUrl = $"/api/media/{mediaId}"
+            });
         }
     }
 }

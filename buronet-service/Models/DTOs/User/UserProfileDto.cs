@@ -5,7 +5,7 @@ namespace buronet_service.Models.DTOs.User
 {
     public class UserProfileDto
     {
-        public string Id { get; set; } // This will be the UserProfile.Id (which is also User.Id)
+        public Guid Id { get; set; } // This will be the UserProfile.Id (which is also User.Id)
 
         // Core user details (flattened from User entity for frontend convenience. Mapped from User entity)
         public string Username { get; set; } = string.Empty;
@@ -23,6 +23,7 @@ namespace buronet_service.Models.DTOs.User
         public string? ZipCode { get; set; }
         public string? Country { get; set; }
         public string? ProfilePictureUrl { get; set; }
+        public Guid? ProfilePictureMediaId { get; set; }
         public string? Bio { get; set; }
         public string? Headline { get; set; }
         public DateTime ProfileCreatedAt { get; set; } // Renamed to avoid clash with User.CreatedAt

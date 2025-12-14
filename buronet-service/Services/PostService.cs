@@ -206,11 +206,11 @@ namespace buronet_service.Services // Ensure this namespace is correct
                 UserId = userIdGuid,
                 Title = createDto.Title,
                 Content = createDto.Content,
-                ImageUrl = createDto.ImageUrl,
+                Image = createDto.Image,
                 IsPoll = createDto.IsPoll, // Set the IsPoll flag from the DTO
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow,
-                TagsJson = createDto.TagsJson
+                Tags = createDto.TagsJson
             };
 
             _context.Posts.Add(newPost);

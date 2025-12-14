@@ -3,8 +3,8 @@ using buronet_messaging_service.Data;
 using buronet_messaging_service.Models;
 using buronet_messaging_service.Models.DTOs;
 using buronet_messaging_service.Services.Interfaces;
-using buronet_service.Data;
-using buronet_service.Models.User; // To access the User entity
+using buronet_messaging_service.Data;
+using buronet_messaging_service.Models.Users; // To access the User entity
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System;
@@ -17,7 +17,6 @@ namespace buronet_messaging_service.Services
     public class ConversationService : IConversationService
     {
         private readonly MessagingDbContext _context;
-        private readonly AppDbContext _appContext;
         private readonly IMapper _mapper;
         private readonly ILogger<ConversationService> _logger;
 
@@ -132,7 +131,7 @@ namespace buronet_messaging_service.Services
                 {
                     if (participant.User == null)
                     {
-                        participant.User = await _appContext.Users
+                        participant.User = await _context.Users
                                                             .Include(u => u.Profile)
                                                             .FirstOrDefaultAsync(u => u.Id == participant.UserId)
                                                             ?? throw new InvalidOperationException($"User {participant.UserId} not found for participant in conversation {conv.Id}.");
@@ -140,7 +139,7 @@ namespace buronet_messaging_service.Services
                 }
                 if (conv.Messages.Any() && conv.Messages.First().Sender == null)
                 {
-                    conv.Messages.First().Sender = await _appContext.Users
+                    conv.Messages.First().Sender = await _context.Users
                                                                     .Include(u => u.Profile)
                                                                     .FirstOrDefaultAsync(u => u.Id == conv.Messages.First().SenderId)
                                                                     ?? throw new InvalidOperationException($"Sender {conv.Messages.First().SenderId} not found for last message in conversation {conv.Id}.");

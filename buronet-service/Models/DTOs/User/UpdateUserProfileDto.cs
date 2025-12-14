@@ -34,8 +34,7 @@ namespace buronet_service.Models.DTOs.User
         [MaxLength(100)]
         public string? Country { get; set; }
 
-        [MaxLength(500)]
-        public string? ProfilePictureUrl { get; set; }
+        public Guid? ProfilePictureMediaId { get; set; }
 
         public string? Bio { get; set; }
 

@@ -14,7 +14,7 @@ namespace buronet_service.Models.DTOs.User
 
         public string? FirstName { get; set; }
         public string? LastName { get; set; }
-        public string? ProfilePictureUrl { get; set; }
+        public Guid? ProfilePictureMediaId { get; set; }
         public string? Headline { get; set; }
 
         public int MutualConnections { get; set; } // The calculated number of mutual connections

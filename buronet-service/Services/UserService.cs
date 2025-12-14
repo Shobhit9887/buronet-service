@@ -366,6 +366,26 @@ namespace buronet_service.Services // Ensure this namespace is correct
             return true;
         }
 
-        
+        public async Task UpdateProfilePictureAsync(Guid userId, Guid mediaId)
+        {
+            var profile = await _context.UserProfiles.FindAsync(userId);
+            if (profile == null)
+                throw new ApplicationException("User profile not found");
+
+            profile.ProfilePictureMediaId = mediaId;
+            profile.UpdatedAt = DateTime.UtcNow;
+
+            await _context.SaveChangesAsync();
+        }
+
+
+        private const string MediaBaseUrl = "https://localhost:44349/api/media";
+
+        public string MapToDo(Guid? profilePictureId)
+        {
+            var profilePicUrl = $"{MediaBaseUrl}/{profilePictureId}";
+            return profilePicUrl;
+        }
+
     }
 }

@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using buronet_messaging_service.Models;
-using buronet_service.Models.User; // Important: Reference the User model
+using buronet_messaging_service.Models.Users; // Important: Reference the User model
 
 namespace buronet_messaging_service.Data
 {
@@ -9,6 +9,22 @@ namespace buronet_messaging_service.Data
         public MessagingDbContext(DbContextOptions<MessagingDbContext> options) : base(options) { }
 
         // DbSet properties for your messaging entities
+        public DbSet<User> Users { get; set; } = null!;
+        public DbSet<UserProfile> UserProfiles { get; set; } = null!;
+        public DbSet<UserExperience> UserExperiences { get; set; } = null!;
+        public DbSet<UserSkill> UserSkills { get; set; } = null!;
+        public DbSet<UserEducation> UserEducation { get; set; } = null!;
+        public DbSet<UserExamAttempt> UserExamAttempts { get; set; } = null!;
+        public DbSet<UserCoaching> UserCoaching { get; set; } = null!;
+        public DbSet<UserPublication> UserPublications { get; set; } = null!;
+        public DbSet<UserProject> UserProjects { get; set; } = null!;
+        public DbSet<UserCommunityGroup> UserCommunityGroups { get; set; } = null!;
+        public DbSet<Post> Posts { get; set; } = null!;
+        public DbSet<Comment> Comments { get; set; } = null!;
+        public DbSet<Like> Likes { get; set; } = null!;
+        public DbSet<TagFrequency> TagFrequencies { get; set; } = null!;
+        public DbSet<PollVote> PollVotes { get; set; } = null!;
+        public DbSet<Poll> Polls { get; set; } = null!;
         public DbSet<Conversation> Conversations { get; set; } = null!;
         public DbSet<ConversationParticipant> ConversationParticipants { get; set; } = null!;
         public DbSet<Message> Messages { get; set; } = null!;

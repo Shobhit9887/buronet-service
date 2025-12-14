@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-namespace buronet_service.Models.User
+namespace buronet_messaging_service.Models.Users
 {
     [Table("UserProfiles")] // Matches your new database table name
     public class UserProfile

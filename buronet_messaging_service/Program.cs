@@ -5,7 +5,6 @@ using buronet_messaging_service.Hubs; // Your SignalR Hub
 using buronet_messaging_service.Profiles; // Your AutoMapper Profiles
 using buronet_messaging_service.Services; // Your Messaging Services
 using buronet_messaging_service.Services.Interfaces; // Your Messaging Service Interfaces
-using buronet_service.Data;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -28,14 +27,6 @@ builder.Services.AddDbContext<MessagingDbContext>(options =>
     options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString));
     // For SQL Server:
     // options.UseSqlServer(connectionString);
-});
-
-builder.Services.AddDbContext<AppDbContext>(options =>
-{
-    var connectionString = configuration.GetConnectionString("MessagingConnection"); // <--- NEW: Add a connection string for buronet_service DB
-    // Use the same DB provider as your buronet_service project
-    options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString));
-    // Or options.UseSqlServer(connectionString);
 });
 
 // 2. Add JWT Authentication

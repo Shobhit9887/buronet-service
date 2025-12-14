@@ -101,7 +101,7 @@ namespace buronet_service.Mappings
                 .ForMember(dest => dest.FirstName, opt => opt.MapFrom(src => src.Profile.FirstName))
                 .ForMember(dest => dest.LastName, opt => opt.MapFrom(src => src.Profile.LastName))
                 // Map profilePictureUrl and headline from User.Profile
-                .ForMember(dest => dest.ProfilePictureUrl, opt => opt.MapFrom(src => src.Profile != null ? src.Profile.ProfilePictureUrl : null))
+                .ForMember(dest => dest.ProfilePictureMediaId, opt => opt.MapFrom(src => src.Profile != null ? src.Profile.ProfilePictureMediaId : null))
                 .ForMember(dest => dest.Headline, opt => opt.MapFrom(src => src.Profile != null ? src.Profile.Headline : null));
 
             // --- NEW: Connection Mappings ---
@@ -113,8 +113,8 @@ namespace buronet_service.Mappings
                     src.UserId1 == (Guid)context.Items["CurrentUserId"] ? src.User2.Username : src.User1.Username))
                 .ForMember(dest => dest.ConnectedUserHeadline, opt => opt.MapFrom((src, dest, _, context) =>
                     src.UserId1 == (Guid)context.Items["CurrentUserId"] ? src.User2.Profile!.Headline : src.User1.Profile!.Headline))
-                .ForMember(dest => dest.ConnectedUserProfilePictureUrl, opt => opt.MapFrom((src, dest, _, context) =>
-                    src.UserId1 == (Guid)context.Items["CurrentUserId"] ? src.User2.Profile!.ProfilePictureUrl : src.User1.Profile!.ProfilePictureUrl));
+                .ForMember(dest => dest.ConnectedUserProfilePictureId, opt => opt.MapFrom((src, dest, _, context) =>
+                    src.UserId1 == (Guid)context.Items["CurrentUserId"] ? src.User2.Profile!.ProfilePictureMediaId : src.User1.Profile!.ProfilePictureMediaId));
 
 
             // --- NEW: ConnectionRequest Mappings ---
@@ -135,7 +135,7 @@ namespace buronet_service.Mappings
                 .ForMember(dest => dest.FirstName, opt => opt.MapFrom(src => src.Profile!.FirstName))
                 .ForMember(dest => dest.LastName, opt => opt.MapFrom(src => src.Profile!.LastName))
                 .ForMember(dest => dest.Headline, opt => opt.MapFrom(src => src.Profile!.Headline))
-                .ForMember(dest => dest.ProfilePictureUrl, opt => opt.MapFrom(src => src.Profile!.ProfilePictureUrl))
+                .ForMember(dest => dest.ProfilePictureMediaId, opt => opt.MapFrom(src => src.Profile!.ProfilePictureMediaId))
                 .ForMember(dest => dest.CurrentOrganization, opt => opt.Ignore()) // Custom logic in service if needed
                                                                                   // Connection status flags will be set in the service
                 .ForMember(dest => dest.IsConnected, opt => opt.Ignore())
@@ -149,7 +149,7 @@ namespace buronet_service.Mappings
                 .ForMember(dest => dest.FirstName, opt => opt.MapFrom(src => src.Profile != null ? src.Profile.FirstName : null))
                 .ForMember(dest => dest.LastName, opt => opt.MapFrom(src => src.Profile != null ? src.Profile.LastName : null))
                 .ForMember(dest => dest.Headline, opt => opt.MapFrom(src => src.Profile != null ? src.Profile.Headline : null))
-                .ForMember(dest => dest.ProfilePictureUrl, opt => opt.MapFrom(src => src.Profile != null ? src.Profile.ProfilePictureUrl : null))
+                .ForMember(dest => dest.ProfilePictureMediaId, opt => opt.MapFrom(src => src.Profile != null ? src.Profile.ProfilePictureMediaId : null))
                 .ForMember(dest => dest.MutualConnections, opt => opt.Ignore());
 
             // Map Poll entity to PollDto

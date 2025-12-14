@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using buronet_service.Data;
 
@@ -11,9 +12,11 @@ using buronet_service.Data;
 namespace buronet_service.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251214111755_UpdateProfilePictureType")]
+    partial class UpdateProfilePictureType
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -341,8 +344,9 @@ namespace buronet_service.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime(6)");
 
-                    b.Property<Guid?>("Image")
-                        .HasColumnType("char(36)");
+                    b.Property<string>("ImageUrl")
+                        .HasMaxLength(500)
+                        .HasColumnType("varchar(500)");
 
                     b.Property<bool>("IsPoll")
                         .HasColumnType("tinyint(1)");
@@ -674,7 +678,8 @@ namespace buronet_service.Migrations
                         .HasColumnType("varchar(20)");
 
                     b.Property<Guid?>("ProfilePictureMediaId")
-                        .HasColumnType("char(36)");
+                        .HasMaxLength(48)
+                        .HasColumnType("char(48)");
 
                     b.Property<string>("StateProvince")
                         .HasMaxLength(100)

@@ -2,7 +2,7 @@
 using AutoMapper;
 using buronet_messaging_service.Models;
 using buronet_messaging_service.Models.DTOs;
-using buronet_service.Models.User; // To map from buronet_service.Models.User.User and UserProfile
+using buronet_messaging_service.Models.Users; // To map from buronet_service.Models.User.User and UserProfile
 using System.Linq;
 
 namespace buronet_messaging_service.Profiles
@@ -16,7 +16,7 @@ namespace buronet_messaging_service.Profiles
                 .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))
                 .ForMember(dest => dest.Username, opt => opt.MapFrom(src => src.Username))
                 // Map avatar from UserProfile.ProfilePictureUrl
-                .ForMember(dest => dest.Avatar, opt => opt.MapFrom(src => src.Profile != null ? src.Profile.ProfilePictureUrl : null));
+                .ForMember(dest => dest.Avatar, opt => opt.MapFrom(src => src.Profile != null ? src.Profile.ProfilePictureMediaId : null));
 
             // Map Message entity to MessageDto
             CreateMap<Message, MessageDto>()

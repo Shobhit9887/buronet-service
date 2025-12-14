@@ -37,7 +37,6 @@ namespace buronet_service.Models.DTOs.Search
     // Specific Payloads for Type = "User"
     public class UserSearchResultPayload
     {
-        public string ProfilePictureUrl { get; set; }
         public string CurrentPosition { get; set; }
         public string Location { get; set; }
     }

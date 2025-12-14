@@ -1,5 +1,5 @@
 ﻿using AutoMapper;
-using buronet_service;
+using buronet_messaging_service;
 using buronet_messaging_service.Data;
 using buronet_messaging_service.Models;
 using buronet_messaging_service.Models.DTOs;
@@ -10,21 +10,19 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using buronet_service.Data;
+using buronet_messaging_service.Data;
 
 namespace buronet_messaging_service.Services
 {
     public class MessageService : IMessageService
     {
         private readonly MessagingDbContext _messagingContext; // Renamed for clarity
-        private readonly AppDbContext _appContext; // New: Inject AppDbContext
         private readonly IMapper _mapper;
         private readonly ILogger<ConversationService> _logger;
 
-        public MessageService(MessagingDbContext messagingContext, AppDbContext appContext, IMapper mapper, ILogger<ConversationService> logger)
+        public MessageService(MessagingDbContext messagingContext, IMapper mapper, ILogger<ConversationService> logger)
         {
             _messagingContext = messagingContext;
-            _appContext = appContext; // Assign injected AppDbContext
             _mapper = mapper;
             _logger = logger;
         }
@@ -41,7 +39,7 @@ namespace buronet_messaging_service.Services
                 throw new ArgumentException("Conversation not found or sender is not a participant.");
             }
 
-            var sender = await _appContext.Users.FindAsync(senderId); // Assuming Users DbSet is available via buronet_service reference
+            var sender = await _messagingContext.Users.FindAsync(senderId); // Assuming Users DbSet is available via buronet_service reference
             if (sender == null)
             {
                 _logger.LogWarning("AddMessageAsync: Sender User {SenderId} not found.", senderId);

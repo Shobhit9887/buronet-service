@@ -80,7 +80,6 @@ namespace buronet_service.Services
                 LinkUrl = $"/profile/{u.Id}",
                 Payload = new UserSearchResultPayload
                 {
-                    ProfilePictureUrl = u.ProfilePictureUrl,
                     CurrentPosition = (u.Experiences.Count > 0 ? u.Experiences.OrderBy(e => e.StartDate).First().Title : u.Headline),
                     Location = u.City
                 }
