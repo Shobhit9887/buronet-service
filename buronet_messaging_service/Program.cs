@@ -108,13 +108,13 @@ builder.Services.AddSwaggerGen(options =>
 // 7. Configure CORS (Crucial for frontend communication)
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowSpecificOrigin",
-        builder => builder.WithOrigins(
-                                configuration["FrontendAppUrl"] ?? "http://localhost:3000" // Your Next.js frontend URL
-                            )
-                            .AllowAnyHeader()
-                            .AllowAnyMethod()
-                            .AllowCredentials()); // Allow credentials for SignalR and HttpOnly cookies
+    options.AddPolicy("OpenAll", policy =>
+    {
+        policy.WithOrigins(["http://ec2-13-48-45-225.eu-north-1.compute.amazonaws.com", "http://localhost:3000"])  // or your frontend URL
+            .AllowAnyHeader()
+            .AllowAnyMethod()
+            .AllowCredentials();
+    });
 });
 
 
