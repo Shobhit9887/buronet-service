@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 namespace buronet_messaging_service.Controllers
 {
     [ApiController]
-    [Route("api/conversations/{conversationId}/[controller]")] // Nested route: /api/conversations/{conversationId}/messages
+    [Route("conversations/{conversationId}/[controller]")] // Nested route: /api/conversations/{conversationId}/messages
     [Authorize] // All message operations require authentication
     public class MessagesController : ControllerBase
     {

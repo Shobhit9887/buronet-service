@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 namespace buronet_messaging_service.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")] // This will make it /api/conversations
+    [Route("[controller]")] // This will make it /api/conversations
     [Authorize] // All conversation operations require authentication
     public class ConversationsController : ControllerBase
     {
