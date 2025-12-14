@@ -7,8 +7,7 @@ name: Deploy bytes API to AWS Elastic Beanstalk
 on:
   push:
     branches:
-      - main
-      - feature/global-search-function
+      - master
     # paths:
     #   - 'Buronet.JobService/**'
 
