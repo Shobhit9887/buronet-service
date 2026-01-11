@@ -111,8 +111,6 @@ public class Creator
     public string Id { get; set; } = string.Empty;
     [BsonElement("name")]
     public string Name { get; set; } = string.Empty;
-    [BsonElement("handle")]
-    public string Handle { get; set; } = string.Empty;
     [BsonElement("pic")]
     public string Pic { get; set; } = string.Empty;
 }
@@ -135,6 +133,7 @@ public class CreateByteRequest
     public string Thumbnail { get; set; } = string.Empty;
     public string Title { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty;
+    public string CreatorPic { get; set; } = string.Empty;
     public List<string> Tags { get; set; } = new();
 }
 

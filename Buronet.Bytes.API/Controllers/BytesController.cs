@@ -36,11 +36,10 @@ public class BytesController : ControllerBase
 
         // --- Get User Info from Auth Token (Secure) ---
         var creatorId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "e70c3bbb-eec9-4a44-82ca-d69d5ce2a213"; // Fallback for testing
-        var creatorHandle = User.FindFirst("handle")?.Value ?? "soniyabora08"; // Example custom claim
         var creatorName = User.FindFirst(ClaimTypes.Name)?.Value ?? "soniya";
-        var creatorPic = User.FindFirst("picture")?.Value;
+        var creatorPic = request.CreatorPic;
 
-        if (string.IsNullOrEmpty(creatorId) || string.IsNullOrEmpty(creatorHandle))
+        if (string.IsNullOrEmpty(creatorId) || string.IsNullOrEmpty(creatorName))
             return Unauthorized("User identity could not be determined from token.");
 
         // --- Upload to Cloud & Get URL ---
@@ -51,7 +50,7 @@ public class BytesController : ControllerBase
         // --- Create DB Document ---
         var newPost = new BytePost
         {
-            Creator = new Creator { Id = creatorId, Handle = creatorHandle, Name = creatorName, Pic = creatorPic },
+            Creator = new Creator { Id = creatorId, Name = creatorName, Pic = creatorPic },
             Submission = new Submission { Title = request.Title, Description = request.Description, MediaUrl = mediaUrl, Thumbnail = thumbnailUrl }
         };
 

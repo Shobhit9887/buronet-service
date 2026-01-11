@@ -41,7 +41,6 @@ namespace Buronet.Bytes.API.Controllers
             {
                 Id = User.FindFirstValue(ClaimTypes.NameIdentifier)!,
                 Name = User.FindFirstValue(ClaimTypes.Name) ?? "Unknown User",
-                Handle = User.FindFirstValue("handle") ?? "unknownhandle",
                 Pic = User.FindFirstValue("picture") ?? ""
             };
 

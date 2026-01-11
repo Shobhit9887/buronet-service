@@ -7,7 +7,7 @@ name: Deploy Messaging API to AWS Elastic Beanstalk
 on:
   push:
     branches:
-      - master
+      - main
     # paths:
     #   - 'buronet_messaging_service/**'
 
