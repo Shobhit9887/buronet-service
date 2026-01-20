@@ -21,7 +21,7 @@ namespace buronet_service.Services
 
         public async Task<string?> RegisterAsync(RegisterDto dto)
         {
-            if (await _context.Users.AnyAsync(u => u.Username == dto.Username))
+            if (await _context.Users.AnyAsync(u => u.Username == dto.Username || u.Email == dto.Email))
                 return null;
 
             PasswordHasher.CreateHash(dto.Password, out byte[] hash, out byte[] salt);

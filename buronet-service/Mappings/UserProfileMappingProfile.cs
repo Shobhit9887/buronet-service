@@ -11,7 +11,11 @@ namespace buronet_service.Mappings
         public UserProfileMappingProfile()
         {
             // Core User (authentication) mapping
-            CreateMap<User, UserDto>().ReverseMap(); // Source and destination are now explicitly qualified
+            CreateMap<User, UserDto>()
+                .ForMember(dest => dest.Headline, opt => opt.MapFrom(src => src.Profile != null ? src.Profile.Headline : null))
+                .ForMember(dest => dest.FirstName, opt => opt.MapFrom(src => src.Profile != null ? src.Profile.FirstName : null))
+                .ForMember(dest => dest.LastName, opt => opt.MapFrom(src => src.Profile != null ? src.Profile.LastName : null))
+                .ReverseMap();
 
             // UserProfile (rich data) mapping
             // Source is UserProfile entity, destination is UserProfileDto DTO

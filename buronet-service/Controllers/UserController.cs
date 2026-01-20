@@ -105,6 +105,32 @@ namespace buronet_service.Controllers // Ensure this namespace is correct
             return Ok(updatedProfile);
         }
 
+        // GET api/users/profile/{id}
+        // Fetches the profile of a specific user by their ID.
+        [HttpGet("profile/{id}")]
+        public async Task<ActionResult<UserProfileDto>> GetUserProfileById(Guid id)
+        {
+            // 1. Validate the ID
+            if (id == Guid.Empty)
+            {
+                return BadRequest("Invalid user ID.");
+            }
+
+            // 2. Fetch the profile from the service
+            var userProfileDto = await _userService.GetUserProfileDtoByIdAsync(id);
+
+            // 3. Handle Not Found
+            if (userProfileDto == null)
+            {
+                return NotFound($"User profile with ID {id} not found.");
+            }
+
+            // 4. Map the Profile Picture URL (Reuse your existing mapping logic)
+            userProfileDto.ProfilePictureUrl = _userService.MapToDo(userProfileDto.ProfilePictureMediaId);
+
+            return Ok(userProfileDto);
+        }
+
         // --- Endpoints for User Experiences ---
         [HttpGet("profile/experiences")]
         public async Task<ActionResult<IEnumerable<UserExperienceDto>>> GetUserExperiences()
