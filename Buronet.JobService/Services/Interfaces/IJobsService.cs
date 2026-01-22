@@ -14,4 +14,5 @@ public interface IJobsService
     Task<List<DepartmentStatsDto>> GetDepartmentStatsAsync();
     Task<bool> UpdateAsync(string id, Job updatedJob);
     Task<List<Job>> SearchAsync(string keyword);
+    Task<(List<Job> Jobs, long TotalCount)> GetPaginatedAsync(int page, int pageSize);
 }

@@ -28,6 +28,21 @@ public class JobsController : ControllerBase
         return jobs;
     }
 
+    [HttpGet("all")]
+    public async Task<IActionResult> GetAll([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
+    {
+        var (jobs, totalCount) = await _jobsService.GetPaginatedAsync(page, pageSize);
+
+        return Ok(new
+        {
+            Page = page < 1 ? 1 : page,
+            PageSize = pageSize,
+            TotalCount = totalCount,
+            TotalPages = (int)Math.Ceiling(totalCount / (double)pageSize),
+            Data = jobs
+        });
+    }
+
     [HttpGet("job-home")]
     public async Task<ActionResult<List<Job>>> GetJobsForJobHome()
     {

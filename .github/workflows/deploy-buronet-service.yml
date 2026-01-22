@@ -8,8 +8,8 @@ on:
   push:
     branches:
       - master
-    # paths:
-    #   - 'buronet-service/**'
+    paths:
+      - 'buronet-service/**'
 
 jobs:
   deploy-api:

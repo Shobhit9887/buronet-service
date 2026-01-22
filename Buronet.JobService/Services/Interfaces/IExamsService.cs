@@ -1,4 +1,5 @@
 ﻿using Buronet.JobService.Models;
+using JobService.Models;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -11,5 +12,6 @@ namespace Buronet.JobService.Services.Interfaces
         Task CreateAsync(Exam newExam);
         Task<bool> UpdateAsync(string id, Exam updatedExam);
         Task<List<Exam>> SearchAsync(string keyword);
+        Task<(List<Exam> Exams, long TotalCount)> GetPaginatedAsync(int page, int pageSize);
     }
 }

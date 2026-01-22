@@ -41,6 +41,38 @@ public class JobsService : IJobsService
     public async Task<List<Job>> GetAsync() =>
         await _jobsCollection.Find(_ => true).ToListAsync();
 
+    public async Task<(List<Job> Jobs, long TotalCount)> GetPaginatedAsync(int page, int pageSize)
+    {
+        if (page < 1)
+        {
+            page = 1;
+        }
+
+        if (pageSize < 1)
+        {
+            pageSize = 10;
+        }
+
+        if (pageSize > 100)
+        {
+            pageSize = 100;
+        }
+
+        var filter = Builders<Job>.Filter.Empty;
+        var skip = (page - 1) * pageSize;
+
+        var totalCountTask = _jobsCollection.CountDocumentsAsync(filter);
+        var jobsTask = _jobsCollection
+            .Find(filter)
+            .Skip(skip)
+            .Limit(pageSize)
+            .ToListAsync();
+
+        await Task.WhenAll(totalCountTask, jobsTask);
+
+        return (await jobsTask, await totalCountTask);
+    }
+
     public async Task<List<Job>> GetJobsForJobHomeAsync() =>
     await _jobsCollection.Find(job => job.Status == "Active")
                          .SortByDescending(job => job.CreatedDate)

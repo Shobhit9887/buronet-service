@@ -1,5 +1,6 @@
 ﻿using Buronet.JobService.Models;
 using Buronet.JobService.Services.Interfaces;
+using JobService.Services;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -26,6 +27,21 @@ namespace Buronet.JobService.Controllers
                 return NotFound();
             }
             return Ok(exams);
+        }
+
+        [HttpGet("all")]
+        public async Task<IActionResult> GetAll([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
+        {
+            var (exams, totalCount) = await _examsService.GetPaginatedAsync(page, pageSize);
+
+            return Ok(new
+            {
+                Page = page < 1 ? 1 : page,
+                PageSize = pageSize,
+                TotalCount = totalCount,
+                TotalPages = (int)Math.Ceiling(totalCount / (double)pageSize),
+                Data = exams
+            });
         }
 
         [HttpGet("{id:length(24)}")]

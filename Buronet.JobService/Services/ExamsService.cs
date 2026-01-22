@@ -1,6 +1,7 @@
 ﻿using Buronet.JobService.Models;
 using Buronet.JobService.Services.Interfaces;
 using Buronet.JobService.Settings;
+using JobService.Models;
 using Microsoft.Extensions.Options;
 using MongoDB.Driver;
 using System.Collections.Generic;
@@ -32,6 +33,38 @@ namespace Buronet.JobService.Services
 
         public async Task<List<Exam>> GetAsync() =>
             await _examsCollection.Find(_ => true).ToListAsync();
+
+        public async Task<(List<Exam> Exams, long TotalCount)> GetPaginatedAsync(int page, int pageSize)
+        {
+            if (page < 1)
+            {
+                page = 1;
+            }
+
+            if (pageSize < 1)
+            {
+                pageSize = 10;
+            }
+
+            if (pageSize > 100)
+            {
+                pageSize = 100;
+            }
+
+            var filter = Builders<Exam>.Filter.Empty;
+            var skip = (page - 1) * pageSize;
+
+            var totalCountTask = _examsCollection.CountDocumentsAsync(filter);
+            var examsTask = _examsCollection
+                .Find(filter)
+                .Skip(skip)
+                .Limit(pageSize)
+                .ToListAsync();
+
+            await Task.WhenAll(totalCountTask, examsTask);
+
+            return (await examsTask, await totalCountTask);
+        }
 
         public async Task<Exam?> GetAsync(string id) =>
             await _examsCollection.Find(x => x.Id == id).FirstOrDefaultAsync();
