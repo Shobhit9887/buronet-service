@@ -5,7 +5,7 @@ using System; // For Guid
 using System.Collections.Generic;
 using System.Security.Claims; // For accessing user claims
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authorization; // For [Authorize] and [AllowAnonymous]
+using Microsoft.AspNetCore.Authorization; // For [Authorize] and [AllowAnonymous
 
 namespace buronet_service.Controllers
 {
@@ -23,7 +23,6 @@ namespace buronet_service.Controllers
             _mediaService = mediaService;
         }
 
-        // Helper to get the current user's ID (Guid) from their authentication claims
         private Guid? GetCurrentUserId()
         {
             string? userIdString = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
@@ -32,6 +31,60 @@ namespace buronet_service.Controllers
                 return userIdGuid;
             }
             return null;
+        }
+
+        // POST api/posts/report-post
+        // Frontend hits: /posts/report-post (under api base in this service)
+        // Body:
+        // {
+        //   postId: number,
+        //   postUrl: string,
+        //   message: string,
+        //   reporter?: { id: string, email: string, username: string }
+        // }
+        [HttpPost("report-post")]
+        [AllowAnonymous]
+        public async Task<IActionResult> ReportPost([FromBody] ReportPostRequestDto request)
+        {
+            if (request == null) return BadRequest("Request body is required.");
+            if (request.PostId <= 0) return BadRequest("postId is required.");
+            if (string.IsNullOrWhiteSpace(request.PostUrl)) return BadRequest("postUrl is required.");
+            if (string.IsNullOrWhiteSpace(request.Message)) return BadRequest("message is required.");
+
+            Guid? reporterId = null;
+            if (request.Reporter?.Id != null && Guid.TryParse(request.Reporter.Id, out var parsedReporterId))
+            {
+                reporterId = parsedReporterId;
+            }
+
+            // If user is authenticated, prefer claim-based id (more trustworthy than client payload)
+            var currentUserId = GetCurrentUserId();
+            if (currentUserId.HasValue && currentUserId.Value != Guid.Empty)
+            {
+                reporterId = currentUserId.Value;
+            }
+
+            try
+            {
+                var sent = await _postService.ReportPostAsync(
+                    request.PostId,
+                    request.PostUrl,
+                    request.Message,
+                    reporterId,
+                    request.Reporter?.Email,
+                    request.Reporter?.Username);
+
+                if (!sent) return NotFound("Post not found.");
+                return Ok(new { success = true });
+            }
+            catch (ApplicationException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "An unexpected error occurred while reporting the post.", details = ex.Message });
+            }
         }
 
         // GET api/posts
@@ -80,7 +133,6 @@ namespace buronet_service.Controllers
             }
             catch (Exception ex)
             {
-                // Log unexpected errors
                 return StatusCode(500, new { message = "An unexpected error occurred while creating the post.", details = ex.Message });
             }
         }
@@ -187,7 +239,7 @@ namespace buronet_service.Controllers
             }
         }
 
-        // POST api/posts/{id}/like
+        // POST api/posts/{id}/toggle-like
         // Toggles a like on a post (like if not liked, unlike if liked). Requires authentication.
         [HttpPost("{id}/toggle-like")]
         public async Task<IActionResult> ToggleLike(int id)
@@ -244,6 +296,21 @@ namespace buronet_service.Controllers
                 profilePictureMediaId = mediaId,
                 profilePictureUrl = $"/api/media/{mediaId}"
             });
+        }
+
+        public sealed class ReportPostRequestDto
+        {
+            public int PostId { get; set; }
+            public string PostUrl { get; set; } = string.Empty;
+            public string Message { get; set; } = string.Empty;
+            public ReportPostReporterDto? Reporter { get; set; }
+        }
+
+        public sealed class ReportPostReporterDto
+        {
+            public string? Id { get; set; }
+            public string? Email { get; set; }
+            public string? Username { get; set; }
         }
     }
 }

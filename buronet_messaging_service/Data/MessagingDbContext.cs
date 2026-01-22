@@ -1,6 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using buronet_messaging_service.Models;
 using buronet_messaging_service.Models.Users; // Important: Reference the User model
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
+using System;
 
 namespace buronet_messaging_service.Data
 {
@@ -32,6 +34,8 @@ namespace buronet_messaging_service.Data
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
+
+            ApplyUtcDateTimeConverters(modelBuilder);
 
             modelBuilder.Entity<User>(entity =>
             {
@@ -72,6 +76,40 @@ namespace buronet_messaging_service.Data
                 .WithMany() // User can send many messages (no direct collection on User)
                 .HasForeignKey(m => m.SenderId)
                 .OnDelete(DeleteBehavior.NoAction); // Prevent cascade delete on User if message is removed
+        }
+
+        private static void ApplyUtcDateTimeConverters(ModelBuilder modelBuilder)
+        {
+            var utcDateTimeConverter = new ValueConverter<DateTime, DateTime>(
+                toDb => DateTime.SpecifyKind(
+                    (toDb.Kind == DateTimeKind.Utc) ? toDb : toDb.ToUniversalTime(),
+                    DateTimeKind.Unspecified),
+                fromDb => DateTime.SpecifyKind(fromDb, DateTimeKind.Utc));
+
+            var utcNullableDateTimeConverter = new ValueConverter<DateTime?, DateTime?>(
+                toDb => toDb.HasValue
+                    ? DateTime.SpecifyKind(
+                        (toDb.Value.Kind == DateTimeKind.Utc) ? toDb.Value : toDb.Value.ToUniversalTime(),
+                        DateTimeKind.Unspecified)
+                    : null,
+                fromDb => fromDb.HasValue
+                    ? DateTime.SpecifyKind(fromDb.Value, DateTimeKind.Utc)
+                    : null);
+
+            foreach (var entityType in modelBuilder.Model.GetEntityTypes())
+            {
+                foreach (var property in entityType.GetProperties())
+                {
+                    if (property.ClrType == typeof(DateTime))
+                    {
+                        property.SetValueConverter(utcDateTimeConverter);
+                    }
+                    else if (property.ClrType == typeof(DateTime?))
+                    {
+                        property.SetValueConverter(utcNullableDateTimeConverter);
+                    }
+                }
+            }
         }
     }
 }

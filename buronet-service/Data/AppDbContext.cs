@@ -5,7 +5,9 @@ using buronet_service.Entities;
 using buronet_service.Models.User;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Microsoft.Extensions.Configuration;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -43,10 +45,11 @@ namespace buronet_service.Data
         public DbSet<Notification> Notifications { get; set; } = null!;
         public DbSet<MediaFile> MediaFiles { get; set; }
 
-
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
+
+            ApplyUtcDateTimeConverters(modelBuilder);
 
             // Configure the core User entity
             modelBuilder.Entity<User>(entity =>
@@ -69,12 +72,10 @@ namespace buronet_service.Data
                 entity.Property(p => p.CreatedAt).HasColumnName("CreatedAt");
                 entity.Property(p => p.UpdatedAt).HasColumnName("UpdatedAt");
 
-                // Configure relationships for all child entities to UserProfile
-                // Ensure UserProfile has ICollection<T> properties for each of these
                 entity.HasMany(up => up.Experiences)
                       .WithOne(ue => ue.UserProfile)
                       .HasForeignKey(ue => ue.UserProfileId)
-                      .OnDelete(DeleteBehavior.Cascade); // If UserProfile is deleted, experiences are too
+                      .OnDelete(DeleteBehavior.Cascade);
 
                 entity.HasMany(up => up.Skills)
                       .WithOne(us => us.UserProfile)
@@ -97,12 +98,12 @@ namespace buronet_service.Data
                       .OnDelete(DeleteBehavior.Cascade);
 
                 entity.HasMany(up => up.Publications)
-                      .WithOne(up => up.UserProfile) // Corrected: up.UserProfile for Publication entity
+                      .WithOne(up => up.UserProfile)
                       .HasForeignKey(up => up.UserProfileId)
                       .OnDelete(DeleteBehavior.Cascade);
 
                 entity.HasMany(up => up.Projects)
-                      .WithOne(up => up.UserProfile) // Corrected: up.UserProfile for Project entity
+                      .WithOne(up => up.UserProfile)
                       .HasForeignKey(up => up.UserProfileId)
                       .OnDelete(DeleteBehavior.Cascade);
 
@@ -197,12 +198,12 @@ namespace buronet_service.Data
                       .HasForeignKey(cr => cr.ReceiverId)
                       .IsRequired()
                       .OnDelete(DeleteBehavior.Restrict);
+            });
 
-                modelBuilder.Entity<TagFrequency>(entity =>
-                {
-                    entity.HasKey(e => e.Id);
-                    entity.HasIndex(e => e.TagName).IsUnique(); // Ensure tag names are unique
-                });
+            modelBuilder.Entity<TagFrequency>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.HasIndex(e => e.TagName).IsUnique(); // Ensure tag names are unique
             });
 
             modelBuilder.Entity<Poll>(entity =>
@@ -259,6 +260,42 @@ namespace buronet_service.Data
                 // Map the C# Enum to a string in the database
                 entity.Property(n => n.Type).HasConversion<string>();
             });
+        }
+
+        private static void ApplyUtcDateTimeConverters(ModelBuilder modelBuilder)
+        {
+            // MySQL DATETIME has no timezone.
+            // Convention: store UTC as "Unspecified" in DB, materialize it back as DateTimeKind.Utc in app.
+            var utcDateTimeConverter = new ValueConverter<DateTime, DateTime>(
+                toDb => DateTime.SpecifyKind(
+                    (toDb.Kind == DateTimeKind.Utc) ? toDb : toDb.ToUniversalTime(),
+                    DateTimeKind.Unspecified),
+                fromDb => DateTime.SpecifyKind(fromDb, DateTimeKind.Utc));
+
+            var utcNullableDateTimeConverter = new ValueConverter<DateTime?, DateTime?>(
+                toDb => toDb.HasValue
+                    ? DateTime.SpecifyKind(
+                        (toDb.Value.Kind == DateTimeKind.Utc) ? toDb.Value : toDb.Value.ToUniversalTime(),
+                        DateTimeKind.Unspecified)
+                    : null,
+                fromDb => fromDb.HasValue
+                    ? DateTime.SpecifyKind(fromDb.Value, DateTimeKind.Utc)
+                    : null);
+
+            foreach (var entityType in modelBuilder.Model.GetEntityTypes())
+            {
+                foreach (var property in entityType.GetProperties())
+                {
+                    if (property.ClrType == typeof(DateTime))
+                    {
+                        property.SetValueConverter(utcDateTimeConverter);
+                    }
+                    else if (property.ClrType == typeof(DateTime?))
+                    {
+                        property.SetValueConverter(utcNullableDateTimeConverter);
+                    }
+                }
+            }
         }
     }
 }

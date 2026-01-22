@@ -1,19 +1,20 @@
 ﻿using AutoMapper;
 using buronet_service.Models;
-using buronet_service.Data; // Your DbContext
-using buronet_service.Models.DTOs.User; // DTOs
-using buronet_service.Models.User; // Entities
-using Microsoft.AspNetCore.Http.HttpResults;
+using buronet_service.Data;
+using buronet_service.Models.DTOs.User;
+using buronet_service.Models.User;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
-using System.Linq; // For LINQ operations
-using System.Net.Http;
+using System.Linq;
 using System.Threading.Tasks;
+using MailKit.Net.Smtp;
+using MailKit.Security;
+using MimeKit;
 
-namespace buronet_service.Services // Ensure this namespace is correct
+namespace buronet_service.Services
 {
     public class PostService : IPostService
     {
@@ -21,21 +22,83 @@ namespace buronet_service.Services // Ensure this namespace is correct
         private readonly IMapper _mapper;
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly INotificationsService _notificationsService;
+        private readonly IConfiguration _configuration;
 
-        public PostService(AppDbContext context, IMapper mapper, IHttpClientFactory httpClientFactory, INotificationsService notificationsService)
+        public PostService(AppDbContext context, IMapper mapper, IHttpClientFactory httpClientFactory, INotificationsService notificationsService, IConfiguration configuration)
         {
             _context = context;
             _mapper = mapper;
             _httpClientFactory = httpClientFactory;
             _notificationsService = notificationsService;
+            _configuration = configuration;
+        }
+
+        public async Task<bool> ReportPostAsync(int postId, string postUrl, string message, Guid? reporterId, string? reporterEmail, string? reporterUsername)
+        {
+            var exists = await _context.Posts.AsNoTracking().AnyAsync(p => p.Id == postId);
+            if (!exists) return false;
+
+            var smtp = _configuration.GetSection("Smtp");
+            var host = smtp["Host"];
+            var portString = smtp["Port"];
+            var username = smtp["Username"];
+            var password = smtp["Password"];
+            var from = smtp["From"];
+            var to = smtp["To"];
+
+            if (string.IsNullOrWhiteSpace(host) ||
+                string.IsNullOrWhiteSpace(portString) ||
+                string.IsNullOrWhiteSpace(username) ||
+                string.IsNullOrWhiteSpace(password) ||
+                string.IsNullOrWhiteSpace(from) ||
+                string.IsNullOrWhiteSpace(to))
+            {
+                throw new ApplicationException("SMTP configuration is missing.");
+            }
+
+            if (!int.TryParse(portString, out var port))
+            {
+                throw new ApplicationException("SMTP Port is invalid.");
+            }
+
+            var subject = $"[Buronet] Post Reported - PostId {postId}";
+            var body =
+                "A post was reported.\n\n" +
+                $"PostId: {postId}\n" +
+                $"PostUrl: {postUrl}\n" +
+                $"Message: {message}\n\n" +
+                "Reporter:\n" +
+                $"  Id: {reporterId?.ToString() ?? "(anonymous)"}\n" +
+                $"  Username: {reporterUsername ?? "(not provided)"}\n" +
+                $"  Email: {reporterEmail ?? "(not provided)"}\n" +
+                $"  ReportedAtUtc: {DateTime.UtcNow:O}\n";
+
+            var email = new MimeMessage();
+            email.From.Add(MailboxAddress.Parse(from));
+            email.To.Add(MailboxAddress.Parse(to));
+            email.Subject = subject;
+            email.Body = new TextPart("plain")
+            {
+                Text = body
+            };
+
+            using var client = new SmtpClient();
+
+            // Port 465 = implicit SSL/TLS
+            var socketOptions = port == 465 ? SecureSocketOptions.SslOnConnect : SecureSocketOptions.StartTls;
+
+            await client.ConnectAsync(host, port, socketOptions);
+            await client.AuthenticateAsync(username, password);
+            await client.SendAsync(email);
+            await client.DisconnectAsync(true);
+
+            return true;
         }
 
         private async Task SendNotificationToService(Guid userId, string title, string message, string type, string redirectUrl, string? targetId = null)
         {
-            // Implementation of this method goes here (using IHttpClientFactory)
             if (!Enum.TryParse(type, true, out NotificationType notificationType))
             {
-                // Handle error: unknown type
                 return;
             }
 
@@ -47,20 +110,18 @@ namespace buronet_service.Services // Ensure this namespace is correct
                     UserId = userId,
                     Title = title,
                     Message = message,
-                    Type = notificationType, // <-- Use the converted enum
+                    Type = notificationType,
                     RedirectUrl = redirectUrl,
                     TargetId = targetId,
                     IsRead = false,
                     CreatedAt = DateTime.UtcNow
                 });
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                // Log error
             }
         }
 
-        // Helper to check if a user has liked a post (internal use)
         private async Task<bool> HasUserLikedPostInternalAsync(int postId, Guid userId)
         {
             return await _context.Likes.AnyAsync(l => l.PostId == postId && l.UserId == userId);
