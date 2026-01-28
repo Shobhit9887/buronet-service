@@ -5,11 +5,14 @@ using buronet_service.Models.DTOs.User; // DTOs: UserDto, UserProfileDto, etc.
 using System; // For Guid and DateTime
 using System.Threading.Tasks;
 using AutoMapper;
-using System.Collections.Generic;
+using buronet_service.Data;
+using buronet_service.Models.DTOs.User;
+using buronet_service.Models.User;
+using Microsoft.EntityFrameworkCore;
 
-namespace buronet_service.Services // Ensure this namespace is correct
+namespace buronet_service.Services
 {
-    public class UserService : IUserService // <-- Implements the new interface
+    public class UserService : IUserService
     {
         private readonly AppDbContext _context;
         private readonly IMapper _mapper;
@@ -385,6 +388,20 @@ namespace buronet_service.Services // Ensure this namespace is correct
         {
             var profilePicUrl = $"{MediaBaseUrl}/{profilePictureId}";
             return profilePicUrl;
+        }
+
+        public async Task<string?> GetMediaUrlAsync(Guid? mediaId)
+        {
+            if (!mediaId.HasValue || mediaId.Value == Guid.Empty)
+            {
+                return null;
+            }
+
+            var media = await _context.MediaFiles
+                .AsNoTracking()
+                .FirstOrDefaultAsync(m => m.Id == mediaId.Value);
+
+            return media?.StoragePath;
         }
 
     }

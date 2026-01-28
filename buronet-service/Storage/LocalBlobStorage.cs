@@ -16,8 +16,10 @@
             await File.WriteAllBytesAsync(fullPath, data);
         }
 
-        public string GetPath(string path)
+        public string? GetPath(string path)
             => Path.Combine(_root, path);
-    }
 
+        public string? GetPublicUrl(string path)
+            => null;
+    }
 }

@@ -2,7 +2,6 @@
 using buronet_service.Models.DTOs.User;
 using buronet_service.Services;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 
@@ -31,13 +30,12 @@ namespace buronet_service.Controllers
         }
 
         [HttpPost("logout")]
-        [Authorize] // Only authenticated users can trigger a server-side logout
+        [Authorize]
         public async Task<IActionResult> Logout()
         {
             var userIdString = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (string.IsNullOrEmpty(userIdString) || !Guid.TryParse(userIdString, out Guid userId))
             {
-                //_logger.LogWarning("Logout endpoint hit by unidentifiable authorized user.");
                 return Unauthorized("User ID not found or invalid in token.");
             }
 
@@ -45,7 +43,6 @@ namespace buronet_service.Controllers
 
             await _auth.LogoutAsync(userId, accessToken);
 
-            //_logger.LogInformation("User {UserId} successfully processed logout request.", userId);
             return Ok(new { message = "Logged out successfully." });
         }
 
@@ -56,7 +53,6 @@ namespace buronet_service.Controllers
             var success = await _auth.ForgotPasswordAsync(forgotDto.Email);
             if (success)
             {
-                // Always return OK even if the email doesn't exist to prevent user enumeration attacks
                 return Ok("If an account with that email exists, a password reset link has been sent.");
             }
             return Ok("If an account with that email exists, a password reset link has been sent.");
@@ -74,11 +70,34 @@ namespace buronet_service.Controllers
             return Ok("Password has been reset successfully.");
         }
 
+        [HttpPost("change-password")]
+        [Authorize]
+        public async Task<IActionResult> ChangePassword(ChangePasswordDto dto)
+        {
+            if (!ModelState.IsValid)
+            {
+                return ValidationProblem(ModelState);
+            }
+
+            var userIdString = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userIdString) || !Guid.TryParse(userIdString, out var userId))
+            {
+                return Unauthorized("User ID not found or invalid in token.");
+            }
+
+            var success = await _auth.ChangePasswordAsync(userId, dto);
+            if (!success)
+            {
+                return BadRequest("Unable to change password. Please verify your inputs and try again.");
+            }
+
+            return Ok("Password changed successfully.");
+        }
+
         [Authorize]
         [HttpGet("profile")]
         public async Task<IActionResult> GetProfile()
         {
-            // Extract user id from JWT token claims
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (userIdClaim == null || !Guid.TryParse(userIdClaim, out var userId))
             {

@@ -3,7 +3,9 @@
     public interface IBlobStorage
     {
         Task SaveAsync(string path, byte[] data);
-        string GetPath(string path);
-    }
 
+        string? GetPath(string path);
+
+        string? GetPublicUrl(string path);
+    }
 }

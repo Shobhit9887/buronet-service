@@ -1,6 +1,6 @@
-﻿using buronet_service.Entities;
+﻿using buronet_service.Data;
+using buronet_service.Entities;
 using buronet_service.Storage;
-using buronet_service.Data;
 
 namespace buronet_service.Services
 {
@@ -18,12 +18,27 @@ namespace buronet_service.Services
         public async Task<Guid> UploadAsync(IFormFile file)
         {
             var id = Guid.NewGuid();
-            var path = $"media/{id}";
 
             using var ms = new MemoryStream();
             await file.CopyToAsync(ms);
 
-            await _storage.SaveAsync(path, ms.ToArray());
+            string storagePath;
+
+            if (_storage is CloudinaryBlobStorage cloudinaryStorage)
+            {
+                // Store returned URL in StoragePath.
+                storagePath = await cloudinaryStorage.UploadAsync(
+                    ms.ToArray(),
+                    file.FileName,
+                    file.ContentType,
+                    publicId: $"media/{id}");
+            }
+            else
+            {
+                // Local fallback
+                storagePath = $"media/{id}";
+                await _storage.SaveAsync(storagePath, ms.ToArray());
+            }
 
             _db.MediaFiles.Add(new MediaFile
             {
@@ -31,7 +46,7 @@ namespace buronet_service.Services
                 FileName = file.FileName,
                 ContentType = file.ContentType,
                 FileSize = file.Length,
-                StoragePath = path
+                StoragePath = storagePath
             });
 
             await _db.SaveChangesAsync();
@@ -41,5 +56,4 @@ namespace buronet_service.Services
         public MediaFile Get(Guid id)
             => _db.MediaFiles.Find(id)!;
     }
-
 }

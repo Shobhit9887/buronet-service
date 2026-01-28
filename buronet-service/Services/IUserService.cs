@@ -59,6 +59,7 @@ namespace buronet_service.Services // Ensure this namespace is correct
         Task<bool> DeleteUserCommunityGroupAsync(int groupId, Guid userProfileIdGuid);
         Task UpdateProfilePictureAsync(Guid userId, Guid mediaId);
         string MapToDo(Guid? userProfile);
+        Task<string?> GetMediaUrlAsync(Guid? mediaId);
 
     }
 }

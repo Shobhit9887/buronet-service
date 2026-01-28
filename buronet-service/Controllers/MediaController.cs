@@ -25,9 +25,15 @@ namespace buronet_service.Controllers
         public IActionResult Get(Guid id)
         {
             var media = _media.Get(id);
+
+            var publicUrl = _storage.GetPublicUrl(media.StoragePath);
+            if (!string.IsNullOrWhiteSpace(publicUrl))
+            {
+                return Redirect(publicUrl);
+            }
+
             var path = _storage.GetPath(media.StoragePath);
-            return PhysicalFile(path, media.ContentType);
+            return PhysicalFile(path!, media.ContentType);
         }
     }
-
 }

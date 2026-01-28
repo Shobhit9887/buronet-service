@@ -52,36 +52,6 @@ namespace buronet_service.Services // Ensure this namespace is correct
             return string.Compare(id1, id2, StringComparison.Ordinal) < 0 ? (userid1, userid2) : (userid2, userid1);
         }
 
-        // --- Network Metrics ---
-        //public async Task<NetworkMetricsDto> GetNetworkMetricsAsync(Guid userIdGuid)
-        //{
-        //    var oneMonthAgo = DateTime.UtcNow.AddMonths(-1);
-
-        //    string userIdString = userIdGuid.ToString();
-
-        //    var totalConnections = await _context.Connections
-        //                                        .CountAsync(c => c.UserId1 == userIdGuid || c.UserId2 == userIdGuid);
-
-        //    var joinedGroups = await _context.UserCommunityGroups // UserCommunityGroups is a user's joined groups
-        //                                    .CountAsync(ucg => ucg.UserProfileId == userIdGuid);
-
-        //    var pendingRequests = await _context.ConnectionRequests
-        //                                        .CountAsync(cr => cr.ReceiverId == userIdGuid && cr.Status == "Pending");
-
-        //    var networkGrowth = await _context.Connections
-        //                                        .CountAsync(ng => (ng.UserId1 == userIdGuid || ng.UserId2 == userIdGuid) && ng.CreatedAt >= oneMonthAgo);
-
-        //    // Network Growth Percentage is a placeholder for now, would need historical data
-        //    return new NetworkMetricsDto
-        //    {
-        //        TotalConnections = totalConnections,
-        //        JoinedGroups = joinedGroups,
-        //        PendingRequests = pendingRequests,
-        //        NetworkGrowthPercentage = 0.0, // Placeholder
-        //        NetworkGrowth = networkGrowth
-        //    };
-        //}
-
         public async Task<NetworkMetricsDto> GetNetworkMetricsAsync(Guid userIdGuid)
         {
             // Define time frames for comparison
@@ -156,8 +126,6 @@ namespace buronet_service.Services // Ensure this namespace is correct
             };
         }
 
-        // --- User Discovery & Connections ---
-
         public async Task<IEnumerable<UserCardDto>> GetDiscoverUsersAsync(Guid currentUserIdGuid)
         {
             string currentUserIdString = currentUserIdGuid.ToString();
@@ -207,7 +175,6 @@ namespace buronet_service.Services // Ensure this namespace is correct
                                     .ThenBy(u => u.Username); // Alphabetical
         }
 
-
         public async Task<IEnumerable<ConnectionDto>> GetUserConnectionsAsync(Guid userIdGuid)
         {
             string userIdString = userIdGuid.ToString();
@@ -242,20 +209,30 @@ namespace buronet_service.Services // Ensure this namespace is correct
             return connectionDtos.OrderByDescending(c => c.CreatedAt);
         }
 
-        public async Task<IEnumerable<ConnectionRequestDto>> GetPendingConnectionRequestsAsync(Guid receiverIdGuid)
+        public async Task<IEnumerable<ConnectionRequestDto>> GetPendingConnectionRequestsAsync(Guid userIdGuid, bool outgoing = false)
         {
-            string receiverIdString = receiverIdGuid.ToString();
+            IQueryable<ConnectionRequest> query = _context.ConnectionRequests
+                .AsNoTracking()
+                .Where(cr => cr.Status == "Pending");
 
-            var pendingRequests = await _context.ConnectionRequests
-                                                .Include(cr => cr.Sender)
-                                                .Include(cr => cr.Sender.Profile)
-                                                .Where(cr => cr.ReceiverId == receiverIdGuid && cr.Status == "Pending")
-                                                .ToListAsync();
+            if (outgoing)
+            {
+                query = query
+                    .Where(cr => cr.SenderId == userIdGuid)
+                    .Include(cr => cr.Receiver)
+                    .Include(cr => cr.Receiver.Profile);
+            }
+            else
+            {
+                query = query
+                    .Where(cr => cr.ReceiverId == userIdGuid)
+                    .Include(cr => cr.Sender)
+                    .Include(cr => cr.Sender.Profile);
+            }
 
+            var pendingRequests = await query.ToListAsync();
             return _mapper.Map<List<ConnectionRequestDto>>(pendingRequests);
         }
-
-        // --- Connection Management ---
 
         public async Task<ConnectionRequestDto?> SendConnectionRequestAsync(Guid senderIdGuid, SendConnectionRequestDto sendDto)
         {
@@ -275,6 +252,15 @@ namespace buronet_service.Services // Ensure this namespace is correct
                 throw new ApplicationException("Receiver user not found.");
             }
 
+            // Restrict multiple pending requests from the same sender to anyone.
+            bool senderHasAnyPending = await _context.ConnectionRequests
+                .AnyAsync(cr => cr.SenderId == senderIdGuid && cr.Status == "Pending");
+
+            if (senderHasAnyPending)
+            {
+                throw new ApplicationException("You already have a pending connection request. Please wait for a response before sending another.");
+            }
+
             // Check if already connected
             var (u1, u2) = GetCanonicalConnectionPair(senderIdGuid, sendDto.ReceiverId);
             var alreadyConnected = await _context.Connections.AnyAsync(c => c.UserId1 == u1 && c.UserId2 == u2);
@@ -285,9 +271,10 @@ namespace buronet_service.Services // Ensure this namespace is correct
 
             // Check for existing pending request (either way)
             var existingRequest = await _context.ConnectionRequests
-                                                .FirstOrDefaultAsync(cr =>
-                                                    (cr.SenderId == senderIdGuid && cr.ReceiverId == sendDto.ReceiverId && cr.Status == "Pending") ||
-                                                    (cr.SenderId == sendDto.ReceiverId && cr.ReceiverId == senderIdGuid && cr.Status == "Pending"));
+                .FirstOrDefaultAsync(cr =>
+                    (cr.SenderId == senderIdGuid && cr.ReceiverId == sendDto.ReceiverId && cr.Status == "Pending") ||
+                    (cr.SenderId == sendDto.ReceiverId && cr.ReceiverId == senderIdGuid && cr.Status == "Pending"));
+
             if (existingRequest != null)
             {
                 throw new ApplicationException("A pending connection request already exists with this user.");
@@ -313,9 +300,6 @@ namespace buronet_service.Services // Ensure this namespace is correct
             // Manually populate SenderName/Headline as mapper might not handle recursive includes without ProjectTo
             if (senderUser != null)
             {
-                //newRequestDto.SenderName = senderUser.Username;
-                //newRequestDto.SenderHeadline = senderUser.Profile?.Headline;
-                //newRequestDto.SenderProfilePictureUrl = senderUser.Profile?.ProfilePictureUrl;
                 newRequestDto.Sender = new UserDto
                 {
                     Id = senderUser.Id,
@@ -408,9 +392,6 @@ namespace buronet_service.Services // Ensure this namespace is correct
 
         public async Task<bool> RemoveConnectionAsync(Guid currentUserIdGuid, Guid connectedUserId)
         {
-            //    string currentUserIdString = currentUserIdGuid.ToString();
-            //    string connectedUserIdString = connectedUserId.ToString();
-
             // Find the canonical pair for the connection
             var (u1, u2) = GetCanonicalConnectionPair(currentUserIdGuid, connectedUserId);
 
@@ -424,176 +405,8 @@ namespace buronet_service.Services // Ensure this namespace is correct
             return true;
         }
 
-        //public async Task<IEnumerable<SuggestedUserDto>> GetSuggestedUsersAsync(Guid currentUserId, int limit)
-        //{
-
-        //    // STEP 1: Build the exclusion list in SQL (already connected, pending requests, yourself)
-        //    var usersToExclude =
-        //        from u in _context.Users
-        //        where
-        //            // Already connected (either direction)
-        //            _context.Connections.Any(c => (c.UserId1 == currentUserId && c.UserId2 == u.Id) ||
-        //                                          (c.UserId2 == currentUserId && c.UserId1 == u.Id))
-        //            // Pending connection requests (either direction)
-        //            || _context.ConnectionRequests.Any(cr => (cr.SenderId == currentUserId && cr.ReceiverId == u.Id) ||
-        //                                                     (cr.ReceiverId == currentUserId && cr.SenderId == u.Id))
-        //            // The current user themselves
-        //            || u.Id == currentUserId
-        //        select u.Id;
-
-        //    // STEP 2: Find connections-of-your-connections
-        //    var connectionsOfConnections = await _context.Connections
-        //        .Where(coc => usersToExclude.Contains(coc.UserId1) || usersToExclude.Contains(coc.UserId2))
-        //        .Select(coc => usersToExclude.Contains(coc.UserId1) ? coc.UserId2 : coc.UserId1)
-        //        .Distinct()
-        //        .ToListAsync();
-
-        //    // STEP 3: Get the final suggested users
-        //    // - Must be a connection-of-a-connection
-        //    // - Must NOT be in the exclusion list
-        //    // - Order by recent profile activity
-        //    // - Limit results to 'limit'
-        //    var suggestedUsers = await _context.Users
-        //        .AsNoTracking()
-        //        .Include(u => u.Profile)
-        //        .Where(u => connectionsOfConnections.Contains(u.Id) && !usersToExclude.Contains(u.Id))
-        //        .OrderByDescending(u => u.Profile!.UpdatedAt)
-        //        .Take(limit)
-        //        .ToListAsync();
-
-
-        //    // STEP 6: Convert the DB entities into the format needed by the API
-        //    return _mapper.Map<IEnumerable<SuggestedUserDto>>(suggestedUsers);
-        //}
-
-
-        //public async Task<List<IEnumerable<SuggestedUserDto>>> GetSuggestedUsersAsync(Guid currentUserId, int limit)
-        //{
-        //    var result = new List<IEnumerable<SuggestedUserDto>>();
-
-        //    // STEP 1: Build exclusion list (already connected, pending requests, yourself)
-        //    var usersToExcludeQuery =
-        //        from u in _context.Users
-        //        where
-        //            _context.Connections.Any(c =>
-        //                (c.UserId1 == currentUserId && c.UserId2 == u.Id) ||
-        //                (c.UserId2 == currentUserId && c.UserId1 == u.Id))
-        //            || _context.ConnectionRequests.Any(cr =>
-        //                (cr.SenderId == currentUserId && cr.ReceiverId == u.Id) ||
-        //                (cr.ReceiverId == currentUserId && cr.SenderId == u.Id))
-        //            || u.Id == currentUserId
-        //        select u.Id;
-
-        //    // STEP 2: Get connections-of-connections (both directions in one query)
-        //    var connectionsOfConnections = await _context.Connections
-        //        .Where(coc => !usersToExcludeQuery.Contains(coc.UserId1) && !usersToExcludeQuery.Contains(coc.UserId2))
-        //        .Select(coc => usersToExcludeQuery.Contains(coc.UserId1) ? coc.UserId2 : coc.UserId1)
-        //        .Distinct()
-        //        .ToListAsync();
-
-        //    // STEP 3: Get current user's data sequentially (to avoid DbContext concurrency issues)
-        //    var currentUserHeadline = await _context.Users
-        //        .Where(u => u.Id == currentUserId)
-        //        .Select(u => u.Profile!.Headline)
-        //        .FirstOrDefaultAsync();
-
-        //    var currentUserTitle = await _context.UserExperiences
-        //        .Where(e => e.UserProfileId == currentUserId)
-        //        .OrderByDescending(e => e.EndDate ?? DateTime.MaxValue)
-        //        .Select(e => e.Title)
-        //        .FirstOrDefaultAsync();
-
-        //    var currentUserEducation = await _context.UserEducation
-        //        .Where(e => e.UserProfileId == currentUserId)
-        //        .Select(e => new { e.Institution, e.Degree, e.Major })
-        //        .ToListAsync();
-
-        //    // STEP 4: Similar headline
-        //    string? headlineKeyword = currentUserHeadline ;
-        //        //.Split(' ', StringSplitOptions.RemoveEmptyEntries)
-        //        //.FirstOrDefault();
-
-        //    var similarHeadlineUsers = await _context.Users
-        //        .AsNoTracking()
-        //        .Include(u => u.Profile)
-        //        .Where(u =>
-        //            //connectionsOfConnections.Contains(u.Id) &&
-        //            !usersToExcludeQuery.Contains(u.Id) &&
-        //            ((string.IsNullOrEmpty(headlineKeyword) ||
-        //             (u.Profile!.Headline != null && u.Profile.Headline.Contains(headlineKeyword)))))
-        //        .OrderByDescending(u => u.Profile!.UpdatedAt)
-        //        .Take(limit)
-        //        .ToListAsync();
-
-        //    if (similarHeadlineUsers.Count() > 0) result.Add(_mapper.Map<IEnumerable<SuggestedUserDto>>(similarHeadlineUsers));
-
-        //    // STEP 5: Similar title
-        //    if (!string.IsNullOrEmpty(currentUserTitle))
-        //    {
-        //        var similarTitleUsers = await _context.Users
-        //            .AsNoTracking()
-        //            .Include(u => u.Profile)
-        //            .Where(u =>
-        //                //connectionsOfConnections.Contains(u.Id) &&
-        //                !usersToExcludeQuery.Contains(u.Id) &&
-        //                _context.UserExperiences.Any(e =>
-        //                    e.UserProfileId == u.Id &&
-        //                    e.Title == currentUserTitle))
-        //            .OrderByDescending(u => u.Profile!.UpdatedAt)
-        //            .Take(limit)
-        //            .ToListAsync();
-
-        //        if(similarTitleUsers.Count() > 0) result.Add(_mapper.Map<IEnumerable<SuggestedUserDto>>(similarTitleUsers));
-        //    }
-        //    else
-        //    {
-        //        result.Add(Enumerable.Empty<SuggestedUserDto>());
-        //    }
-
-        //    // STEP 6: Similar education
-        //    var possibleUsers = await _context.Users
-        //        .AsNoTracking()
-        //        .Include(u => u.Profile)
-        //        .Where(u =>
-        //            //connectionsOfConnections.Contains(u.Id) &&
-        //            !usersToExcludeQuery.Contains(u.Id))
-        //        .OrderByDescending(u => u.Profile!.UpdatedAt)
-        //        .Take(limit * 3) // extra for filtering
-        //        .ToListAsync();
-
-        //    var possibleUserIds = possibleUsers.Select(u => u.Id).ToList();
-
-        //    var possibleUserEducations = await _context.UserEducation
-        //        .Where(e => possibleUserIds.Contains(e.UserProfileId))
-        //        .Select(e => new { e.UserProfileId, e.Institution, e.Degree, e.Major })
-        //        .ToListAsync();
-
-        //    // In-memory parallel filtering for speed
-        //    var similarEducationUsers = possibleUsers
-        //        .AsParallel()
-        //        .Where(u =>
-        //            possibleUserEducations.Any(e =>
-        //                e.UserProfileId == u.Id &&
-        //                currentUserEducation.Any(edu =>
-        //                    (edu.Institution != null && e.Institution == edu.Institution) ||
-        //                    (edu.Degree != null && e.Degree == edu.Degree) ||
-        //                    (edu.Major != null && e.Major == edu.Major)
-        //                )
-        //            )
-        //        )
-        //        .Take(limit)
-        //        .ToList();
-
-        //    if (similarEducationUsers.Count() > 0) result.Add(_mapper.Map<IEnumerable<SuggestedUserDto>>(similarEducationUsers));
-
-        //    return result;
-        //}
-
-        //public async Task<IEnumerable<SuggestedUserDto>> GetSuggestedUsersAsync(Guid currentUserId, int limit)
         public async Task<Dictionary<string, List<SuggestedUserDto>>> GetSuggestedUsersAsync(Guid currentUserId, int limit)
         {
-            //_logger.LogInformation("Fetching categorized suggested users for user {UserId} with limit {Limit}.", currentUserId, limit);
-
             var suggestions = new Dictionary<string, List<SuggestedUserDto>>
             {
                 { "People With Similar Headline", new List<SuggestedUserDto>() },
@@ -667,15 +480,11 @@ namespace buronet_service.Services // Ensure this namespace is correct
             suggestions["People With Similar Title"] = _mapper.Map<List<SuggestedUserDto>>(similarTitleUsers);
             suggestions["People With Similar Education"] = _mapper.Map<List<SuggestedUserDto>>(similarEducationUsers);
 
-            //_logger.LogInformation("Found {Count} total categorized suggestions.", similarHeadlineUsers.Count + similarTitleUsers.Count + similarEducationUsers.Count);
-
             return suggestions;
         }
 
         public async Task<IEnumerable<SuggestedUserDto>> GetGeneralSuggestedUsersAsync(Guid currentUserId, int limit)
         {
-            //_logger.LogInformation("Fetching general suggested users for user {UserId} with limit {Limit}.", currentUserId, limit);
-
             // Fetch all excluded users in one go
             var excludedUsers = await _context.Connections
                 .Where(c => c.UserId1 == currentUserId || c.UserId2 == currentUserId)
@@ -751,46 +560,6 @@ namespace buronet_service.Services // Ensure this namespace is correct
             return _mapper.Map<IEnumerable<SuggestedUserDto>>(scoredUsers.Select(x => x.User));
         }
 
-
-
-        //public async Task<IEnumerable<PopularUserDto>> GetPopularUsersAsync(Guid currentUserId, int limit)
-        //{
-        //    var twoWeeksAgo = DateTime.UtcNow.AddDays(-14);
-
-        //    // Fetch all excluded users in one go
-        //    var excludedUserIds = new HashSet<Guid>();
-        //    excludedUserIds.Add(currentUserId);
-        //    var connectionUserIds = await _context.Connections
-        //        .Where(c => c.UserId1 == currentUserId || c.UserId2 == currentUserId)
-        //        .Select(c => c.UserId1 == currentUserId ? c.UserId2 : c.UserId1)
-        //        .ToListAsync();
-        //    excludedUserIds.UnionWith(connectionUserIds);
-
-        //    var popularUsersQuery =
-        //        from u in _context.Users.AsNoTracking().Include(u => u.Profile)
-        //        where !excludedUserIds.Contains(u.Id)
-        //        let recentConnectionCount = _context.Connections.Count(c =>
-        //            (c.UserId1 == u.Id || c.UserId2 == u.Id) &&
-        //            c.CreatedAt >= twoWeeksAgo)
-        //        let mutualCount = _context.Connections.Count(c =>
-        //            (c.UserId1 == u.Id && connectionUserIds.Contains(c.UserId2)) ||
-        //            (c.UserId2 == u.Id && connectionUserIds.Contains(c.UserId1)))
-        //        where recentConnectionCount > 0
-        //        orderby recentConnectionCount descending, mutualCount descending, u.Profile!.UpdatedAt descending
-        //        select new PopularUserDto
-        //        {
-        //            Id = u.Id,
-        //            Username = u.Username,
-        //            FirstName = u.Profile!.FirstName,
-        //            LastName = u.Profile!.LastName,
-        //            ProfilePictureUrl = u.Profile!.ProfilePictureUrl,
-        //            Headline = u.Profile!.Headline,
-        //            MutualConnections = mutualCount
-        //        };
-
-        //    return await popularUsersQuery.Take(limit).ToListAsync();
-        //}
-
         public async Task<IEnumerable<PopularUserDto>> GetPopularUsersAsync(Guid currentUserId, int limit)
         {
             var twoWeeksAgo = DateTime.UtcNow.AddDays(-14);
@@ -855,6 +624,5 @@ namespace buronet_service.Services // Ensure this namespace is correct
 
             return finalSuggestions;
         }
-
     }
 }

@@ -1,22 +1,29 @@
 ﻿using buronet_service.Data;
 using buronet_service.Helpers;
-using buronet_service.Models.User;
 using buronet_service.Models.DTOs;
 using buronet_service.Models.DTOs.User;
+using buronet_service.Models.User;
+using MailKit.Net.Smtp;
+using MailKit.Security;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using MimeKit;
 using System.Security.Cryptography;
 
 namespace buronet_service.Services
 {
     public class AuthService
     {
+        private const string PasswordChars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789@#$%";
         private readonly AppDbContext _context;
         private readonly JwtService _jwt;
+        private readonly IConfiguration _configuration;
 
-        public AuthService(AppDbContext context, JwtService jwt)
+        public AuthService(AppDbContext context, JwtService jwt, IConfiguration configuration)
         {
             _context = context;
             _jwt = jwt;
+            _configuration = configuration;
         }
 
         public async Task<string?> RegisterAsync(RegisterDto dto)
@@ -36,20 +43,17 @@ namespace buronet_service.Services
 
             _context.Users.Add(user);
 
-            // 2. IMMEDIATELY create the associated UserProfile entity
-            // Ensure UserProfile model also has a Guid Id and other default properties
             var newProfile = new UserProfile
             {
-                Id = user.Id, // CRITICAL: Use the SAME ID for the shared primary key 1:1 relationship 
-                FirstName = "", // Use username as initial first name or a placeholder
-                LastName = "", // Default empty
-                //Email = dtoemail, // Copy email to profile if applicable
-                DateOfBirth = null, // Or DateTime.MinValue, depending on nullability/defaults
+                Id = user.Id,
+                FirstName = "",
+                LastName = "",
+                DateOfBirth = null,
                 PhoneNumber = "",
-                // ... set other UserProfile properties with default values or empty strings/nulls
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow
             };
+
             _context.UserProfiles.Add(newProfile);
             await _context.SaveChangesAsync();
             return _jwt.GenerateToken(user);
@@ -66,113 +70,80 @@ namespace buronet_service.Services
 
         public async Task LogoutAsync(Guid userId, string? accessToken = null)
         {
-            //_logger.LogInformation("User {UserId} is attempting to log out.", userId);
-
-            // Here you would implement server-side invalidation:
-            // 1. If using Refresh Tokens: Invalidate the refresh token associated with this user/session.
-            //    This is the most common use case for a backend logout endpoint.
-            //    E.g., mark a refresh token in your database as invalid or delete it.
-            // 2. If using short-lived Access Tokens and a Blacklist:
-            //    Add the accessToken's JTI (JWT ID) to a blacklist in your cache (Redis) or database.
-            //    Subsequent requests with this token would be rejected by your JWT validation middleware.
-            //    (Less common for simple JWTs, as they are stateless by design and expire quickly).
-
-            // Example: If you had a RefreshToken entity
-            // var refreshToken = await _context.RefreshTokens.FirstOrDefaultAsync(rt => rt.UserId == userId && rt.Token == accessToken);
-            // if (refreshToken != null) {
-            //     _context.RefreshTokens.Remove(refreshToken);
-            //     await _context.SaveChangesAsync();
-            // }
-
-            //_logger.LogInformation("User {UserId} logged out successfully (server-side logic completed).", userId);
-            await Task.CompletedTask; // Ensure it's an async method
+            await Task.CompletedTask;
         }
-
-        //public async Task<bool> ForgotPasswordAsync(string email)
-        //{
-        //    var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
-        //    if (user == null)
-        //    {
-        //        //_logger.LogWarning("Forgot password attempt for non-existent email: {Email}", email);
-        //        return false;
-        //    }
-
-        //    // Generate a unique, secure token
-        //    var tokenBytes = new byte[32];
-        //    using (var rng = RandomNumberGenerator.Create())
-        //    {
-        //        rng.GetBytes(tokenBytes);
-        //    }
-        //    var resetToken = Convert.ToBase64String(tokenBytes);
-        //    var tokenExpiration = DateTime.UtcNow.AddHours(1); // Token expires in 1 hour
-
-        //    // Store the token and expiration date in the database
-        //    // Note: You would need to add PasswordResetToken and TokenExpiration properties to your User model
-        //    user.PasswordResetToken = resetToken;
-        //    user.ResetTokenExpires = tokenExpiration;
-        //    await _context.SaveChangesAsync();
-
-        //    // *** In a real application, you would send an email here ***
-        //    //_logger.LogInformation("Password reset link for {Email}: /reset-password?token={Token}", email, resetToken);
-        //    return true;
-        //}
-
-        //public async Task<bool> ResetPasswordAsync(ResetPasswordDto resetDto)
-        //{
-        //    var user = await _context.Users.FirstOrDefaultAsync(u => u.PasswordResetToken == resetDto.Token);
-
-        //    if (user == null || user.ResetTokenExpires == null || user.ResetTokenExpires < DateTime.UtcNow)
-        //    {
-        //        //_logger.LogWarning("Invalid or expired password reset token received.");
-        //        return false;
-        //    }
-
-        //    // Hash the new password and update the user record
-        //    byte[] passwordHash, passwordSalt;
-        //    //AuthService.CreatePasswordHash(resetDto.NewPassword, out passwordHash, out passwordSalt);
-        //    PasswordHasher.CreateHash(resetDto.NewPassword, out passwordHash, out passwordSalt);
-        //    user.PasswordHash = passwordHash;
-        //    user.PasswordSalt = passwordSalt;
-
-        //    // Clear the password reset token and expiration
-        //    user.PasswordResetToken = null;
-        //    user.ResetTokenExpires = null;
-        //    await _context.SaveChangesAsync();
-
-        //    //_logger.LogInformation("Password successfully reset for user with token.");
-        //    return true;
-        //}
 
         public async Task<bool> ForgotPasswordAsync(string email)
         {
             var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
+
+            // Security: do not reveal if user exists
             if (user == null)
             {
-                // This is a security measure to prevent user enumeration
                 return true;
             }
 
-            // Generate a unique, secure token
-            var tokenBytes = new byte[32];
-            using (var rng = RandomNumberGenerator.Create())
-            {
-                rng.GetBytes(tokenBytes);
-            }
-            var resetToken = Convert.ToBase64String(tokenBytes).Replace('+', '-').Replace('/', '_'); // Make URL-safe
-            var tokenExpiration = DateTime.UtcNow.AddHours(1);
+            var temporaryPassword = GenerateTemporaryPassword(length: 12);
 
-            // Create a new token record in the dedicated table
-            var newResetToken = new PasswordResetToken
-            {
-                UserId = user.Id,
-                Token = resetToken,
-                ExpiresAt = tokenExpiration
-            };
+            PasswordHasher.CreateHash(temporaryPassword, out byte[] passwordHash, out byte[] passwordSalt);
+            user.PasswordHash = passwordHash;
+            user.PasswordSalt = passwordSalt;
+            user.UpdatedAt = DateTime.UtcNow;
 
-            _context.PasswordResetTokens.Add(newResetToken);
             await _context.SaveChangesAsync();
 
-            //_logger.LogInformation("Password reset link for {Email}: /reset-password?token={Token}", email, resetToken);
+            await SendTemporaryPasswordEmailAsync(user.Email, user.Username, temporaryPassword);
+
+            return true;
+        }
+
+        public async Task<bool> ChangePasswordAsync(Guid userId, ChangePasswordDto dto)
+        {
+            if (dto == null)
+            {
+                return false;
+            }
+
+            // Extra server-side validations (beyond DataAnnotations)
+            if (string.IsNullOrWhiteSpace(dto.CurrentPassword) ||
+                string.IsNullOrWhiteSpace(dto.NewPassword) ||
+                string.IsNullOrWhiteSpace(dto.ConfirmPassword))
+            {
+                return false;
+            }
+
+            if (!string.Equals(dto.NewPassword, dto.ConfirmPassword, StringComparison.Ordinal))
+            {
+                return false;
+            }
+
+            if (dto.NewPassword.Length < 6)
+            {
+                return false;
+            }
+
+            if (string.Equals(dto.CurrentPassword, dto.NewPassword, StringComparison.Ordinal))
+            {
+                return false;
+            }
+
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId);
+            if (user == null)
+            {
+                return false;
+            }
+
+            if (!PasswordHasher.Verify(dto.CurrentPassword, user.PasswordHash, user.PasswordSalt))
+            {
+                return false;
+            }
+
+            PasswordHasher.CreateHash(dto.NewPassword, out byte[] passwordHash, out byte[] passwordSalt);
+            user.PasswordHash = passwordHash;
+            user.PasswordSalt = passwordSalt;
+            user.UpdatedAt = DateTime.UtcNow;
+
+            await _context.SaveChangesAsync();
             return true;
         }
 
@@ -184,22 +155,18 @@ namespace buronet_service.Services
 
             if (resetTokenRecord == null || resetTokenRecord.ExpiresAt < DateTime.UtcNow)
             {
-                // Token is invalid or expired
                 return false;
             }
 
             var user = resetTokenRecord.User;
-            byte[] passwordHash, passwordSalt;
-            // Assuming you have an AuthService with a CreatePasswordHash method
-            PasswordHasher.CreateHash(resetDto.NewPassword, out passwordHash, out passwordSalt);            
+            PasswordHasher.CreateHash(resetDto.NewPassword, out byte[] passwordHash, out byte[] passwordSalt);
             user.PasswordHash = passwordHash;
             user.PasswordSalt = passwordSalt;
+            user.UpdatedAt = DateTime.UtcNow;
 
-            // Remove the used token to prevent reuse
             _context.PasswordResetTokens.Remove(resetTokenRecord);
             await _context.SaveChangesAsync();
 
-            //_logger.LogInformation("Password successfully reset for user.");
             return true;
         }
 
@@ -216,6 +183,83 @@ namespace buronet_service.Services
                 Email = user.Email,
                 IsAdmin = user.isAdmin
             };
+        }
+
+        private static string GenerateTemporaryPassword(int length)
+        {
+            if (length < 8)
+            {
+                length = 8;
+            }
+
+            var result = new char[length];
+            for (var i = 0; i < result.Length; i++)
+            {
+                var index = RandomNumberGenerator.GetInt32(0, PasswordChars.Length);
+                result[i] = PasswordChars[index];
+            }
+
+            return new string(result);
+        }
+
+        private async Task SendTemporaryPasswordEmailAsync(string toEmail, string username, string temporaryPassword)
+        {
+            var smtp = _configuration.GetSection("Smtp");
+
+            var host = smtp["Host"];
+            var portString = smtp["Port"];
+            var smtpUsername = smtp["Username"];
+            var smtpPassword = smtp["Password"];
+            var enableSslString = smtp["EnableSsl"];
+
+            var from = "admin@buronet.co.in";
+
+            if (string.IsNullOrWhiteSpace(host) ||
+                string.IsNullOrWhiteSpace(portString) ||
+                string.IsNullOrWhiteSpace(smtpUsername) ||
+                string.IsNullOrWhiteSpace(smtpPassword) ||
+                string.IsNullOrWhiteSpace(enableSslString))
+            {
+                throw new ApplicationException("SMTP configuration is missing.");
+            }
+
+            if (!int.TryParse(portString, out var port))
+            {
+                throw new ApplicationException("SMTP Port is invalid.");
+            }
+
+            _ = bool.TryParse(enableSslString, out var enableSsl);
+
+            var subject = "[Buronet] Temporary Password";
+            var body =
+                $"Hi {username},\n\n" +
+                "A temporary password has been generated for your account.\n\n" +
+                $"Temporary password: {temporaryPassword}\n\n" +
+                "Please log in using this password and change it immediately.\n\n" +
+                "Regards,\n" +
+                "Buronet Admin";
+
+            var message = new MimeMessage();
+            message.From.Add(MailboxAddress.Parse(from));
+            message.To.Add(MailboxAddress.Parse(toEmail));
+            message.Subject = subject;
+            message.Body = new TextPart("plain")
+            {
+                Text = body
+            };
+
+            using var client = new SmtpClient();
+
+            // Port 465 = implicit SSL/TLS.
+            // Otherwise prefer StartTls if SSL is enabled.
+            var socketOptions = port == 465
+                ? SecureSocketOptions.SslOnConnect
+                : (enableSsl ? SecureSocketOptions.StartTls : SecureSocketOptions.Auto);
+
+            await client.ConnectAsync(host, port, socketOptions);
+            await client.AuthenticateAsync(smtpUsername, smtpPassword);
+            await client.SendAsync(message);
+            await client.DisconnectAsync(true);
         }
     }
 }

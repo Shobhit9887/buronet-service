@@ -6,7 +6,6 @@ using buronet_service.Services;
 using buronet_service.Services.Interfaces;
 using buronet_service.Storage;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
@@ -55,7 +54,7 @@ builder.Services.AddScoped<IPostService, PostService>(); // <--- NEW: Register P
 builder.Services.AddScoped<IConnectionService, ConnectionService>();
 builder.Services.AddScoped<ISearchService, SearchService>();
 builder.Services.AddScoped<INotificationsService, NotificationsService>();
-builder.Services.AddScoped<IBlobStorage, LocalBlobStorage>();
+builder.Services.AddScoped<IBlobStorage, CloudinaryBlobStorage>();
 builder.Services.AddScoped<MediaService>();
 //*********************** Add services to the container end.***********************
 

@@ -7,23 +7,20 @@ using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims; // For accessing user claims
 using System.Collections.Generic; // For IEnumerable
 
-namespace buronet_service.Controllers // Ensure this namespace is correct
+namespace buronet_service.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")] // Base route: api/users
-    [Authorize] // All actions in this controller require authentication
+    [Route("api/[controller]")]
+    [Authorize]
     public class UsersController : ControllerBase
     {
         private readonly IUserService _userService;
         private readonly MediaService _mediaService;
 
-        // private readonly AuthService _authService; // You might inject AuthService here if ProvisionUserAndProfileAsync moves to it.
-
         public UsersController(IUserService userService, MediaService mediaService /*, AuthService authService */)
         {
             _userService = userService;
             _mediaService = mediaService;
-            // _authService = authService;
         }
 
         // Helper to get the current user's ID (Guid) from their authentication claims
@@ -86,7 +83,8 @@ namespace buronet_service.Controllers // Ensure this namespace is correct
                     return StatusCode(500, "Failed to provision user and profile.");
                 }
             }
-            userProfileDto.ProfilePictureUrl = _userService.MapToDo(userProfileDto.ProfilePictureMediaId);
+
+            userProfileDto.ProfilePictureUrl = await _userService.GetMediaUrlAsync(userProfileDto.ProfilePictureMediaId);
 
             return Ok(userProfileDto);
         }
@@ -126,7 +124,7 @@ namespace buronet_service.Controllers // Ensure this namespace is correct
             }
 
             // 4. Map the Profile Picture URL (Reuse your existing mapping logic)
-            userProfileDto.ProfilePictureUrl = _userService.MapToDo(userProfileDto.ProfilePictureMediaId);
+            userProfileDto.ProfilePictureUrl = await _userService.GetMediaUrlAsync(userProfileDto.ProfilePictureMediaId);
 
             return Ok(userProfileDto);
         }
@@ -497,18 +495,19 @@ namespace buronet_service.Controllers // Ensure this namespace is correct
         {
             var userId = GetCurrentUserId();
             if (!userId.HasValue || userId.Value == Guid.Empty)
+            {
                 return Unauthorized();
+            }
 
-            // 1️⃣ Upload to media service (same app)
             var mediaId = await _mediaService.UploadAsync(file);
-
-            // 2️⃣ Save reference in user profile
             await _userService.UpdateProfilePictureAsync(userId.Value, mediaId);
+
+            var cloudinaryUrl = await _userService.GetMediaUrlAsync(mediaId);
 
             return Ok(new
             {
                 profilePictureMediaId = mediaId,
-                profilePictureUrl = $"/api/media/{mediaId}"
+                profilePictureUrl = cloudinaryUrl
             });
         }
     }

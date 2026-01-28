@@ -14,7 +14,7 @@ namespace buronet_service.Services // Ensure this namespace is correct
         // User Discovery & Connections
         Task<IEnumerable<UserCardDto>> GetDiscoverUsersAsync(Guid currentUserId);
         Task<IEnumerable<ConnectionDto>> GetUserConnectionsAsync(Guid userId);
-        Task<IEnumerable<ConnectionRequestDto>> GetPendingConnectionRequestsAsync(Guid receiverId);
+        Task<IEnumerable<ConnectionRequestDto>> GetPendingConnectionRequestsAsync(Guid userId, bool outgoing = false);
 
         // Connection Management
         Task<ConnectionRequestDto?> SendConnectionRequestAsync(Guid senderId, SendConnectionRequestDto sendDto);

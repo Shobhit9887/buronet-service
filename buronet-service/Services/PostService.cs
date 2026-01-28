@@ -443,7 +443,7 @@ namespace buronet_service.Services
                             title: "New Post Like!",
                             message: $"{likerUser.FirstName} {likerUser.LastName} liked your post: \"{postSnippet}\"",
                             type: "PostLiked",
-                            redirectUrl: $"/post/{postId}",
+                            redirectUrl: $"/posts/{postId}",
                             targetId: userIdGuid.ToString()
                         );
                     }

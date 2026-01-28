@@ -74,14 +74,15 @@ namespace buronet_service.Controllers // Ensure this namespace is correct
         }
 
         // GET api/connections/requests/pending
-        // Returns connection requests sent TO the current user (requests they need to act on).
+        // Returns connection requests sent TO the current user (requests they need to act on) by default.
+        // If outgoing=true, returns pending requests sent BY the current user.
         [HttpGet("requests/pending")]
-        public async Task<ActionResult<IEnumerable<ConnectionRequestDto>>> GetPendingRequests()
+        public async Task<ActionResult<IEnumerable<ConnectionRequestDto>>> GetPendingRequests([FromQuery] bool outgoing = false)
         {
             var userId = GetCurrentUserId();
             if (!userId.HasValue || userId.Value == Guid.Empty) return Unauthorized("User not authenticated.");
 
-            var pendingRequests = await _connectionService.GetPendingConnectionRequestsAsync(userId.Value);
+            var pendingRequests = await _connectionService.GetPendingConnectionRequestsAsync(userId.Value, outgoing);
             return Ok(pendingRequests);
         }
 
@@ -193,7 +194,6 @@ namespace buronet_service.Controllers // Ensure this namespace is correct
             var currentUserIdString = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (string.IsNullOrEmpty(currentUserIdString) || !Guid.TryParse(currentUserIdString, out Guid currentUserId))
             {
-                //_logger.LogWarning("GetSuggestedUsers: User ID claim missing or invalid for authorized user.");
                 return Unauthorized("User ID not found or invalid in token.");
             }
             var suggestions = await _connectionService.GetSuggestedUsersAsync(currentUserId, limit);
@@ -206,7 +206,6 @@ namespace buronet_service.Controllers // Ensure this namespace is correct
             var currentUserIdString = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (string.IsNullOrEmpty(currentUserIdString) || !Guid.TryParse(currentUserIdString, out Guid currentUserId))
             {
-                //_logger.LogWarning("GetSuggestedUsers: User ID claim missing or invalid for authorized user.");
                 return Unauthorized("User ID not found or invalid in token.");
             }
             var suggestions = await _connectionService.GetGeneralSuggestedUsersAsync(currentUserId, limit);
@@ -219,7 +218,6 @@ namespace buronet_service.Controllers // Ensure this namespace is correct
             var currentUserIdString = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (string.IsNullOrEmpty(currentUserIdString) || !Guid.TryParse(currentUserIdString, out Guid currentUserId))
             {
-                //_logger.LogWarning("GetSuggestedUsers: User ID claim missing or invalid for authorized user.");
                 return Unauthorized("User ID not found or invalid in token.");
             }
             var suggestions = await _connectionService.GetPopularUsersAsync(currentUserId, limit);
