@@ -61,9 +61,25 @@ namespace buronet_service.Services
 
         public async Task<string?> LoginAsync(LoginDto dto)
         {
-            var user = await _context.Users.FirstOrDefaultAsync(u => u.Username == dto.Username);
-            if (user == null || !PasswordHasher.Verify(dto.Password, user.PasswordHash, user.PasswordSalt))
+            if (dto == null || string.IsNullOrWhiteSpace(dto.Password))
+            {
                 return null;
+            }
+
+            // FE might send username OR email in `Username`. Support both.
+            var loginIdentifier = (dto.Username ?? string.Empty).Trim();
+            if (string.IsNullOrWhiteSpace(loginIdentifier))
+            {
+                return null;
+            }
+
+            var user = await _context.Users.FirstOrDefaultAsync(u =>
+                u.Username == loginIdentifier || u.Email == loginIdentifier);
+
+            if (user == null || !PasswordHasher.Verify(dto.Password, user.PasswordHash, user.PasswordSalt))
+            {
+                return null;
+            }
 
             return _jwt.GenerateToken(user);
         }
@@ -104,7 +120,6 @@ namespace buronet_service.Services
                 return false;
             }
 
-            // Extra server-side validations (beyond DataAnnotations)
             if (string.IsNullOrWhiteSpace(dto.CurrentPassword) ||
                 string.IsNullOrWhiteSpace(dto.NewPassword) ||
                 string.IsNullOrWhiteSpace(dto.ConfirmPassword))
