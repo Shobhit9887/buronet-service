@@ -252,15 +252,6 @@ namespace buronet_service.Services // Ensure this namespace is correct
                 throw new ApplicationException("Receiver user not found.");
             }
 
-            // Restrict multiple pending requests from the same sender to anyone.
-            bool senderHasAnyPending = await _context.ConnectionRequests
-                .AnyAsync(cr => cr.SenderId == senderIdGuid && cr.Status == "Pending");
-
-            if (senderHasAnyPending)
-            {
-                throw new ApplicationException("You already have a pending connection request. Please wait for a response before sending another.");
-            }
-
             // Check if already connected
             var (u1, u2) = GetCanonicalConnectionPair(senderIdGuid, sendDto.ReceiverId);
             var alreadyConnected = await _context.Connections.AnyAsync(c => c.UserId1 == u1 && c.UserId2 == u2);
