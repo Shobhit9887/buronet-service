@@ -15,6 +15,7 @@ namespace buronet_service.Services
     public class AuthService
     {
         private const string PasswordChars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789@#$%";
+        private const int MinimumPasswordLength = 8;
         private readonly AppDbContext _context;
         private readonly JwtService _jwt;
         private readonly IConfiguration _configuration;
@@ -26,17 +27,68 @@ namespace buronet_service.Services
             _configuration = configuration;
         }
 
-        public async Task<string?> RegisterAsync(RegisterDto dto)
+        public async Task<RegisterResultDto> RegisterAsync(RegisterDto dto)
         {
-            if (await _context.Users.AnyAsync(u => u.Username == dto.Username || u.Email == dto.Email))
-                return null;
+            if (dto == null ||
+                string.IsNullOrWhiteSpace(dto.Username) ||
+                string.IsNullOrWhiteSpace(dto.Email) ||
+                string.IsNullOrWhiteSpace(dto.Password))
+            {
+                return new RegisterResultDto
+                {
+                    Success = false,
+                    Message = "Invalid registration details."
+                };
+            }
+
+            var username = dto.Username.Trim();
+            var email = dto.Email.Trim();
+
+            if (!TryValidatePasswordStrength(dto.Password, out var passwordError))
+            {
+                return new RegisterResultDto
+                {
+                    Success = false,
+                    Message = passwordError
+                };
+            }
+
+            var usernameExists = await _context.Users.AsNoTracking().AnyAsync(u => u.Username == username);
+            var emailExists = await _context.Users.AsNoTracking().AnyAsync(u => u.Email == email);
+
+            if (usernameExists && emailExists)
+            {
+                return new RegisterResultDto
+                {
+                    Success = false,
+                    Message = "User account exists, please log in!"
+                };
+            }
+
+            if (usernameExists)
+            {
+                return new RegisterResultDto
+                {
+                    Success = false,
+                    Message = "Username already exists!"
+                };
+            }
+
+            if (emailExists)
+            {
+                return new RegisterResultDto
+                {
+                    Success = false,
+                    Message = "Email already linked to another account!"
+                };
+            }
 
             PasswordHasher.CreateHash(dto.Password, out byte[] hash, out byte[] salt);
 
             var user = new User
             {
-                Username = dto.Username,
-                Email = dto.Email,
+                Username = username,
+                Email = email,
                 PasswordHash = hash,
                 PasswordSalt = salt
             };
@@ -56,7 +108,13 @@ namespace buronet_service.Services
 
             _context.UserProfiles.Add(newProfile);
             await _context.SaveChangesAsync();
-            return _jwt.GenerateToken(user);
+
+            return new RegisterResultDto
+            {
+                Success = true,
+                Token = _jwt.GenerateToken(user),
+                Message = "Registration successful."
+            };
         }
 
         public async Task<string?> LoginAsync(LoginDto dto)
@@ -66,7 +124,6 @@ namespace buronet_service.Services
                 return null;
             }
 
-            // FE might send username OR email in `Username`. Support both.
             var loginIdentifier = (dto.Username ?? string.Empty).Trim();
             if (string.IsNullOrWhiteSpace(loginIdentifier))
             {
@@ -132,12 +189,12 @@ namespace buronet_service.Services
                 return false;
             }
 
-            if (dto.NewPassword.Length < 6)
+            if (string.Equals(dto.CurrentPassword, dto.NewPassword, StringComparison.Ordinal))
             {
                 return false;
             }
 
-            if (string.Equals(dto.CurrentPassword, dto.NewPassword, StringComparison.Ordinal))
+            if (!TryValidatePasswordStrength(dto.NewPassword, out _))
             {
                 return false;
             }
@@ -173,6 +230,11 @@ namespace buronet_service.Services
                 return false;
             }
 
+            if (!TryValidatePasswordStrength(resetDto.NewPassword, out _))
+            {
+                return false;
+            }
+
             var user = resetTokenRecord.User;
             PasswordHasher.CreateHash(resetDto.NewPassword, out byte[] passwordHash, out byte[] passwordSalt);
             user.PasswordHash = passwordHash;
@@ -198,6 +260,50 @@ namespace buronet_service.Services
                 Email = user.Email,
                 IsAdmin = user.isAdmin
             };
+        }
+
+        private static bool TryValidatePasswordStrength(string password, out string errorMessage)
+        {
+            errorMessage = string.Empty;
+
+            if (string.IsNullOrWhiteSpace(password))
+            {
+                errorMessage = "Password is required.";
+                return false;
+            }
+
+            if (password.Length < MinimumPasswordLength)
+            {
+                errorMessage = $"Password must be at least {MinimumPasswordLength} characters long.";
+                return false;
+            }
+
+            if (password.Contains(' '))
+            {
+                errorMessage = "Password must not contain spaces.";
+                return false;
+            }
+
+            var hasUpper = false;
+            var hasLower = false;
+            var hasDigit = false;
+            var hasSpecial = false;
+
+            foreach (var c in password)
+            {
+                if (char.IsUpper(c)) hasUpper = true;
+                else if (char.IsLower(c)) hasLower = true;
+                else if (char.IsDigit(c)) hasDigit = true;
+                else hasSpecial = true;
+            }
+
+            if (!hasUpper || !hasLower || !hasDigit || !hasSpecial)
+            {
+                errorMessage = "Password must include at least one uppercase letter, one lowercase letter, one number, and one special character.";
+                return false;
+            }
+
+            return true;
         }
 
         private static string GenerateTemporaryPassword(int length)
@@ -265,8 +371,6 @@ namespace buronet_service.Services
 
             using var client = new SmtpClient();
 
-            // Port 465 = implicit SSL/TLS.
-            // Otherwise prefer StartTls if SSL is enabled.
             var socketOptions = port == 465
                 ? SecureSocketOptions.SslOnConnect
                 : (enableSsl ? SecureSocketOptions.StartTls : SecureSocketOptions.Auto);

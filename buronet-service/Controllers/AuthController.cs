@@ -18,8 +18,14 @@ namespace buronet_service.Controllers
         [HttpPost("register")]
         public async Task<IActionResult> Register(RegisterDto dto)
         {
-            var token = await _auth.RegisterAsync(dto);
-            return token == null ? BadRequest("User already exists") : Ok(new { token });
+            var result = await _auth.RegisterAsync(dto);
+
+            if (!result.Success)
+            {
+                return BadRequest(new { message = result.Message });
+            }
+
+            return Ok(new { token = result.Token, message = result.Message });
         }
 
         [HttpPost("login")]
@@ -50,12 +56,8 @@ namespace buronet_service.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> ForgotPassword(ForgotPasswordDto forgotDto)
         {
-            var success = await _auth.ForgotPasswordAsync(forgotDto.Email);
-            if (success)
-            {
-                return Ok("If an account with that email exists, a password reset link has been sent.");
-            }
-            return Ok("If an account with that email exists, a password reset link has been sent.");
+            await _auth.ForgotPasswordAsync(forgotDto.Email);
+            return Ok(new { message = "If an account with that email exists, an email has been sent." });
         }
 
         [HttpPost("reset-password")]
@@ -65,9 +67,9 @@ namespace buronet_service.Controllers
             var success = await _auth.ResetPasswordAsync(resetDto);
             if (!success)
             {
-                return BadRequest("Invalid or expired token.");
+                return BadRequest(new { message = "Invalid or expired token." });
             }
-            return Ok("Password has been reset successfully.");
+            return Ok(new { message = "Password has been reset successfully." });
         }
 
         [HttpPost("change-password")]
@@ -82,16 +84,16 @@ namespace buronet_service.Controllers
             var userIdString = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (string.IsNullOrEmpty(userIdString) || !Guid.TryParse(userIdString, out var userId))
             {
-                return Unauthorized("User ID not found or invalid in token.");
+                return Unauthorized(new { message = "User ID not found or invalid in token." });
             }
 
             var success = await _auth.ChangePasswordAsync(userId, dto);
             if (!success)
             {
-                return BadRequest("Unable to change password. Please verify your inputs and try again.");
+                return BadRequest(new { message = "Unable to change password. Please verify your inputs and try again." });
             }
 
-            return Ok("Password changed successfully.");
+            return Ok(new { message = "Password changed successfully." });
         }
 
         [Authorize]
