@@ -9,6 +9,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using MimeKit;
 using System.Security.Cryptography;
+using System.Text;
 
 namespace buronet_service.Services
 {
@@ -20,6 +21,8 @@ namespace buronet_service.Services
         private readonly JwtService _jwt;
         private readonly IConfiguration _configuration;
 
+        private static readonly TimeSpan RefreshTokenLifetime = TimeSpan.FromDays(30);
+
         public AuthService(AppDbContext context, JwtService jwt, IConfiguration configuration)
         {
             _context = context;
@@ -29,6 +32,8 @@ namespace buronet_service.Services
 
         public async Task<RegisterResultDto> RegisterAsync(RegisterDto dto)
         {
+            // NOTE: registration returns only access token currently
+            // (can be extended later if you want auto-remember after register)
             if (dto == null ||
                 string.IsNullOrWhiteSpace(dto.Username) ||
                 string.IsNullOrWhiteSpace(dto.Email) ||
@@ -117,7 +122,7 @@ namespace buronet_service.Services
             };
         }
 
-        public async Task<string?> LoginAsync(LoginDto dto)
+        public async Task<LoginResultDto?> LoginAsync(LoginDto dto, string? ipAddress = null)
         {
             if (dto == null || string.IsNullOrWhiteSpace(dto.Password))
             {
@@ -138,12 +143,107 @@ namespace buronet_service.Services
                 return null;
             }
 
-            return _jwt.GenerateToken(user);
+            var accessToken = _jwt.GenerateToken(user);
+
+            // Default session: only access token (2 days)
+            if (!dto.RememberMe)
+            {
+                return new LoginResultDto { Token = accessToken };
+            }
+
+            // RememberMe: also issue refresh token
+            var refreshTokenPlain = GenerateSecureTokenString(64);
+            var refreshTokenHash = HashToken(refreshTokenPlain);
+
+            var refreshEntity = new RefreshToken
+            {
+                UserId = user.Id,
+                TokenHash = refreshTokenHash,
+                CreatedAt = DateTime.UtcNow,
+                ExpiresAt = DateTime.UtcNow.Add(RefreshTokenLifetime),
+                CreatedByIp = ipAddress
+            };
+
+            _context.RefreshTokens.Add(refreshEntity);
+            await _context.SaveChangesAsync();
+
+            return new LoginResultDto
+            {
+                Token = accessToken,
+                RefreshToken = refreshTokenPlain
+            };
+        }
+
+        public async Task<LoginResultDto?> RefreshAsync(string refreshToken, string? ipAddress = null)
+        {
+            if (string.IsNullOrWhiteSpace(refreshToken))
+            {
+                return null;
+            }
+
+            var hash = HashToken(refreshToken);
+
+            var existing = await _context.RefreshTokens
+                .AsTracking()
+                .FirstOrDefaultAsync(rt => rt.TokenHash == hash);
+
+            if (existing == null || !existing.IsActive)
+            {
+                return null;
+            }
+
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == existing.UserId);
+            if (user == null)
+            {
+                return null;
+            }
+
+            // Rotate refresh token (recommended)
+            existing.RevokedAt = DateTime.UtcNow;
+            existing.RevokedByIp = ipAddress;
+
+            var newRefreshPlain = GenerateSecureTokenString(64);
+            var newRefreshHash = HashToken(newRefreshPlain);
+
+            _context.RefreshTokens.Add(new RefreshToken
+            {
+                UserId = user.Id,
+                TokenHash = newRefreshHash,
+                CreatedAt = DateTime.UtcNow,
+                ExpiresAt = DateTime.UtcNow.Add(RefreshTokenLifetime),
+                CreatedByIp = ipAddress
+            });
+
+            var newAccessToken = _jwt.GenerateToken(user);
+
+            await _context.SaveChangesAsync();
+
+            return new LoginResultDto
+            {
+                Token = newAccessToken,
+                RefreshToken = newRefreshPlain
+            };
         }
 
         public async Task LogoutAsync(Guid userId, string? accessToken = null)
         {
-            await Task.CompletedTask;
+            // Revoke all active refresh tokens for this user
+            var activeTokens = await _context.RefreshTokens
+                .Where(rt => rt.UserId == userId && rt.RevokedAt == null && rt.ExpiresAt > DateTime.UtcNow)
+                .ToListAsync();
+
+            if (activeTokens.Count == 0)
+            {
+                return;
+            }
+
+            var now = DateTime.UtcNow;
+            foreach (var t in activeTokens)
+            {
+                t.RevokedAt = now;
+            }
+
+            await _context.SaveChangesAsync();
         }
 
         public async Task<bool> ForgotPasswordAsync(string email)
@@ -379,6 +479,19 @@ namespace buronet_service.Services
             await client.AuthenticateAsync(smtpUsername, smtpPassword);
             await client.SendAsync(message);
             await client.DisconnectAsync(true);
+        }
+
+        private static string GenerateSecureTokenString(int byteLength)
+        {
+            var bytes = RandomNumberGenerator.GetBytes(byteLength);
+            return Convert.ToBase64String(bytes);
+        }
+
+        private static string HashToken(string token)
+        {
+            // store only hash in DB
+            var bytes = SHA256.HashData(Encoding.UTF8.GetBytes(token));
+            return Convert.ToHexString(bytes);
         }
     }
 }

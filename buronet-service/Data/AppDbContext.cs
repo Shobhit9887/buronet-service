@@ -23,6 +23,7 @@ namespace buronet_service.Data
         // All DbSets (assuming all corresponding models are correctly defined)
         public DbSet<User> Users { get; set; } = null!;
         public DbSet<PasswordResetToken> PasswordResetTokens { get; set; } = null!;
+        public DbSet<RefreshToken> RefreshTokens { get; set; } = null!; // <-- added
         public DbSet<UserProfile> UserProfiles { get; set; } = null!;
         public DbSet<UserExperience> UserExperiences { get; set; } = null!;
         public DbSet<UserSkill> UserSkills { get; set; } = null!;
@@ -259,6 +260,15 @@ namespace buronet_service.Data
 
                 // Map the C# Enum to a string in the database
                 entity.Property(n => n.Type).HasConversion<string>();
+            });
+
+            modelBuilder.Entity<RefreshToken>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.HasIndex(e => new { e.UserId, e.TokenHash }).IsUnique();
+                entity.Property(e => e.TokenHash).HasMaxLength(512);
+                entity.Property(e => e.CreatedByIp).HasMaxLength(128);
+                entity.Property(e => e.RevokedByIp).HasMaxLength(128);
             });
         }
 

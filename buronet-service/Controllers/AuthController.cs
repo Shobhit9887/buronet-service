@@ -31,8 +31,24 @@ namespace buronet_service.Controllers
         [HttpPost("login")]
         public async Task<IActionResult> Login(LoginDto dto)
         {
-            var token = await _auth.LoginAsync(dto);
-            return token == null ? Unauthorized("Invalid credentials") : Ok(new { token });
+            var ip = HttpContext.Connection.RemoteIpAddress?.ToString();
+            var result = await _auth.LoginAsync(dto, ip);
+
+            return result == null
+                ? Unauthorized("Invalid credentials")
+                : Ok(result);
+        }
+
+        [HttpPost("refresh")]
+        [AllowAnonymous]
+        public async Task<IActionResult> Refresh([FromBody] RefreshRequestDto dto)
+        {
+            var ip = HttpContext.Connection.RemoteIpAddress?.ToString();
+            var result = await _auth.RefreshAsync(dto.RefreshToken, ip);
+
+            return result == null
+                ? Unauthorized(new { message = "Invalid or expired refresh token." })
+                : Ok(result);
         }
 
         [HttpPost("logout")]
