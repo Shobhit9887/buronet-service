@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Security.Claims; // For accessing user claims
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization; // For [Authorize] and [AllowAnonymous
+using System.Linq;
 
 namespace buronet_service.Controllers
 {
@@ -31,6 +32,22 @@ namespace buronet_service.Controllers
                 return userIdGuid;
             }
             return null;
+        }
+
+        // GET api/posts/mine
+        // Returns all posts created by the logged-in user.
+        [HttpGet("mine")]
+        public async Task<ActionResult<IEnumerable<PostDto>>> GetMyPosts()
+        {
+            var userId = GetCurrentUserId();
+            if (!userId.HasValue || userId.Value == Guid.Empty) return Unauthorized("User not authenticated.");
+
+            // Uses existing feed method, then filters to current user's posts.
+            // (If you want DB-side filtering for performance, add a dedicated service method.)
+            var posts = await _postService.GetAllPostsAsync(userId);
+            var myPosts = posts.Where(p => string.Equals(p.UserId, userId.Value.ToString(), StringComparison.OrdinalIgnoreCase));
+
+            return Ok(myPosts);
         }
 
         // POST api/posts/report-post

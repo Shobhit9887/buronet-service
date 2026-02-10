@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Security.Claims; // For accessing user claims
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization; // For [Authorize]
+using System.Linq;
 
 namespace buronet_service.Controllers // Ensure this namespace is correct
 {
@@ -73,6 +74,35 @@ namespace buronet_service.Controllers // Ensure this namespace is correct
             return Ok(connections);
         }
 
+        // GET api/connections/all
+        // Returns ALL connections of the current user as a paginated list.
+        [HttpGet("all")]
+        public async Task<IActionResult> GetAllConnections([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
+        {
+            var userId = GetCurrentUserId();
+            if (!userId.HasValue || userId.Value == Guid.Empty) return Unauthorized("User not authenticated.");
+
+            page = page < 1 ? 1 : page;
+            pageSize = pageSize < 1 ? 10 : pageSize;
+
+            var connections = (await _connectionService.GetUserConnectionsAsync(userId.Value)).ToList();
+            var totalCount = connections.Count;
+
+            var data = connections
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToList();
+
+            return Ok(new
+            {
+                Page = page,
+                PageSize = pageSize,
+                TotalCount = totalCount,
+                TotalPages = (int)Math.Ceiling(totalCount / (double)pageSize),
+                Data = data
+            });
+        }
+
         // GET api/connections/requests/pending
         // Returns connection requests sent TO the current user (requests they need to act on) by default.
         // If outgoing=true, returns pending requests sent BY the current user.
@@ -101,7 +131,7 @@ namespace buronet_service.Controllers // Ensure this namespace is correct
                 var newRequest = await _connectionService.SendConnectionRequestAsync(senderId.Value, sendDto);
                 if (newRequest == null) return StatusCode(500, "Failed to send request.");
                 return CreatedAtAction(nameof(GetPendingRequests), new { requestId = newRequest.Id }, newRequest);
-            } 
+            }
             catch (ApplicationException ex)
             {
                 return BadRequest(new { message = ex.Message });
@@ -170,7 +200,6 @@ namespace buronet_service.Controllers // Ensure this namespace is correct
             var currentUserId = GetCurrentUserId();
             if (!currentUserId.HasValue || currentUserId.Value == Guid.Empty) return Unauthorized("User not authenticated.");
             if (!Guid.TryParse(connectedUserId.ToString(), out Guid targetUserId)) return BadRequest("Invalid connected user ID format.");
-
 
             try
             {
