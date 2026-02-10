@@ -21,16 +21,6 @@ builder.Services.AddCors(options =>
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
-        //options.Authority = $"https://{builder.Configuration["Auth0:Domain"]}"; // Your Auth0 Domain
-        //options.Audience = builder.Configuration["Auth0:Audience"];             // Your API Identifier
-        //// Optional: for stricter validation (e.g., against specific audiences in token)
-        //// options.TokenValidationParameters = new TokenValidationParameters
-        //// {
-        ////     ValidAudience = builder.Configuration["Auth0:Audience"],
-        ////     ValidIssuer = $"https://{builder.Configuration["Auth0:Domain"]}/" // Note the trailing slash
-        //// };
-
-
         options.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuerSigningKey = true,
@@ -46,6 +36,16 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 // Configure MongoDB settings and service
 builder.Services.Configure<MongoDbSettings>(builder.Configuration.GetSection("MongoDbSettings"));
 builder.Services.AddScoped<BytePostService>();
+
+// NEW: client for buronet-service
+builder.Services.AddHttpClient<BuronetConnectionsClient>(client =>
+{
+    var baseUrl = builder.Configuration["ServiceUrls:BuronetService"];
+    if (!string.IsNullOrWhiteSpace(baseUrl))
+    {
+        client.BaseAddress = new Uri(baseUrl);
+    }
+});
 
 builder.Services.AddControllers();
 

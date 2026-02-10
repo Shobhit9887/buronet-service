@@ -1,5 +1,6 @@
 ﻿using Buronet.Bytes.API.Models;
 using Microsoft.Extensions.Options;
+using MongoDB.Bson;
 using MongoDB.Driver;
 
 namespace Buronet.Bytes.API.Services;
@@ -30,11 +31,22 @@ public class BytePostService
         await _postsCollection.Find(p => p.Likes.Any(l => connectionIds.Contains(l)))
                                 .SortByDescending(p => p.CreatedAt).Limit(10).ToListAsync();
 
-    public async Task<List<Models.BytePost>> GetPopularFeedAsync() =>
-        await _postsCollection.Find(_ => true).SortByDescending(p => p.Likes.Count).Limit(10).ToListAsync();
+    public async Task<List<Models.BytePost>> GetPopularFeedAsync()
+    {
+        // Popular = most likes, ties broken by recency.
+        var pipeline = new[]
+        {
+            new BsonDocument("$addFields",
+                new BsonDocument("likesCount",
+                    new BsonDocument("$size",
+                        new BsonDocument("$ifNull", new BsonArray { "$likes", new BsonArray() })))),
+            new BsonDocument("$sort", new BsonDocument { { "likesCount", -1 }, { "createdAt", -1 } }),
+            new BsonDocument("$limit", 10),
+            new BsonDocument("$project", new BsonDocument("likesCount", 0))
+        };
 
-    //public async Task CreateAsync(Models.BytePost newPost) =>
-    //    await _postsCollection.InsertOneAsync(newPost);
+        return await _postsCollection.Aggregate<Models.BytePost>(pipeline).ToListAsync();
+    }
 
     public async Task ToggleLikeAsync(string byteId, string userId)
     {

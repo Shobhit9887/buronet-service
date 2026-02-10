@@ -11,12 +11,14 @@ namespace Buronet.Bytes.API.Controllers;
 public class BytesController : ControllerBase
 {
     private readonly BytePostService _bytePostService;
+    private readonly BuronetConnectionsClient _connectionsClient;
     private readonly List<string> _allowedVideoTypes = new() { "video/mp4", "video/quicktime", "video/webm" };
     private const long _maxFileSize = 500 * 1024 * 1024; // 500 MB
 
-    public BytesController(BytePostService bytePostService)
+    public BytesController(BytePostService bytePostService, BuronetConnectionsClient connectionsClient)
     {
         _bytePostService = bytePostService;
+        _connectionsClient = connectionsClient;
     }
 
     [HttpGet]
@@ -29,10 +31,6 @@ public class BytesController : ControllerBase
     {
         if (request.MediaUrl == null || request.MediaUrl.Length == 0)
             return BadRequest("A video file is required.");
-        //if (request.ByteFile.Length > _maxFileSize)?
-            //return BadRequest($"File size exceeds the limit of {_maxFileSize / 1024 / 1024} MB.");
-        //if (!_allowedVideoTypes.Contains(request.ByteFile.ContentType.ToLower()))
-            //return BadRequest($"Invalid file format. Allowed formats are: {string.Join(", ", _allowedVideoTypes)}");
 
         // --- Get User Info from Auth Token (Secure) ---
         var creatorId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "e70c3bbb-eec9-4a44-82ca-d69d5ce2a213"; // Fallback for testing
@@ -42,12 +40,9 @@ public class BytesController : ControllerBase
         if (string.IsNullOrEmpty(creatorId) || string.IsNullOrEmpty(creatorName))
             return Unauthorized("User identity could not be determined from token.");
 
-        // --- Upload to Cloud & Get URL ---
-        // TODO: Replace this with your actual cloud storage upload logic (e.g., to AWS S3)
         var mediaUrl = request.MediaUrl;
         var thumbnailUrl = request.Thumbnail;
 
-        // --- Create DB Document ---
         var newPost = new BytePost
         {
             Creator = new Creator { Id = creatorId, Name = creatorName, Pic = creatorPic },
@@ -67,9 +62,25 @@ public class BytesController : ControllerBase
         switch (filter)
         {
             case "Connections":
-                var mockConnectionIds = new List<string> { "mock-user-id-2", "mock-user-id-3" };
-                var connectionFeed = await _bytePostService.GetConnectionsFeedAsync(mockConnectionIds);
+            {
+                // Forward caller token to buronet-service
+                var authHeader = Request.Headers.Authorization.ToString();
+                var bearer = authHeader.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase)
+                    ? authHeader["Bearer ".Length..].Trim()
+                    : string.Empty;
+
+                if (string.IsNullOrWhiteSpace(bearer))
+                    return Unauthorized("Missing Bearer token.");
+
+                var connectionIds = await _connectionsClient.GetAllConnectionUserIdsAsync(bearer);
+
+                // If no connections, return empty feed (or fall back to For You if preferred)
+                if (connectionIds.Count == 0)
+                    return Ok(new List<BytePost>());
+
+                var connectionFeed = await _bytePostService.GetConnectionsFeedAsync(connectionIds);
                 return Ok(connectionFeed);
+            }
 
             case "Popular":
                 var popularFeed = await _bytePostService.GetPopularFeedAsync();
@@ -81,6 +92,4 @@ public class BytesController : ControllerBase
                 return Ok(forYouFeed);
         }
     }
-
-
 }

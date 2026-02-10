@@ -1,5 +1,6 @@
 ﻿using Buronet.JobService.Data;
 using Buronet.JobService.Models;
+using Buronet.JobService.Models.DTOs;
 using Buronet.JobService.Services.Interfaces;
 using Buronet.JobService.Settings;
 using JobService.Models;
@@ -22,9 +23,7 @@ public class JobsService : IJobsService
         _jobsCollection = mongoDatabase.GetCollection<Job>(mongoDbSettings.Value.JobsCollectionName);
         _examsCollection = mongoDatabase.GetCollection<Exam>(mongoDbSettings.Value.ExamsCollectionName);
         _dbContext = dbContext;
-        // --- THIS IS THE FIX ---
-        // Create a text index on multiple fields to enable text search.
-        // This is an idempotent operation, so it's safe to run on every startup.
+
         var indexKeysDefinition = Builders<Job>.IndexKeys
             .Text(j => j.JobTitle)
             .Text(j => j.JobDescription)
@@ -34,7 +33,6 @@ public class JobsService : IJobsService
             .Text(j => j.Location);
 
         var indexModel = new CreateIndexModel<Job>(indexKeysDefinition);
-        // The driver will check if the index exists and only create it if it doesn't.
         _jobsCollection.Indexes.CreateOne(indexModel);
     }
 
@@ -193,4 +191,36 @@ public class JobsService : IJobsService
         return jobs;
     }
 
+    public async Task<Job> CreateFromFrontendAsync(CreateJobRequest request)
+    {
+        var now = DateTime.UtcNow.ToString("O");
+
+        var job = new Job
+        {
+            Id = null, // let Mongo generate
+            JobTitle = request.JobTitle.Trim(),
+            CompanyName = request.CompanyName.Trim(),
+            Sector = request.Sector.Trim(),
+            ReferenceNumber = request.ReferenceNumber?.Trim() ?? string.Empty,
+            OrganizationName = request.OrganizationName.Trim(),
+            Location = request.Location.Trim(),
+            Compensation = request.Compensation?.Trim() ?? string.Empty,
+            JobDescription = request.JobDescription.Trim(),
+            ContactInformation = request.ContactInformation?.Trim() ?? string.Empty,
+            EmploymentType = request.EmploymentType?.Trim() ?? string.Empty,
+            DateOfIssue = request.DateOfIssue?.Trim() ?? string.Empty,
+            Qualifications = request.Qualifications ?? new(),
+            Benefits = request.Benefits ?? new(),
+            ApplicationProcess = request.ApplicationProcess ?? new(),
+            EligibilityNotes = request.EligibilityNotes ?? new(),
+            ApplyLink = request.ApplyLink,
+            LastDateToApply = request.LastDateToApply?.Trim() ?? string.Empty,
+            Status = "Active",
+            CreatedDate = now,
+            UpdatedDate = now
+        };
+
+        await _jobsCollection.InsertOneAsync(job);
+        return job;
+    }
 }

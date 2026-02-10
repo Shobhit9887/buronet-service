@@ -1,8 +1,8 @@
 ﻿// File: JobService/Controllers/JobsController.cs
 using Buronet.JobService.Models;
+using Buronet.JobService.Models.DTOs;
 using Buronet.JobService.Services.Interfaces;
 using JobService.Models;
-using JobService.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace JobService.Controllers;
@@ -104,7 +104,6 @@ public class JobsController : ControllerBase
     {
         // 1. Validate that a keyword was provided.
         if (string.IsNullOrWhiteSpace(keyword))
-        if (string.IsNullOrWhiteSpace(keyword))
         {
             return BadRequest(new ApiSearchResponse<List<Job>> { Success = false, Message = "A search keyword is required." });
         }
@@ -116,4 +115,17 @@ public class JobsController : ControllerBase
         return Ok(new ApiSearchResponse<List<Job>> { Success = true, Data = jobs });
     }
 
+    [HttpPost("create")]
+    public async Task<IActionResult> CreateFromFrontend([FromBody] CreateJobRequest request)
+    {
+        if (!ModelState.IsValid)
+        {
+            return ValidationProblem(ModelState);
+        }
+
+        var created = await _jobsService.CreateFromFrontendAsync(request);
+        return CreatedAtAction(nameof(Get), new { id = created.Id }, created);
+    }
+
+    // Note: you have a duplicate `if (string.IsNullOrWhiteSpace(keyword))` in Search().
 }
