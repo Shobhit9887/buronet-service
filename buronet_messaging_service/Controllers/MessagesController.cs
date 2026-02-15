@@ -17,11 +17,16 @@ namespace buronet_messaging_service.Controllers
     public class MessagesController : ControllerBase
     {
         private readonly IMessageService _messageService;
+        private readonly IConversationService _conversationService;
         private readonly ILogger<MessagesController> _logger;
 
-        public MessagesController(IMessageService messageService, ILogger<MessagesController> logger)
+        public MessagesController(
+            IMessageService messageService,
+            IConversationService conversationService,
+            ILogger<MessagesController> logger)
         {
             _messageService = messageService;
+            _conversationService = conversationService;
             _logger = logger;
         }
 
@@ -41,15 +46,20 @@ namespace buronet_messaging_service.Controllers
             }
 
             _logger.LogInformation("Fetching messages for conversation {ConversationId} by user {UserId}.", conversationId, userId);
+
             try
             {
                 var messages = await _messageService.GetConversationMessagesAsync(conversationId, userId);
+
+                // Automatically mark as read when the user opens the conversation (fetches messages)
+                await _conversationService.MarkConversationAsReadAsync(conversationId, userId);
+
                 return Ok(messages);
             }
             catch (UnauthorizedAccessException ex)
             {
                 _logger.LogWarning("GetConversationMessages: {ErrorMessage}", ex.Message);
-                return Forbid(ex.Message); // 403 Forbidden if not a participant
+                return Forbid(ex.Message);
             }
             catch (Exception ex)
             {
@@ -75,9 +85,7 @@ namespace buronet_messaging_service.Controllers
             }
 
             if (string.IsNullOrWhiteSpace(createDto.Content))
-            {
                 return BadRequest("Message content cannot be empty.");
-            }
 
             _logger.LogInformation("User {SenderId} sending message to conversation {ConversationId}.", senderId, conversationId);
 
@@ -94,7 +102,7 @@ namespace buronet_messaging_service.Controllers
             catch (UnauthorizedAccessException ex)
             {
                 _logger.LogWarning("SendMessage: {ErrorMessage}", ex.Message);
-                return Forbid(ex.Message); // 403 Forbidden if not a participant
+                return Forbid(ex.Message);
             }
             catch (Exception ex)
             {
@@ -102,7 +110,5 @@ namespace buronet_messaging_service.Controllers
                 return StatusCode(500, "An unexpected error occurred while sending message.");
             }
         }
-
-        // You can add other message-related endpoints here, e.g., DeleteMessage, MarkMessageAsRead, etc.
     }
 }

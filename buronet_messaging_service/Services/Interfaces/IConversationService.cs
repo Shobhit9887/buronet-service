@@ -12,6 +12,7 @@ namespace buronet_messaging_service.Services.Interfaces
         Task<IEnumerable<ConversationDto>> GetUserConversationsAsync(Guid userId);
         Task<IEnumerable<int>> GetUserConversationIdsAsync(Guid userId); // For SignalR group management
         Task<ConversationDto?> GetConversationByIdAsync(int conversationId, Guid userId);
+        Task MarkConversationAsReadAsync(int conversationId, Guid userId);
         // Add methods for updating conversation, removing participants, etc.
     }
 }

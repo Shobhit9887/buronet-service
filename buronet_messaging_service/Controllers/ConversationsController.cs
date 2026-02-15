@@ -109,5 +109,28 @@ namespace buronet_messaging_service.Controllers
                 return StatusCode(500, "An unexpected error occurred while creating conversation.");
             }
         }
+
+        /// <summary>
+        /// Marks a conversation as read.
+        /// </summary>
+        /// <param name="conversationId">The ID of the conversation to mark as read.</param>
+        /// <returns>No content (204) if successful, otherwise an error response.</returns>
+        [HttpPost("{conversationId}/read")] // POST /api/conversations/{conversationId}/read
+        public async Task<IActionResult> MarkAsRead(int conversationId)
+        {
+            var userIdString = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userIdString) || !Guid.TryParse(userIdString, out var userId))
+                return Unauthorized("User ID not found or invalid in token.");
+
+            try
+            {
+                await _conversationService.MarkConversationAsReadAsync(conversationId, userId);
+                return NoContent();
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return Forbid(ex.Message);
+            }
+        }
     }
 }

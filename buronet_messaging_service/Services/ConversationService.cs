@@ -3,14 +3,8 @@ using buronet_messaging_service.Data;
 using buronet_messaging_service.Models;
 using buronet_messaging_service.Models.DTOs;
 using buronet_messaging_service.Services.Interfaces;
-using buronet_messaging_service.Data;
-using buronet_messaging_service.Models.Users; // To access the User entity
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace buronet_messaging_service.Services
 {
@@ -36,11 +30,6 @@ namespace buronet_messaging_service.Services
 
             _logger.LogInformation("Creating new conversation with participants: {ParticipantIds}", string.Join(", ", participantUserIds));
 
-            // Validate participants exist in buronet_service's User table
-            // Assuming AppDbContext is accessible or you have a way to verify users.
-            // For now, we'll assume they exist based on the Guid.
-            // In a real app, you'd query buronet_service's AppDbContext for User existence.
-
             var newConversation = new Conversation
             {
                 Title = title ?? "New Chat",
@@ -49,39 +38,35 @@ namespace buronet_messaging_service.Services
             };
 
             _context.Conversations.Add(newConversation);
-            await _context.SaveChangesAsync(); // Save to get the Conversation Id
+            await _context.SaveChangesAsync();
 
-            // Add participants
             foreach (var userId in participantUserIds)
             {
                 var participant = new ConversationParticipant
                 {
                     ConversationId = newConversation.Id,
                     UserId = userId,
-                    JoinedAt = DateTime.UtcNow
+                    JoinedAt = DateTime.UtcNow,
+                    LastReadMessageAt = DateTime.UtcNow
                 };
-                _context.ConversationParticipants.Add(participant); // <--- FIX: Add directly to DbSet
+
+                _context.ConversationParticipants.Add(participant);
                 await _context.SaveChangesAsync();
-                newConversation.Participants.Add(participant); // Also add to navigation collection for in-memory consistency
+                newConversation.Participants.Add(participant);
             }
 
-            await _context.SaveChangesAsync(); // Save participants
+            await _context.SaveChangesAsync();
 
-            // Load participants and their User data for the DTO
             await _context.Entry(newConversation)
                           .Collection(c => c.Participants)
                           .LoadAsync();
+
             foreach (var participant in newConversation.Participants)
             {
-                await _context.Entry(participant)
-                              .Reference(cp => cp.User)
-                              .LoadAsync();
+                await _context.Entry(participant).Reference(cp => cp.User).LoadAsync();
                 if (participant.User != null)
                 {
-                    // If you need Profile data for ChatUser, load it here
-                    await _context.Entry(participant.User)
-                                  .Reference(u => u.Profile)
-                                  .LoadAsync();
+                    await _context.Entry(participant.User).Reference(u => u.Profile).LoadAsync();
                 }
             }
 
@@ -94,66 +79,66 @@ namespace buronet_messaging_service.Services
         {
             _logger.LogInformation("Fetching conversations for user {UserId}.", userId);
 
-            //var conversations = await _context.ConversationParticipants
-            //                                  .Where(cp => cp.UserId == userId)
-            //                                  .Select(cp => cp.Conversation)
-            //                                  .Include(c => c.Participants)
-            //                                      .ThenInclude(p => p.User)
-            //                                          .ThenInclude(u => u.Profile) // Include user profile for avatar/name
-            //                                  .Include(c => c.Messages.OrderByDescending(m => m.SentAt).Take(1)) // Get last message
-            //                                      .ThenInclude(m => m.Sender)
-            //                                          .ThenInclude(s => s.Profile)
-            //                                  .OrderByDescending(c => c.UpdatedAt) // Order by last activity
-            //                                  .ToListAsync();
             var conversations = await _context.Conversations
                                               .Include(c => c.Participants)
                                                   .ThenInclude(p => p.User)
-                                                      .ThenInclude(u => u.Profile) // Include user profile for avatar/name
-                                              .Where(c => c.Participants.Any(cp => cp.UserId == userId)) // Filter by current user's participation
-                                              .OrderByDescending(c => c.UpdatedAt) // Order by last activity
-                                              .ToListAsync(); // Materialize the conversations here
+                                                      .ThenInclude(u => u.Profile)
+                                              .Where(c => c.Participants.Any(cp => cp.UserId == userId))
+                                              .OrderByDescending(c => c.UpdatedAt)
+                                              .ToListAsync();
 
-            // Manually load the last message for each conversation in a separate query/loop
             foreach (var conv in conversations)
             {
                 conv.Messages = await _context.Messages
-                                                       .Where(m => m.ConversationId == conv.Id)
-                                                       .OrderByDescending(m => m.SentAt)
-                                                       .Take(1)
-                                                       .Include(m => m.Sender) // Include sender for the last message
-                                                           .ThenInclude(s => s.Profile)
-                                                       .ToListAsync(); // Load as a list to match ICollection<Message>
+                                              .Where(m => m.ConversationId == conv.Id)
+                                              .OrderByDescending(m => m.SentAt)
+                                              .Take(1)
+                                              .Include(m => m.Sender)
+                                                  .ThenInclude(s => s.Profile)
+                                              .ToListAsync();
 
-                // Manually load User data for participants and sender if not already loaded by Include
-                // This manual loading is still necessary if the Includes don't fully load all needed nested User/Profile data
-                // (e.g., if the initial Include chain is insufficient or if User is from a different DbContext)
                 foreach (var participant in conv.Participants)
                 {
                     if (participant.User == null)
                     {
                         participant.User = await _context.Users
-                                                            .Include(u => u.Profile)
-                                                            .FirstOrDefaultAsync(u => u.Id == participant.UserId)
-                                                            ?? throw new InvalidOperationException($"User {participant.UserId} not found for participant in conversation {conv.Id}.");
+                                                         .Include(u => u.Profile)
+                                                         .FirstOrDefaultAsync(u => u.Id == participant.UserId)
+                                                         ?? throw new InvalidOperationException($"User {participant.UserId} not found for participant in conversation {conv.Id}.");
                     }
                 }
+
                 if (conv.Messages.Any() && conv.Messages.First().Sender == null)
                 {
-                    conv.Messages.First().Sender = await _context.Users
-                                                                    .Include(u => u.Profile)
-                                                                    .FirstOrDefaultAsync(u => u.Id == conv.Messages.First().SenderId)
-                                                                    ?? throw new InvalidOperationException($"Sender {conv.Messages.First().SenderId} not found for last message in conversation {conv.Id}.");
+                    var last = conv.Messages.First();
+                    last.Sender = await _context.Users
+                                                .Include(u => u.Profile)
+                                                .FirstOrDefaultAsync(u => u.Id == last.SenderId)
+                                                ?? throw new InvalidOperationException($"Sender {last.SenderId} not found for last message in conversation {conv.Id}.");
                 }
             }
 
+            var conversationDtos = _mapper.Map<List<ConversationDto>>(conversations);
 
-            var conversationDtos = _mapper.Map<IEnumerable<ConversationDto>>(conversations);
+            // Compute unread counts in SQL (SentAt > participant.LastReadMessageAt, excluding own messages)
+            var conversationIds = conversations.Select(c => c.Id).ToList();
+
+            var unreadCountByConversation = await _context.Messages
+                                                         .Where(m => conversationIds.Contains(m.ConversationId) && m.SenderId != userId)
+                                                         .Join(
+                                                             _context.ConversationParticipants.Where(cp => cp.UserId == userId),
+                                                             m => m.ConversationId,
+                                                             cp => cp.ConversationId,
+                                                             (m, cp) => new { m.ConversationId, m.SentAt, cp.LastReadMessageAt }
+                                                         )
+                                                         .Where(x => x.SentAt > x.LastReadMessageAt)
+                                                         .GroupBy(x => x.ConversationId)
+                                                         .Select(g => new { ConversationId = g.Key, Count = g.Count() })
+                                                         .ToDictionaryAsync(x => x.ConversationId, x => x.Count);
 
             foreach (var dto in conversationDtos)
             {
-                // AutoMapper will now map LastMessage from conv.Messages.FirstOrDefault()
-                // Ensure LastMessage is correctly mapped in MessagingProfile.cs
-                dto.UnreadCount = 0; // Placeholder
+                dto.UnreadCount = unreadCountByConversation.TryGetValue(dto.Id, out var count) ? count : 0;
             }
 
             return conversationDtos;
@@ -175,7 +160,7 @@ namespace buronet_messaging_service.Services
                                              .Include(c => c.Participants)
                                                  .ThenInclude(p => p.User)
                                                      .ThenInclude(u => u.Profile)
-                                             .Include(c => c.Messages) // Include all messages for this view
+                                             .Include(c => c.Messages)
                                                  .ThenInclude(m => m.Sender)
                                                      .ThenInclude(s => s.Profile)
                                              .FirstOrDefaultAsync(c => c.Id == conversationId && c.Participants.Any(cp => cp.UserId == userId));
@@ -183,6 +168,20 @@ namespace buronet_messaging_service.Services
             if (conversation == null) return null;
 
             return _mapper.Map<ConversationDto>(conversation);
+        }
+
+        public async Task MarkConversationAsReadAsync(int conversationId, Guid userId)
+        {
+            var participant = await _context.ConversationParticipants
+                                            .FirstOrDefaultAsync(cp => cp.ConversationId == conversationId && cp.UserId == userId);
+
+            if (participant == null)
+                throw new UnauthorizedAccessException("User is not a participant of this conversation.");
+
+            // Set to "now" (simple + works without needing max message timestamp)
+            participant.LastReadMessageAt = DateTime.UtcNow;
+
+            await _context.SaveChangesAsync();
         }
     }
 }
