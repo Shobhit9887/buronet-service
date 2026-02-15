@@ -568,5 +568,158 @@ namespace buronet_service.Services
                 HasVoted = hasVoted // Set HasVoted based on whether the user has voted or not
             };
         }
+
+        public async Task<IEnumerable<PostDto>> GetPostsByTagAsync(string tag, Guid? currentUserId)
+        {
+            if (string.IsNullOrWhiteSpace(tag))
+                return Array.Empty<PostDto>();
+
+            var normalizedTag = tag.Trim().ToLowerInvariant();
+            var tagSearchTerm = $"\"{normalizedTag.Replace("\"", "\\\"")}\"";
+
+            var posts = await _context.Posts
+                .AsNoTracking()
+                .Where(p => p.TagsJson != null && p.TagsJson.ToLower().Contains(tagSearchTerm))
+                .Include(p => p.User)
+                    .ThenInclude(u => u.Profile)
+                .Include(p => p.Likes)
+                    .ThenInclude(l => l.User)
+                        .ThenInclude(u => u.Profile)
+                .Include(p => p.Comments)
+                    .ThenInclude(c => c.User)
+                        .ThenInclude(u => u.Profile)
+                .Include(p => p.Poll)
+                    .ThenInclude(poll => poll!.Options)
+                .OrderByDescending(p => p.CreatedAt)
+                .ToListAsync();
+
+            var postDtos = _mapper.Map<List<PostDto>>(posts);
+
+            foreach (var dto in postDtos)
+            {
+                if (currentUserId.HasValue && currentUserId.Value != Guid.Empty)
+                {
+                    dto.IsLikedByCurrentUser = dto.Likes.Any(l => l.UserId == currentUserId.Value.ToString());
+
+                    if (dto.IsPoll && dto.Poll != null)
+                    {
+                        var userVote = await _context.PollVotes
+                            .AsNoTracking()
+                            .FirstOrDefaultAsync(v => v.PollId == dto.Poll.Id && v.UserId == currentUserId.Value);
+
+                        dto.Poll.TotalVotes = await _context.PollVotes
+                            .Where(v => v.PollId == dto.Poll.Id)
+                            .CountAsync();
+
+                        foreach (var option in dto.Poll.Options)
+                        {
+                            option.Votes = await _context.PollVotes
+                                .Where(v => v.PollId == dto.Poll.Id && v.PollOptionId == option.Id)
+                                .CountAsync();
+                        }
+
+                        if (userVote != null)
+                        {
+                            foreach (var option in dto.Poll.Options)
+                            {
+                                if (option.Id == userVote.PollOptionId)
+                                    option.HasVoted = true;
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    dto.IsLikedByCurrentUser = false;
+
+                    if (dto.IsPoll && dto.Poll != null)
+                    {
+                        foreach (var option in dto.Poll.Options)
+                            option.HasVoted = false;
+                    }
+                }
+            }
+
+            return postDtos;
+        }
+
+        public async Task<IEnumerable<PostDto>> GetPostsByTagAsync(string tag, Guid? currentUserId, int page, int pageSize)
+        {
+            if (string.IsNullOrWhiteSpace(tag))
+                return Array.Empty<PostDto>();
+
+            if (page < 1) page = 1;
+            if (pageSize < 1) pageSize = 20;
+
+            var normalizedTag = tag.Trim().ToLowerInvariant();
+            var tagSearchTerm = $"\"{normalizedTag.Replace("\"", "\\\"")}\"";
+
+            var posts = await _context.Posts
+                .AsNoTracking()
+                .Where(p => p.TagsJson != null && p.TagsJson.ToLower().Contains(tagSearchTerm))
+                .Include(p => p.User)
+                    .ThenInclude(u => u.Profile)
+                .Include(p => p.Likes)
+                    .ThenInclude(l => l.User)
+                        .ThenInclude(u => u.Profile)
+                .Include(p => p.Comments)
+                    .ThenInclude(c => c.User)
+                        .ThenInclude(u => u.Profile)
+                .Include(p => p.Poll)
+                    .ThenInclude(poll => poll!.Options)
+                .OrderByDescending(p => p.CreatedAt)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            var postDtos = _mapper.Map<List<PostDto>>(posts);
+
+            foreach (var dto in postDtos)
+            {
+                if (currentUserId.HasValue && currentUserId.Value != Guid.Empty)
+                {
+                    dto.IsLikedByCurrentUser = dto.Likes.Any(l => l.UserId == currentUserId.Value.ToString());
+
+                    if (dto.IsPoll && dto.Poll != null)
+                    {
+                        var userVote = await _context.PollVotes
+                            .AsNoTracking()
+                            .FirstOrDefaultAsync(v => v.PollId == dto.Poll.Id && v.UserId == currentUserId.Value);
+
+                        dto.Poll.TotalVotes = await _context.PollVotes
+                            .Where(v => v.PollId == dto.Poll.Id)
+                            .CountAsync();
+
+                        foreach (var option in dto.Poll.Options)
+                        {
+                            option.Votes = await _context.PollVotes
+                                .Where(v => v.PollId == dto.Poll.Id && v.PollOptionId == option.Id)
+                                .CountAsync();
+                        }
+
+                        if (userVote != null)
+                        {
+                            foreach (var option in dto.Poll.Options)
+                            {
+                                if (option.Id == userVote.PollOptionId)
+                                    option.HasVoted = true;
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    dto.IsLikedByCurrentUser = false;
+
+                    if (dto.IsPoll && dto.Poll != null)
+                    {
+                        foreach (var option in dto.Poll.Options)
+                            option.HasVoted = false;
+                    }
+                }
+            }
+
+            return postDtos;
+        }
     }
 }

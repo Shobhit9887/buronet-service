@@ -315,6 +315,29 @@ namespace buronet_service.Controllers
             });
         }
 
+        // GET api/posts/tag/{tag}?page=1&pageSize=20
+        // Gets posts that contain the specified tag (paginated). Can be viewed by anyone.
+        [HttpGet("tag/{tag}")]
+        [AllowAnonymous]
+        public async Task<ActionResult<IEnumerable<PostDto>>> GetPostsByTag(
+            string tag,
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 20)
+        {
+            if (string.IsNullOrWhiteSpace(tag))
+                return BadRequest("tag is required.");
+
+            if (page < 1)
+                return BadRequest("page must be >= 1.");
+
+            if (pageSize < 1 || pageSize > 100)
+                return BadRequest("pageSize must be between 1 and 100.");
+
+            var currentUserId = GetCurrentUserId(); // null if unauthenticated
+            var posts = await _postService.GetPostsByTagAsync(tag, currentUserId, page, pageSize);
+            return Ok(posts);
+        }
+
         public sealed class ReportPostRequestDto
         {
             public int PostId { get; set; }

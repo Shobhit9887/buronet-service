@@ -21,8 +21,11 @@ namespace buronet_service.Services // Ensure this namespace is correct
         // Likes
         Task<bool> ToggleLikeAsync(int postId, Guid userId); // Like or Unlike
         Task<bool> HasUserLikedPostAsync(int postId, Guid userId); // Helper for internal use, though DTO handles it
-        Task<IEnumerable<TagWithTotalCountDto>> GetTrendingTagsAsync(int limit); // Helper for internal use, though DTO handles it
+        Task<IEnumerable<TagWithTotalCountDto>> GetTrendingTagsAsync(int limit);
         Task<PollOptionDto> TogglePollVoteAsync(PollVoteDto pollVote);
         Task<bool> ReportPostAsync(int postId, string postUrl, string message, Guid? reporterId, string? reporterEmail, string? reporterUsername);
+
+        // Tags (paginated)
+        Task<IEnumerable<PostDto>> GetPostsByTagAsync(string tag, Guid? currentUserId, int page, int pageSize);
     }
 }
