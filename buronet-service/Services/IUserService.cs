@@ -60,6 +60,7 @@ namespace buronet_service.Services // Ensure this namespace is correct
         Task UpdateProfilePictureAsync(Guid userId, Guid mediaId);
         string MapToDo(Guid? userProfile);
         Task<string?> GetMediaUrlAsync(Guid? mediaId);
+        Task<NetworkDashboardStatsDto> GetNetworkDashboardStatsAsync(Guid userId);
 
     }
 }

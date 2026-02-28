@@ -404,5 +404,56 @@ namespace buronet_service.Services
             return media?.StoragePath;
         }
 
+        public async Task<NetworkDashboardStatsDto> GetNetworkDashboardStatsAsync(Guid userId)
+        {
+            var now = DateTime.UtcNow;
+            var firstDayOfMonth = new DateTime(now.Year, now.Month, 1);
+            var sevenDaysAgo = now.AddDays(-7);
+
+            var totalConnections = await _context.Connections
+                .AsNoTracking()
+                .CountAsync(c => (c.UserId1 == userId || c.UserId2 == userId));
+            
+            var connectionsThisMonth = await _context.Connections
+                .AsNoTracking()
+                .CountAsync(c => (c.UserId1 == userId || c.UserId2 == userId) 
+                    && c.CreatedAt >= firstDayOfMonth);
+            
+            var pendingRequests = await _context.ConnectionRequests
+                .AsNoTracking()
+                .CountAsync(cr => cr.ReceiverId == userId && cr.Status == "Pending");
+            
+            var joinedGroups = await _context.UserCommunityGroups
+                .AsNoTracking()
+                .Join(_context.UserProfiles.AsNoTracking(), 
+                    ucg => ucg.UserProfileId, 
+                    up => up.Id, 
+                    (ucg, up) => new { ucg, up })
+                .CountAsync(x => x.up.Id == userId);
+            
+            var groupsJoinedThisMonth = await _context.UserCommunityGroups
+                .AsNoTracking()
+                .Join(_context.UserProfiles.AsNoTracking(), 
+                    ucg => ucg.UserProfileId, 
+                    up => up.Id, 
+                    (ucg, up) => new { ucg, up })
+                .CountAsync(x => x.up.Id == userId && x.ucg.CreatedAt >= firstDayOfMonth);
+            
+            var newConnectionsThisWeek = await _context.Connections
+                .AsNoTracking()
+                .CountAsync(c => (c.UserId1 == userId || c.UserId2 == userId) 
+                    && c.CreatedAt >= sevenDaysAgo);
+
+            return new NetworkDashboardStatsDto
+            {
+                TotalConnections = totalConnections,
+                ConnectionsThisMonth = connectionsThisMonth,
+                PendingRequests = pendingRequests,
+                JoinedGroups = joinedGroups,
+                GroupsJoinedThisMonth = groupsJoinedThisMonth,
+                NewConnectionsThisWeek = newConnectionsThisWeek
+            };
+        }
+
     }
 }

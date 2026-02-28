@@ -123,10 +123,9 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("OpenAll", policy =>
     {
-        policy.WithOrigins(["http://ec2-13-61-18-130.eu-north-1.compute.amazonaws.com", "http://localhost:3000", "http://192.168.18.129:3000", "http://192.168.18.126:3000"])  // or your frontend URL
+        policy.AllowAnyOrigin()  // Allow any origin for now
             .AllowAnyHeader()
-            .AllowAnyMethod()
-            .AllowCredentials();
+            .AllowAnyMethod();
     });
 });
 

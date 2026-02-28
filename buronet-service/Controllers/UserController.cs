@@ -510,5 +510,17 @@ namespace buronet_service.Controllers
                 profilePictureUrl = cloudinaryUrl
             });
         }
+
+        [HttpGet("network/dashboard/{userId}")]
+        public async Task<IActionResult> GetNetworkDashboard(Guid userId)
+        {
+            if (userId == Guid.Empty)
+            {
+                return BadRequest("User ID is required.");
+            }
+
+            var stats = await _userService.GetNetworkDashboardStatsAsync(userId);
+            return Ok(stats);
+        }
     }
 }

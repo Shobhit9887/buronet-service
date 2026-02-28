@@ -90,7 +90,7 @@ public class JobsService : IJobsService
         // Using FilterDefinitionBuilder for more complex queries
         var activeJobsFilter = Builders<Job>.Filter.Eq(j => j.Status, "active");
         var newJobsTodayFilter = Builders<Job>.Filter.Gte(j => j.CreatedDate, today);
-
+ 
         // Run counts in parallel for efficiency
         var totalActiveJobsTask = _jobsCollection.CountDocumentsAsync(activeJobsFilter);
         var newJobsTodayTask = _jobsCollection.CountDocumentsAsync(newJobsTodayFilter);
