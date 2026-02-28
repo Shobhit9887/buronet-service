@@ -56,6 +56,7 @@ builder.Services.AddScoped<ISearchService, SearchService>();
 builder.Services.AddScoped<INotificationsService, NotificationsService>();
 builder.Services.AddScoped<IBlobStorage, CloudinaryBlobStorage>();
 builder.Services.AddScoped<MediaService>();
+builder.Services.AddScoped<ICloudinaryService, CloudinaryService>();
 //*********************** Add services to the container end.***********************
 
 // Add AutoMapper
@@ -122,7 +123,7 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("OpenAll", policy =>
     {
-        policy.WithOrigins(["http://ec2-13-61-18-130.eu-north-1.compute.amazonaws.com", "http://localhost:3000"])  // or your frontend URL
+        policy.WithOrigins(["http://ec2-13-61-18-130.eu-north-1.compute.amazonaws.com", "http://localhost:3000", "http://192.168.18.129:3000", "http://192.168.18.126:3000"])  // or your frontend URL
             .AllowAnyHeader()
             .AllowAnyMethod()
             .AllowCredentials();

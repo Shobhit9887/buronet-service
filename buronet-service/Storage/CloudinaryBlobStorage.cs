@@ -1,109 +1,87 @@
-using System.Net.Http.Json;
+using CloudinaryDotNet;
+using CloudinaryDotNet.Actions;
 
 namespace buronet_service.Storage
 {
     public class CloudinaryBlobStorage : IBlobStorage
     {
-        private readonly IHttpClientFactory _httpClientFactory;
-        private readonly string _imageUploadUrl;
-        private readonly string _videoUploadUrl;
+        private readonly Cloudinary _cloudinary;
         private readonly string _imageUploadPreset;
         private readonly string _videoUploadPreset;
 
         public CloudinaryBlobStorage(IConfiguration configuration, IHttpClientFactory httpClientFactory)
         {
-            _httpClientFactory = httpClientFactory;
-
             var cloudName = configuration["Cloudinary:CloudName"];
+            var apiKey = configuration["Cloudinary:ApiKey"];
+            var apiSecret = configuration["Cloudinary:ApiSecret"];
+
             if (string.IsNullOrWhiteSpace(cloudName))
-            {
                 throw new InvalidOperationException("Cloudinary:CloudName is missing.");
-            }
+            if (string.IsNullOrWhiteSpace(apiKey))
+                throw new InvalidOperationException("Cloudinary:ApiKey is missing.");
+            if (string.IsNullOrWhiteSpace(apiSecret))
+                throw new InvalidOperationException("Cloudinary:ApiSecret is missing.");
 
             _imageUploadPreset = configuration["Cloudinary:ImagePreset"]
                 ?? throw new InvalidOperationException("Cloudinary:ImagePreset is missing.");
             _videoUploadPreset = configuration["Cloudinary:VideoPreset"]
                 ?? throw new InvalidOperationException("Cloudinary:VideoPreset is missing.");
 
-            var imageUrlTemplate = configuration["Cloudinary:ImageUrlTemplate"]
-                ?? throw new InvalidOperationException("Cloudinary:ImageUrlTemplate is missing.");
-            var videoUrlTemplate = configuration["Cloudinary:VideoUrlTemplate"]
-                ?? throw new InvalidOperationException("Cloudinary:VideoUrlTemplate is missing.");
-
-            _imageUploadUrl = imageUrlTemplate.Replace("{cloudName}", cloudName, StringComparison.Ordinal);
-            _videoUploadUrl = videoUrlTemplate.Replace("{cloudName}", cloudName, StringComparison.Ordinal);
+            _cloudinary = new Cloudinary(new Account(cloudName, apiKey, apiSecret))
+            {
+                Api = { Secure = true }
+            };
         }
 
-        public async Task SaveAsync(string path, byte[] data)
-        {
-            // Not used: for Cloudinary we upload and return a public URL via GetPublicUrl() pattern.
-            // This interface method is retained for compatibility, but use UploadAndGetUrlAsync flow in MediaService.
-            throw new NotSupportedException("CloudinaryBlobStorage requires uploading via UploadAsync and storing returned URL.");
-        }
+        public Task SaveAsync(string path, byte[] data)
+            => throw new NotSupportedException("CloudinaryBlobStorage requires uploading via UploadUnsignedAsync and storing returned URL.");
 
         public string? GetPath(string path) => null;
 
-        public string? GetPublicUrl(string path)
-            => path;
+        public string? GetPublicUrl(string path) => path;
 
-        public async Task<string> UploadAsync(byte[] data, string fileName, string? contentType, string publicId)
+        public async Task<string> UploadUnsignedAsync(byte[] data, string fileName, string? contentType)
         {
-            var (uploadUrl, uploadPreset) = ResolveUploadTarget(contentType);
+            var isVideo = !string.IsNullOrWhiteSpace(contentType) &&
+                          contentType.StartsWith("video/", StringComparison.OrdinalIgnoreCase);
 
-            using var content = new MultipartFormDataContent();
+            var preset = isVideo ? _videoUploadPreset : _imageUploadPreset;
 
-            content.Add(new StringContent(uploadPreset), "upload_preset");
-            //content.Add(new StringContent(publicId), "public_id");
+            using var ms = new MemoryStream(data);
 
-            var fileContent = new ByteArrayContent(data);
-            if (!string.IsNullOrWhiteSpace(contentType))
+            if (isVideo)
             {
-                fileContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(contentType);
+                var uploadParams = new VideoUploadParams
+                {
+                    File = new FileDescription(fileName, ms),
+                    UploadPreset = preset
+                    // IMPORTANT: do not set PublicId here unless your unsigned preset allows it.
+                };
+
+                var result = await _cloudinary.UploadAsync(uploadParams);
+
+                if (result.StatusCode is not System.Net.HttpStatusCode.OK and not System.Net.HttpStatusCode.Created)
+                    throw new InvalidOperationException($"Cloudinary upload failed: {result.Error?.Message}");
+
+                return result.SecureUrl?.ToString()
+                       ?? throw new InvalidOperationException("Cloudinary response didn't include SecureUrl.");
             }
-
-            content.Add(fileContent, "file", fileName);
-
-            var http = _httpClientFactory.CreateClient();
-            http.DefaultRequestHeaders.Authorization = null;
-            using var response = await http.PostAsync(uploadUrl, content);
-            if (!response.IsSuccessStatusCode)
+            else
             {
-                var errorBody = await response.Content.ReadAsStringAsync();
-                // LOG THIS errorBody. It will say exactly why Cloudinary is mad.
-                throw new HttpRequestException($"Cloudinary Error: {response.StatusCode} - {errorBody}");
+                var uploadParams = new ImageUploadParams
+                {
+                    File = new FileDescription(fileName, ms),
+                    UploadPreset = preset
+                };
+
+                var result = await _cloudinary.UploadAsync(uploadParams);
+
+                if (result.StatusCode is not System.Net.HttpStatusCode.OK and not System.Net.HttpStatusCode.Created)
+                    throw new InvalidOperationException($"Cloudinary upload failed: {result.Error?.Message}");
+
+                return result.SecureUrl?.ToString()
+                       ?? throw new InvalidOperationException("Cloudinary response didn't include SecureUrl.");
             }
-            response.EnsureSuccessStatusCode();
-
-            var payload = await response.Content.ReadFromJsonAsync<CloudinaryUploadResponse>();
-            if (payload?.SecureUrl == null)
-            {
-                throw new InvalidOperationException("Cloudinary response didn't include secure_url.");
-            }
-
-            return payload.SecureUrl;
-        }
-
-        private (string uploadUrl, string uploadPreset) ResolveUploadTarget(string? contentType)
-        {
-            // Default to image if unknown.
-            if (!string.IsNullOrWhiteSpace(contentType) &&
-                contentType.StartsWith("video/", StringComparison.OrdinalIgnoreCase))
-            {
-                return (_videoUploadUrl, _videoUploadPreset);
-            }
-
-            return (_imageUploadUrl, _imageUploadPreset);
-        }
-
-        private sealed class CloudinaryUploadResponse
-        {
-            [System.Text.Json.Serialization.JsonPropertyName("secure_url")]
-            public string? SecureUrl { get; set; }
-
-            // Cloudinary uses snake_case; System.Text.Json can bind if property matches via attribute.
-            // Keep it explicit:
-            //[System.Text.Json.Serialization.JsonPropertyName("secure_url")]
-            //public string? SecureUrlJson { get => SecureUrl; set => SecureUrl = value; }
         }
     }
 }

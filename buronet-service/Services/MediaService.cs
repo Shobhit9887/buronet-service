@@ -26,16 +26,15 @@ namespace buronet_service.Services
 
             if (_storage is CloudinaryBlobStorage cloudinaryStorage)
             {
-                // Store returned URL in StoragePath.
-                storagePath = await cloudinaryStorage.UploadAsync(
+                // Unsigned upload: rely on upload_preset, do NOT pass a signature/timestamp/api_key.
+                // Also avoid forcing public_id for unsigned presets unless your preset explicitly allows it.
+                storagePath = await cloudinaryStorage.UploadUnsignedAsync(
                     ms.ToArray(),
                     file.FileName,
-                    file.ContentType,
-                    publicId: $"media/{id}");
+                    file.ContentType);
             }
             else
             {
-                // Local fallback
                 storagePath = $"media/{id}";
                 await _storage.SaveAsync(storagePath, ms.ToArray());
             }

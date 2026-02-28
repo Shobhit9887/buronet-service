@@ -24,35 +24,36 @@ namespace buronet_service.Services
 
         public async Task<SearchResultDto> UnifiedSearchAsync(string query, Guid currentUserId)
         {
-            // Normalize query for case-insensitive search
             string normalizedQuery = query.ToLower();
 
-            // 1. Concurrent Search Execution
-            var userSearchTask = await SearchUsersAsync(normalizedQuery, currentUserId);
-            var jobSearchTask = await _fetchJobsFromExternalDatabase(normalizedQuery);
-            var examSearchTask = await _fetchExamsFromExternalDatabase(normalizedQuery);
+            // 1. Start the Tasks (Do not await them yet)
+            var userSearchTask = SearchUsersAsync(normalizedQuery, currentUserId);
+            var jobSearchTask = _fetchJobsFromExternalDatabase(normalizedQuery);
+            var examSearchTask = _fetchExamsFromExternalDatabase(normalizedQuery);
 
-            // Wait for both searches to complete
-            //await Task.WhenAll(userSearchTask, jobSearchTask);
+            // 2. Wait for ALL of them to complete
+            await Task.WhenAll(userSearchTask, jobSearchTask, examSearchTask);
 
-            // 2. Combine and Aggregate Results
+            // 3. Extract the actual Lists from the Tasks
+            var userResults = await userSearchTask; // Or userSearchTask.Result
+            var jobResults = await jobSearchTask;
+            var examResults = await examSearchTask;
+
+            // 4. Combine and Aggregate Results
             var allResults = new SearchResultDto
             {
                 Results = new List<UnifiedSearchResultItem>(),
-                TotalUserCount = userSearchTask.Count,
-                TotalJobCount = jobSearchTask.Count,
-                TotalExamCount = examSearchTask.Count
+                TotalUserCount = userResults.Count,  // Now .Count works!
+                TotalJobCount = jobResults.Count,
+                TotalExamCount = examResults.Count
             };
 
-            // Add User Results
-            allResults.Results.AddRange(userSearchTask);
+            // Add Results to the list
+            allResults.Results.AddRange(userResults);
+            allResults.Results.AddRange(jobResults);
+            allResults.Results.AddRange(examResults);
 
-            // Add Job Results
-            allResults.Results.AddRange(jobSearchTask);
-            allResults.Results.AddRange(examSearchTask);
-
-            // Optional: Implement complex ranking/sorting logic here if needed
-            // For now, we'll sort alphabetically by title for simplicity
+            // Sort and return
             allResults.Results = allResults.Results.OrderBy(r => r.Title).ToList();
 
             return allResults;
@@ -61,16 +62,26 @@ namespace buronet_service.Services
         // --- Data Source 1: Internal User Search (MySQL) ---
         private async Task<List<UnifiedSearchResultItem>> SearchUsersAsync(string normalizedQuery, Guid currentUserId)
         {
-            // Search logic (name, headline, skills, company)
-            var matchingUsers = await _context.UserProfiles
-                .Where(u => u.Id != currentUserId && // Exclude current user
-                            (u.FirstName.ToLower().Contains(normalizedQuery) ||
-                             u.LastName.ToLower().Contains(normalizedQuery) ||
-                             u.Headline.ToLower().Contains(normalizedQuery)))
-                .Take(50) // Limit to a reasonable number of results
-                .ToListAsync();
+            // Split the query into individual words
+            var words = normalizedQuery.Split(' ', StringSplitOptions.RemoveEmptyEntries);
 
-            // Map to Unified DTO
+            var queryable = _context.UserProfiles.AsQueryable();
+
+            // Exclude current user
+            queryable = queryable.Where(u => u.Id != currentUserId);
+
+            // Filter by words
+            foreach (var word in words)
+            {
+                // This ensures every word in the search appears SOMEWHERE in the name or headline
+                queryable = queryable.Where(u =>
+                    u.FirstName.ToLower().Contains(word) ||
+                    u.LastName.ToLower().Contains(word) ||
+                    u.Headline.ToLower().Contains(word));
+            }
+
+            var matchingUsers = await queryable.Take(50).ToListAsync();
+
             return matchingUsers.Select(u => new UnifiedSearchResultItem
             {
                 Id = u.Id.ToString(),
@@ -80,7 +91,8 @@ namespace buronet_service.Services
                 LinkUrl = $"/profile/{u.Id}",
                 Payload = new UserSearchResultPayload
                 {
-                    CurrentPosition = (u.Experiences.Count > 0 ? u.Experiences.OrderBy(e => e.StartDate).First().Title : u.Headline),
+                    // Note: Changed First() to FirstOrDefault() to prevent crashes if Experiences is empty
+                    CurrentPosition = u.Experiences.OrderBy(e => e.StartDate).FirstOrDefault()?.Title ?? u.Headline,
                     Location = u.City
                 }
             }).ToList();
