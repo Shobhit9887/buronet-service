@@ -23,7 +23,8 @@ namespace buronet_service.Models.User // All user-related entities share this na
         [Required]
         public string Content { get; set; } = string.Empty;
 
-        public Guid? Image { get; set; }
+        [MaxLength(int.MaxValue)]
+        public string? Image { get; set; }
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;

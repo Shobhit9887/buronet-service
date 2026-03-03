@@ -12,7 +12,7 @@ namespace buronet_service.Models.DTOs.User // All DTOs share this namespace
         public string UserEmail { get; set; } = string.Empty; // To display post creator's email
         public string Title { get; set; } = string.Empty;
         public string Content { get; set; } = string.Empty;
-        public Guid? Image { get; set; }
+        public string? Image { get; set; }
         // --- ADD THIS NESTED USER OBJECT ---
         public PostUserDto User { get; set; } = null!; // The user who liked
         // --- END ADD ---
@@ -37,7 +37,8 @@ namespace buronet_service.Models.DTOs.User // All DTOs share this namespace
         [Required]
         public string Content { get; set; } = string.Empty;
 
-        public Guid? Image { get; set; }
+        [MaxLength(int.MaxValue)]
+        public string? Image { get; set; }
         public List<string> TagsJson{ get; set; } // Internal property for DB storage
         public bool IsPoll { get; set; } = false;
 
@@ -55,7 +56,7 @@ namespace buronet_service.Models.DTOs.User // All DTOs share this namespace
         public string Content { get; set; } = string.Empty;
 
         [MaxLength(500)]
-        public string? ImageUrl { get; set; }
+        public string? Image { get; set; }
     }
 
 }
