@@ -95,6 +95,65 @@ namespace buronet_service.Services
             return true;
         }
 
+        public async Task<bool> ReportByteAsync(string postId, string postUrl, string message, Guid? reporterId, string? reporterEmail, string? reporterUsername)
+        { 
+            var smtp = _configuration.GetSection("Smtp");
+            var host = smtp["Host"];
+            var portString = smtp["Port"];
+            var username = smtp["Username"];
+            var password = smtp["Password"];
+            var from = smtp["From"];
+            var to = smtp["To"];
+
+            if (string.IsNullOrWhiteSpace(host) ||
+                string.IsNullOrWhiteSpace(portString) ||
+                string.IsNullOrWhiteSpace(username) ||
+                string.IsNullOrWhiteSpace(password) ||
+                string.IsNullOrWhiteSpace(from) ||
+                string.IsNullOrWhiteSpace(to))
+            {
+                throw new ApplicationException("SMTP configuration is missing.");
+            }
+
+            if (!int.TryParse(portString, out var port))
+            {
+                throw new ApplicationException("SMTP Port is invalid.");
+            }
+
+            var subject = $"[Buronet] Byte Reported - Byte Id {postId}";
+            var body =
+                "A byte was reported.\n\n" +
+                $"ByteId: {postId}\n" +
+
+                $"Message: {message}\n\n" +
+                "Reporter:\n" +
+                $"  Id: {reporterId?.ToString() ?? "(anonymous)"}\n" +
+                $"  Username: {reporterUsername ?? "(not provided)"}\n" +
+                $"  Email: {reporterEmail ?? "(not provided)"}\n" +
+                $"  ReportedAtUtc: {DateTime.UtcNow:O}\n";
+
+            var email = new MimeMessage();
+            email.From.Add(MailboxAddress.Parse(from));
+            email.To.Add(MailboxAddress.Parse(to));
+            email.Subject = subject;
+            email.Body = new TextPart("plain")
+            {
+                Text = body
+            };
+
+            using var client = new SmtpClient();
+
+            // Port 465 = implicit SSL/TLS
+            var socketOptions = port == 465 ? SecureSocketOptions.SslOnConnect : SecureSocketOptions.StartTls;
+
+            await client.ConnectAsync(host, port, socketOptions);
+            await client.AuthenticateAsync(username, password);
+            await client.SendAsync(email);
+            await client.DisconnectAsync(true);
+
+            return true;
+        }
+
         private async Task SendNotificationToService(Guid userId, string title, string message, string type, string redirectUrl, string? targetId = null)
         {
             if (!Enum.TryParse(type, true, out NotificationType notificationType))

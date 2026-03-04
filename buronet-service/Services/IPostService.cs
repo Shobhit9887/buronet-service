@@ -24,6 +24,7 @@ namespace buronet_service.Services // Ensure this namespace is correct
         Task<IEnumerable<TagWithTotalCountDto>> GetTrendingTagsAsync(int limit);
         Task<PollOptionDto> TogglePollVoteAsync(PollVoteDto pollVote);
         Task<bool> ReportPostAsync(int postId, string postUrl, string message, Guid? reporterId, string? reporterEmail, string? reporterUsername);
+        Task<bool> ReportByteAsync(string postId, string postUrl, string message, Guid? reporterId, string? reporterEmail, string? reporterUsername);
 
         // Tags (paginated)
         Task<IEnumerable<PostDto>> GetPostsByTagAsync(string tag, Guid? currentUserId, int page, int pageSize);

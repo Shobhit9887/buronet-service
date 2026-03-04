@@ -104,6 +104,51 @@ namespace buronet_service.Controllers
             }
         }
 
+        [HttpPost("report-byte")]
+        [AllowAnonymous]
+        public async Task<IActionResult> ReportPost([FromBody] ReportBytePostRequestDto request)
+        {
+            if (request == null) return BadRequest("Request body is required.");
+            if (request.PostId == null) return BadRequest("postId is required.");
+            if (string.IsNullOrWhiteSpace(request.PostUrl)) return BadRequest("postUrl is required.");
+            if (string.IsNullOrWhiteSpace(request.Message)) return BadRequest("message is required.");
+
+            Guid? reporterId = null;
+            if (request.Reporter?.Id != null && Guid.TryParse(request.Reporter.Id, out var parsedReporterId))
+            {
+                reporterId = parsedReporterId;
+            }
+
+            // If user is authenticated, prefer claim-based id (more trustworthy than client payload)
+            var currentUserId = GetCurrentUserId();
+            if (currentUserId.HasValue && currentUserId.Value != Guid.Empty)
+            {
+                reporterId = currentUserId.Value;
+            }
+
+            try
+            {
+                var sent = await _postService.ReportByteAsync(
+                    request.PostId,
+                    request.PostUrl,
+                    request.Message,
+                    reporterId,
+                    request.Reporter?.Email,
+                    request.Reporter?.Username);
+
+                if (!sent) return NotFound("Post not found.");
+                return Ok(new { success = true });
+            }
+            catch (ApplicationException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "An unexpected error occurred while reporting the post.", details = ex.Message });
+            }
+        }
+
         // GET api/posts
         // Gets a feed of all posts. Can be viewed by anyone.
         [HttpGet]
@@ -341,6 +386,14 @@ namespace buronet_service.Controllers
         public sealed class ReportPostRequestDto
         {
             public int PostId { get; set; }
+            public string PostUrl { get; set; } = string.Empty;
+            public string Message { get; set; } = string.Empty;
+            public ReportPostReporterDto? Reporter { get; set; }
+        }
+
+        public sealed class ReportBytePostRequestDto
+        {
+            public string PostId { get; set; }
             public string PostUrl { get; set; } = string.Empty;
             public string Message { get; set; } = string.Empty;
             public ReportPostReporterDto? Reporter { get; set; }
