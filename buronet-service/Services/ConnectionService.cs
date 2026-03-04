@@ -467,9 +467,15 @@ namespace buronet_service.Services // Ensure this namespace is correct
                 .Take(limit)
                 .ToList();
 
-            suggestions["People With Similar Headline"] = _mapper.Map<List<SuggestedUserDto>>(similarHeadlineUsers);
-            suggestions["People With Similar Title"] = _mapper.Map<List<SuggestedUserDto>>(similarTitleUsers);
-            suggestions["People With Similar Education"] = _mapper.Map<List<SuggestedUserDto>>(similarEducationUsers);
+            suggestions["People With Similar Headline"] = _mapper.Map<List<SuggestedUserDto>>(similarHeadlineUsers)
+                .Where(u => !string.IsNullOrEmpty(u.FirstName))
+                .ToList();
+            suggestions["People With Similar Title"] = _mapper.Map<List<SuggestedUserDto>>(similarTitleUsers)
+                .Where(u => !string.IsNullOrEmpty(u.FirstName))
+                .ToList();
+            suggestions["People With Similar Education"] = _mapper.Map<List<SuggestedUserDto>>(similarEducationUsers)
+                .Where(u => !string.IsNullOrEmpty(u.FirstName))
+                .ToList();
 
             return suggestions;
         }
@@ -548,7 +554,9 @@ namespace buronet_service.Services // Ensure this namespace is correct
                 .Take(limit)
                 .ToList();
 
-            return _mapper.Map<IEnumerable<SuggestedUserDto>>(scoredUsers.Select(x => x.User));
+            return _mapper.Map<IEnumerable<SuggestedUserDto>>(scoredUsers.Select(x => x.User))
+                .Where(u => !string.IsNullOrEmpty(u.FirstName))
+                .ToList();
         }
 
         public async Task<IEnumerable<PopularUserDto>> GetPopularUsersAsync(Guid currentUserId, int limit)
@@ -598,7 +606,9 @@ namespace buronet_service.Services // Ensure this namespace is correct
                 .ToList();
 
             // Manually map to DTOs and calculate MutualConnections in memory
-            var finalSuggestions = combinedUsers.Select(u => new PopularUserDto
+            var finalSuggestions = combinedUsers
+                .Where(u => !string.IsNullOrEmpty(u.Profile?.FirstName))
+                .Select(u => new PopularUserDto
             {
                 Id = u.Id,
                 Username = u.Username,
