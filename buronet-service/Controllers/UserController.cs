@@ -522,5 +522,45 @@ namespace buronet_service.Controllers
             var stats = await _userService.GetNetworkDashboardStatsAsync(userId);
             return Ok(stats);
         }
+
+        // POST api/users/batch-profiles
+        // Fetches profile pictures and names for a batch of user IDs
+        [HttpPost("batch-profiles")]
+        [AllowAnonymous]
+        public async Task<ActionResult<List<UserProfilePictureDto>>> GetBatchUserProfiles([FromBody] List<string> userIds)
+        {
+            if (userIds == null || userIds.Count == 0)
+            {
+                return BadRequest("User IDs list is required and cannot be empty.");
+            }
+
+            if (userIds.Count > 100)
+            {
+                return BadRequest("Maximum 100 user IDs allowed per request.");
+            }
+
+            var result = new List<UserProfilePictureDto>();
+
+            foreach (var userIdString in userIds)
+            {
+                if (string.IsNullOrWhiteSpace(userIdString)) continue;
+                
+                if (!Guid.TryParse(userIdString, out var userId) || userId == Guid.Empty) continue;
+
+                var userProfile = await _userService.GetUserProfileDtoByIdAsync(userId);
+                if (userProfile != null)
+                {
+                    var profilePictureUrl = await _userService.GetMediaUrlAsync(userProfile.ProfilePictureMediaId);
+                    result.Add(new UserProfilePictureDto
+                    {
+                        UserId = userId,
+                        Name = userProfile.Username,
+                        ProfilePictureUrl = profilePictureUrl
+                    });
+                }
+            }
+
+            return Ok(result);
+        }
     }
 }

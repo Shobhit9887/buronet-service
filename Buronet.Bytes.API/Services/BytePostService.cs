@@ -9,13 +9,15 @@ public class BytePostService
 {
     private readonly IMongoCollection<BytePost> _postsCollection;
     private readonly IMongoCollection<Models.Comment> _commentsCollection;
+    private readonly BuronetConnectionsClient _connectionsClient;
 
-    public BytePostService(IOptions<MongoDbSettings> mongoDbSettings)
+    public BytePostService(IOptions<MongoDbSettings> mongoDbSettings, BuronetConnectionsClient connectionsClient)
     {
         var mongoClient = new MongoClient(mongoDbSettings.Value.ConnectionString);
         var mongoDatabase = mongoClient.GetDatabase(mongoDbSettings.Value.DatabaseName);
         _postsCollection = mongoDatabase.GetCollection<BytePost>(mongoDbSettings.Value.CollectionName);
         _commentsCollection = mongoDatabase.GetCollection<Models.Comment>("comments");
+        _connectionsClient = connectionsClient;
     }
 
     public async Task<List<BytePost>> GetAsync() =>
@@ -24,16 +26,36 @@ public class BytePostService
     public async Task CreateAsync(BytePost newPost) =>
         await _postsCollection.InsertOneAsync(newPost);
 
-    public async Task<List<Models.BytePost>> GetForYouFeedAsync(string userId) =>
-            await _postsCollection.Find(_ => true).SortByDescending(p => p.CreatedAt).Limit(10).ToListAsync();
+    public async Task<List<Models.BytePost>> GetForYouFeedAsync(string userId, int page = 1, int pageSize = 10)
+    {
+        var skip = (page - 1) * pageSize;
+        var bytes = await _postsCollection.Find(_ => true)
+            .SortByDescending(p => p.CreatedAt)
+            .Skip(skip)
+            .Limit(pageSize)
+            .ToListAsync();
 
-    public async Task<List<Models.BytePost>> GetConnectionsFeedAsync(List<string> connectionIds) =>
-        await _postsCollection.Find(p => p.Likes.Any(l => connectionIds.Contains(l)))
-                                .SortByDescending(p => p.CreatedAt).Limit(10).ToListAsync();
+        await EnrichBytesWithProfilePicturesAsync(bytes);
+        return bytes;
+    }
 
-    public async Task<List<Models.BytePost>> GetPopularFeedAsync()
+    public async Task<List<Models.BytePost>> GetConnectionsFeedAsync(List<string> connectionIds, int page = 1, int pageSize = 10)
+    {
+        var skip = (page - 1) * pageSize;
+        var bytes = await _postsCollection.Find(p => p.Likes.Any(l => connectionIds.Contains(l)))
+            .SortByDescending(p => p.CreatedAt)
+            .Skip(skip)
+            .Limit(pageSize)
+            .ToListAsync();
+
+        await EnrichBytesWithProfilePicturesAsync(bytes);
+        return bytes;
+    }
+
+    public async Task<List<Models.BytePost>> GetPopularFeedAsync(int page = 1, int pageSize = 10)
     {
         // Popular = most likes, ties broken by recency.
+        var skip = (page - 1) * pageSize;
         var pipeline = new[]
         {
             new BsonDocument("$addFields",
@@ -41,11 +63,14 @@ public class BytePostService
                     new BsonDocument("$size",
                         new BsonDocument("$ifNull", new BsonArray { "$likes", new BsonArray() })))),
             new BsonDocument("$sort", new BsonDocument { { "likesCount", -1 }, { "createdAt", -1 } }),
-            new BsonDocument("$limit", 10),
+            new BsonDocument("$skip", skip),
+            new BsonDocument("$limit", pageSize),
             new BsonDocument("$project", new BsonDocument("likesCount", 0))
         };
 
-        return await _postsCollection.Aggregate<Models.BytePost>(pipeline).ToListAsync();
+        var bytes = await _postsCollection.Aggregate<Models.BytePost>(pipeline).ToListAsync();
+        await EnrichBytesWithProfilePicturesAsync(bytes);
+        return bytes;
     }
 
     public async Task ToggleLikeAsync(string byteId, string userId)
@@ -72,6 +97,46 @@ public class BytePostService
         var filter = Builders<Models.BytePost>.Filter.Eq(p => p.Id, newComment.ByteId);
         var update = Builders<Models.BytePost>.Update.Inc(p => p.CommentCount, 1);
         await _postsCollection.UpdateOneAsync(filter, update);
+    }
+
+    private async Task EnrichBytesWithProfilePicturesAsync(List<BytePost> bytes)
+    {
+        if (bytes == null || bytes.Count == 0)
+            return;
+
+        // Extract unique creator IDs
+        var creatorIds = bytes
+            .Where(b => !string.IsNullOrEmpty(b.Creator?.Id))
+            .Select(b => b.Creator.Id)
+            .Distinct()
+            .ToList();
+
+        if (creatorIds.Count == 0)
+            return;
+
+        try
+        {
+            // Fetch profile pictures in batch
+            var profileData = await _connectionsClient.GetBatchUserProfilesAsync(creatorIds);
+
+            // Enrich bytes with profile pictures
+            foreach (var bytePost in bytes)
+            {
+                if (bytePost.Creator != null && profileData.TryGetValue(bytePost.Creator.Id, out var profile))
+                {
+                    bytePost.Creator.Pic = profile.ProfilePictureUrl;
+                    if (string.IsNullOrEmpty(bytePost.Creator.Name))
+                    {
+                        bytePost.Creator.Name = profile.Name;
+                    }
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            // Log exception but don't fail the request - return bytes with existing pic data
+            System.Diagnostics.Debug.WriteLine($"Error enriching bytes with profile pictures: {ex.Message}");
+        }
     }
 }
 

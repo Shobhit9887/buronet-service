@@ -41,6 +41,8 @@ namespace buronet_service.Models.User
         [MaxLength(100)]
         public string? Country { get; set; }
 
+        public string? ProfilePictureUrl { get; set; }
+
         public Guid? ProfilePictureMediaId { get; set; }
 
         public string? Bio { get; set; }

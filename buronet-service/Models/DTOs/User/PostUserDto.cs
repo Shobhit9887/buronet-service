@@ -8,6 +8,7 @@
         public string? LastName { get; set; } = string.Empty;
         public string Email { get; set; } = string.Empty;
         public Guid? ProfilePictureMediaId { get; set; } // From UserProfile
+        public string? ProfilePictureUrl { get; set; } // From UserProfile
         public string? Headline { get; set; } // From UserProfile
         // Add any other user details you want to display with a post
     }

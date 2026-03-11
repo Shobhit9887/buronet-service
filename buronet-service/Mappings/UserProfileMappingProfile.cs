@@ -106,6 +106,7 @@ namespace buronet_service.Mappings
                 .ForMember(dest => dest.LastName, opt => opt.MapFrom(src => src.Profile.LastName))
                 // Map profilePictureUrl and headline from User.Profile
                 .ForMember(dest => dest.ProfilePictureMediaId, opt => opt.MapFrom(src => src.Profile != null ? src.Profile.ProfilePictureMediaId : null))
+                .ForMember(dest => dest.ProfilePictureUrl, opt => opt.MapFrom(src => src.Profile != null ? src.Profile.ProfilePictureUrl : null))
                 .ForMember(dest => dest.Headline, opt => opt.MapFrom(src => src.Profile != null ? src.Profile.Headline : null));
 
             // --- NEW: Connection Mappings ---

@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+using AutoMapper;
 using buronet_service.Models;
 using buronet_service.Data;
 using buronet_service.Models.DTOs.User;
@@ -23,14 +23,16 @@ namespace buronet_service.Services
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly INotificationsService _notificationsService;
         private readonly IConfiguration _configuration;
+        private readonly IUserService _userService;
 
-        public PostService(AppDbContext context, IMapper mapper, IHttpClientFactory httpClientFactory, INotificationsService notificationsService, IConfiguration configuration)
+        public PostService(AppDbContext context, IMapper mapper, IHttpClientFactory httpClientFactory, INotificationsService notificationsService, IConfiguration configuration, IUserService userService)
         {
             _context = context;
             _mapper = mapper;
             _httpClientFactory = httpClientFactory;
             _notificationsService = notificationsService;
             _configuration = configuration;
+            _userService = userService;
         }
 
         public async Task<bool> ReportPostAsync(int postId, string postUrl, string message, Guid? reporterId, string? reporterEmail, string? reporterUsername)
@@ -214,6 +216,36 @@ namespace buronet_service.Services
             // Manually set IsLikedByCurrentUser for each post
             foreach (var dto in postDtos)
             {
+                // Populate profilePictureUrl for the post creator
+                if (dto.User != null)
+                {
+                    var post = posts.FirstOrDefault(p => p.Id == dto.Id);
+                    if (post?.User != null)
+                    {
+                        dto.User.ProfilePictureUrl = await _userService.GetMediaUrlAsync(post.User.Profile?.ProfilePictureMediaId);
+                    }
+                }
+
+                // Populate profilePictureUrl for all likes
+                foreach (var like in dto.Likes)
+                {
+                    var likeEntity = posts.SelectMany(p => p.Likes).FirstOrDefault(l => l.Id == like.Id);
+                    if (likeEntity?.User != null)
+                    {
+                        like.User.ProfilePictureUrl = await _userService.GetMediaUrlAsync(likeEntity.User.Profile?.ProfilePictureMediaId);
+                    }
+                }
+
+                // Populate profilePictureUrl for all comments
+                foreach (var comment in dto.Comments)
+                {
+                    var commentEntity = posts.SelectMany(p => p.Comments).FirstOrDefault(c => c.Id == comment.Id);
+                    if (commentEntity?.User != null)
+                    {
+                        comment.User.ProfilePictureUrl = await _userService.GetMediaUrlAsync(commentEntity.User.Profile?.ProfilePictureMediaId);
+                    }
+                }
+
                 if (currentUserId.HasValue) // Use .HasValue for Guid?
                 {
                     // Check if any like in the post's Likes collection belongs to the current user
@@ -287,6 +319,32 @@ namespace buronet_service.Services
             if (post == null) return null;
 
             var postDto = _mapper.Map<PostDto>(post);
+
+            // Populate profilePictureUrl for the post creator
+            if (postDto.User != null && post.User != null)
+            {
+                postDto.User.ProfilePictureUrl = await _userService.GetMediaUrlAsync(post.User.Profile?.ProfilePictureMediaId);
+            }
+
+            // Populate profilePictureUrl for all likes
+            foreach (var like in postDto.Likes)
+            {
+                var likeEntity = post.Likes.FirstOrDefault(l => l.Id == like.Id);
+                if (likeEntity?.User != null)
+                {
+                    like.User.ProfilePictureUrl = await _userService.GetMediaUrlAsync(likeEntity.User.Profile?.ProfilePictureMediaId);
+                }
+            }
+
+            // Populate profilePictureUrl for all comments
+            foreach (var comment in postDto.Comments)
+            {
+                var commentEntity = post.Comments.FirstOrDefault(c => c.Id == comment.Id);
+                if (commentEntity?.User != null)
+                {
+                    comment.User.ProfilePictureUrl = await _userService.GetMediaUrlAsync(commentEntity.User.Profile?.ProfilePictureMediaId);
+                }
+            }
 
             if (currentUserId.HasValue)
             {
@@ -384,6 +442,12 @@ namespace buronet_service.Services
 
             var createdPostDto = _mapper.Map<PostDto>(newPost);
 
+            // Populate profilePictureUrl for the post creator
+            if (createdPostDto.User != null && newPost.User != null)
+            {
+                createdPostDto.User.ProfilePictureUrl = await _userService.GetMediaUrlAsync(newPost.User.Profile?.ProfilePictureMediaId);
+            }
+
             //_logger.LogInformation("Post {PostId} created successfully by user {UserId}.", newPost.Id, userId);
             return createdPostDto;
         }
@@ -400,8 +464,20 @@ namespace buronet_service.Services
             await _context.SaveChangesAsync();
 
             // Fetch updated post with user data
-            var updatedPost = await _context.Posts.Include(p => p.User).FirstOrDefaultAsync(p => p.Id == post.Id);
-            return _mapper.Map<PostDto>(updatedPost);
+            var updatedPost = await _context.Posts
+                .Include(p => p.User)
+                    .ThenInclude(u => u.Profile)
+                .FirstOrDefaultAsync(p => p.Id == post.Id);
+            
+            var updatedPostDto = _mapper.Map<PostDto>(updatedPost);
+
+            // Populate profilePictureUrl for the post creator
+            if (updatedPostDto.User != null && updatedPost?.User != null)
+            {
+                updatedPostDto.User.ProfilePictureUrl = await _userService.GetMediaUrlAsync(updatedPost.User.Profile?.ProfilePictureMediaId);
+            }
+
+            return updatedPostDto;
         }
 
         public async Task<bool> DeletePostAsync(int postId, Guid userIdGuid)
@@ -440,8 +516,20 @@ namespace buronet_service.Services
             await _context.SaveChangesAsync();
 
             // Fetch created comment with user data (needed for UserName/Email)
-            var createdComment = await _context.Comments.Include(c => c.User).FirstOrDefaultAsync(c => c.Id == comment.Id);
-            return _mapper.Map<CommentDto>(createdComment);
+            var createdComment = await _context.Comments
+                .Include(c => c.User)
+                    .ThenInclude(u => u.Profile)
+                .FirstOrDefaultAsync(c => c.Id == comment.Id);
+            
+            var commentDto = _mapper.Map<CommentDto>(createdComment);
+
+            // Populate profilePictureUrl for the comment author
+            if (commentDto.User != null && createdComment?.User != null)
+            {
+                commentDto.User.ProfilePictureUrl = await _userService.GetMediaUrlAsync(createdComment.User.Profile?.ProfilePictureMediaId);
+            }
+
+            return commentDto;
         }
 
         public async Task<bool> DeleteCommentAsync(int commentId, Guid userIdGuid)
@@ -656,6 +744,33 @@ namespace buronet_service.Services
 
             foreach (var dto in postDtos)
             {
+                // Populate profilePictureUrl for the post creator
+                var post = posts.FirstOrDefault(p => p.Id == dto.Id);
+                if (dto.User != null && post?.User != null)
+                {
+                    dto.User.ProfilePictureUrl = await _userService.GetMediaUrlAsync(post.User.Profile?.ProfilePictureMediaId);
+                }
+
+                // Populate profilePictureUrl for all likes
+                foreach (var like in dto.Likes)
+                {
+                    var likeEntity = post?.Likes.FirstOrDefault(l => l.Id == like.Id);
+                    if (likeEntity?.User != null)
+                    {
+                        like.User.ProfilePictureUrl = await _userService.GetMediaUrlAsync(likeEntity.User.Profile?.ProfilePictureMediaId);
+                    }
+                }
+
+                // Populate profilePictureUrl for all comments
+                foreach (var comment in dto.Comments)
+                {
+                    var commentEntity = post?.Comments.FirstOrDefault(c => c.Id == comment.Id);
+                    if (commentEntity?.User != null)
+                    {
+                        comment.User.ProfilePictureUrl = await _userService.GetMediaUrlAsync(commentEntity.User.Profile?.ProfilePictureMediaId);
+                    }
+                }
+
                 if (currentUserId.HasValue && currentUserId.Value != Guid.Empty)
                 {
                     dto.IsLikedByCurrentUser = dto.Likes.Any(l => l.UserId == currentUserId.Value.ToString());
@@ -735,6 +850,33 @@ namespace buronet_service.Services
 
             foreach (var dto in postDtos)
             {
+                // Populate profilePictureUrl for the post creator
+                var post = posts.FirstOrDefault(p => p.Id == dto.Id);
+                if (dto.User != null && post?.User != null)
+                {
+                    dto.User.ProfilePictureUrl = await _userService.GetMediaUrlAsync(post.User.Profile?.ProfilePictureMediaId);
+                }
+
+                // Populate profilePictureUrl for all likes
+                foreach (var like in dto.Likes)
+                {
+                    var likeEntity = post?.Likes.FirstOrDefault(l => l.Id == like.Id);
+                    if (likeEntity?.User != null)
+                    {
+                        like.User.ProfilePictureUrl = await _userService.GetMediaUrlAsync(likeEntity.User.Profile?.ProfilePictureMediaId);
+                    }
+                }
+
+                // Populate profilePictureUrl for all comments
+                foreach (var comment in dto.Comments)
+                {
+                    var commentEntity = post?.Comments.FirstOrDefault(c => c.Id == comment.Id);
+                    if (commentEntity?.User != null)
+                    {
+                        comment.User.ProfilePictureUrl = await _userService.GetMediaUrlAsync(commentEntity.User.Profile?.ProfilePictureMediaId);
+                    }
+                }
+
                 if (currentUserId.HasValue && currentUserId.Value != Guid.Empty)
                 {
                     dto.IsLikedByCurrentUser = dto.Likes.Any(l => l.UserId == currentUserId.Value.ToString());
@@ -782,3 +924,5 @@ namespace buronet_service.Services
         }
     }
 }
+
+

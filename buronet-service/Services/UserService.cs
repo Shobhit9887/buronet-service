@@ -46,7 +46,15 @@ namespace buronet_service.Services
                 .Include(up => up.CommunityGroups)
                 .FirstOrDefaultAsync(up => up.Id == userIdGuid); // UserProfile.Id is the UserId
 
-            return _mapper.Map<UserProfileDto>(userProfile);
+            if (userProfile == null)
+                return null;
+
+            var userProfileDto = _mapper.Map<UserProfileDto>(userProfile);
+            
+            // Populate profilePictureUrl using MapToDo
+            userProfileDto.ProfilePictureUrl = await GetMediaUrlAsync(userProfile.ProfilePictureMediaId);
+            
+            return userProfileDto;
         }
 
         // Provision a new User (if not already existing) AND corresponding UserProfile

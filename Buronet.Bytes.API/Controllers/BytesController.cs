@@ -55,8 +55,11 @@ public class BytesController : ControllerBase
 
     [HttpGet("feed")]
     //[Authorize]
-    public async Task<IActionResult> GetFeed([FromQuery] string filter = "For You")
+    public async Task<IActionResult> GetFeed([FromQuery] string filter = "For You", [FromQuery] int page = 1, [FromQuery] int pageSize = 10)
     {
+        if (page < 1) page = 1;
+        if (pageSize < 1 || pageSize > 100) pageSize = 10;
+
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
 
         switch (filter)
@@ -78,17 +81,17 @@ public class BytesController : ControllerBase
                 if (connectionIds.Count == 0)
                     return Ok(new List<BytePost>());
 
-                var connectionFeed = await _bytePostService.GetConnectionsFeedAsync(connectionIds);
+                var connectionFeed = await _bytePostService.GetConnectionsFeedAsync(connectionIds, page, pageSize);
                 return Ok(connectionFeed);
             }
 
             case "Popular":
-                var popularFeed = await _bytePostService.GetPopularFeedAsync();
+                var popularFeed = await _bytePostService.GetPopularFeedAsync(page, pageSize);
                 return Ok(popularFeed);
 
             case "For You":
             default:
-                var forYouFeed = await _bytePostService.GetForYouFeedAsync(userId);
+                var forYouFeed = await _bytePostService.GetForYouFeedAsync(userId, page, pageSize);
                 return Ok(forYouFeed);
         }
     }
