@@ -134,7 +134,8 @@ namespace buronet_service.Controllers
                     request.Message,
                     reporterId,
                     request.Reporter?.Email,
-                    request.Reporter?.Username);
+                    request.Reporter?.Username
+                    );
 
                 if (!sent) return NotFound("Post not found.");
                 return Ok(new { success = true });

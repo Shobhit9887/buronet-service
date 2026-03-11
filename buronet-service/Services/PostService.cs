@@ -126,6 +126,7 @@ namespace buronet_service.Services
             var body =
                 "A byte was reported.\n\n" +
                 $"ByteId: {postId}\n" +
+                $"ByteUrl: {postUrl}\n" +
 
                 $"Message: {message}\n\n" +
                 "Reporter:\n" +
