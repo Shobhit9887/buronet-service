@@ -90,10 +90,113 @@ namespace buronet_service.Controllers
                 return StatusCode(500, new { message = "Failed to generate signature.", details = ex.Message });
             }
         }
+
+        /// <summary>
+        /// Deletes assets from Cloudinary by their URLs.
+        /// </summary>
+        [HttpPost("delete-assets")]
+        public async Task<IActionResult> DeleteAssets([FromBody] DeleteAssetsRequestDto request)
+        {
+            if (request == null)
+                return BadRequest("Request body is required.");
+
+            try
+            {
+                var deletedCount = 0;
+
+                // Delete media URL if provided
+                if (!string.IsNullOrEmpty(request.url))
+                {
+                    var publicId = ExtractPublicIdFromUrl(request.url);
+                    var resourceType = ExtractResourceTypeFromUrl(request.url);
+                    System.Diagnostics.Debug.WriteLine($"Extracted public ID from media URL: '{publicId}' (type: {resourceType}) from URL: '{request.url}'");
+                    if (!string.IsNullOrEmpty(publicId))
+                    {
+                        var deleted = await _cloudinaryService.DeleteAssetAsync(publicId, resourceType);
+                        if (deleted) deletedCount++;
+                    }
+                }
+
+                // Delete thumbnail URL if provided
+                if (!string.IsNullOrEmpty(request.ThumbnailUrl))
+                {
+                    var publicId = ExtractPublicIdFromUrl(request.ThumbnailUrl);
+                    var resourceType = ExtractResourceTypeFromUrl(request.ThumbnailUrl);
+                    System.Diagnostics.Debug.WriteLine($"Extracted public ID from thumbnail URL: '{publicId}' (type: {resourceType}) from URL: '{request.ThumbnailUrl}'");
+                    if (!string.IsNullOrEmpty(publicId))
+                    {
+                        var deleted = await _cloudinaryService.DeleteAssetAsync(publicId, resourceType);
+                        if (deleted) deletedCount++;
+                    }
+                }
+
+                return Ok(new { message = $"Successfully deleted {deletedCount} asset(s)." });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Failed to delete assets.", details = ex.Message });
+            }
+        }
+
+        private string ExtractPublicIdFromUrl(string cloudinaryUrl)
+        {
+            if (string.IsNullOrEmpty(cloudinaryUrl))
+                return null;
+
+            try
+            {
+                // Match pattern: /upload/v{version}/ followed by public_id with optional extension
+                var match = System.Text.RegularExpressions.Regex.Match(cloudinaryUrl, @"/upload/(?:v\d+/)?([^/?]+)");
+                if (match.Success)
+                {
+                    var fullId = match.Groups[1].Value;
+                    // Remove file extension if present
+                    return System.IO.Path.GetFileNameWithoutExtension(fullId);
+                }
+
+                // Fallback: extract filename from URL
+                var uri = new Uri(cloudinaryUrl);
+                var path = uri.AbsolutePath;
+                var fileName = System.IO.Path.GetFileNameWithoutExtension(path);
+                return fileName;
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        private string ExtractResourceTypeFromUrl(string cloudinaryUrl)
+        {
+            if (string.IsNullOrEmpty(cloudinaryUrl))
+                return "image"; // default
+
+            try
+            {
+                // Check if URL contains /video/ or /image/
+                if (cloudinaryUrl.Contains("/video/"))
+                    return "video";
+                if (cloudinaryUrl.Contains("/image/"))
+                    return "image";
+                
+                // Default to image
+                return "image";
+            }
+            catch
+            {
+                return "image";
+            }
+        }
     }
 
     public class SignatureRequestDto
     {
         public string? ResourceType { get; set; }
+    }
+
+    public class DeleteAssetsRequestDto
+    {
+        public string? url { get; set; }
+        public string? ThumbnailUrl { get; set; }
     }
 }

@@ -3,22 +3,34 @@ using System.Collections.Generic;
 using System.Security.Cryptography;
 using System.Text;
 using Microsoft.Extensions.Configuration;
+using System.Threading.Tasks;
+using CloudinaryDotNet;
+using CloudinaryDotNet.Actions;
 
 namespace buronet_service.Services
 {
     public interface ICloudinaryService
     {
         string GenerateSignature(Dictionary<string, string> parameters);
+        Task<bool> DeleteAssetAsync(string publicId, string resourceType = "image");
     }
 
     public class CloudinaryService : ICloudinaryService
     {
         private readonly string _apiSecret;
+        private readonly Cloudinary _cloudinary;
 
         public CloudinaryService(IConfiguration configuration)
         {
             _apiSecret = configuration["Cloudinary:ApiSecret"] 
                 ?? throw new InvalidOperationException("Cloudinary:ApiSecret is not configured");
+            
+            var cloudName = configuration["Cloudinary:CloudName"]
+                ?? throw new InvalidOperationException("Cloudinary:CloudName is not configured");
+            var apiKey = configuration["Cloudinary:ApiKey"]
+                ?? throw new InvalidOperationException("Cloudinary:ApiKey is not configured");
+            
+            _cloudinary = new Cloudinary(new Account(cloudName, apiKey, _apiSecret));
         }
 
         /// <summary>
@@ -57,6 +69,45 @@ namespace buronet_service.Services
             {
                 var hash = sha256.ComputeHash(Encoding.UTF8.GetBytes(queryString.ToString()));
                 return BitConverter.ToString(hash).Replace("-", "").ToLower();
+            }
+        }
+
+        /// <summary>
+        /// Deletes an asset from Cloudinary by public ID.
+        /// </summary>
+        /// <param name="publicId">The public ID of the asset to delete</param>
+        /// <param name="resourceType">The resource type (video or image)</param>
+        /// <returns>True if deletion was successful, false otherwise</returns>
+        public async Task<bool> DeleteAssetAsync(string publicId, string resourceType = "image")
+        {
+            try
+            {
+                // Convert string to ResourceType enum
+                var type = resourceType.ToLower() == "video" ? ResourceType.Video : ResourceType.Image;
+                
+                var deleteParams = new DeletionParams(publicId) { ResourceType = type };
+                var result = await _cloudinary.DestroyAsync(deleteParams);
+                
+                System.Diagnostics.Debug.WriteLine($"Cloudinary delete result ({resourceType}) for '{publicId}': {result.Result}");
+                
+                if (result.Result == "ok")
+                    return true;
+
+                // If not found with specified type, try the other type
+                if (result.Result == "not_found")
+                {
+                    var otherType = type == ResourceType.Video ? ResourceType.Image : ResourceType.Video;
+                    deleteParams = new DeletionParams(publicId) { ResourceType = otherType };
+                    result = await _cloudinary.DestroyAsync(deleteParams);
+                    System.Diagnostics.Debug.WriteLine($"Cloudinary delete result ({otherType}) for '{publicId}': {result.Result}");
+                }
+                
+                return result.Result == "ok";
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error deleting asset from Cloudinary: {ex.Message}");
+                return false;
             }
         }
     }
