@@ -110,7 +110,7 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("OpenAll", policy =>
     {
-        policy.WithOrigins(["http://ec2-13-61-18-130.eu-north-1.compute.amazonaws.com", "http://localhost:3000"])  // or your frontend URL
+        policy.WithOrigins(["http://ec2-13-61-18-130.eu-north-1.compute.amazonaws.com", "http://localhost:3000", "https://test.buronet.co.in"])  // or your frontend URL
             .AllowAnyHeader()
             .AllowAnyMethod()
             .AllowCredentials();

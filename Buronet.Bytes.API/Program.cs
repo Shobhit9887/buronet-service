@@ -9,12 +9,12 @@ var builder = WebApplication.CreateBuilder(args);
 var MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy(name: MyAllowSpecificOrigins, policy =>
+    options.AddPolicy("OpenAll", policy =>
     {
-        // TODO: Replace with your frontend's actual URL in production
-        policy.WithOrigins(["http://ec2-13-61-18-130.eu-north-1.compute.amazonaws.com", "http://localhost:3000"])
-              .AllowAnyHeader()
-              .AllowAnyMethod();
+        policy.WithOrigins(["http://ec2-13-61-18-130.eu-north-1.compute.amazonaws.com", "http://localhost:3000", "https://test.buronet.co.in"])  // or your frontend URL
+            .AllowAnyHeader()
+            .AllowAnyMethod()
+            .AllowCredentials();
     });
 });
 
