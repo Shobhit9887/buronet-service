@@ -10,12 +10,11 @@ using MongoDB.Driver;
 
 var builder = WebApplication.CreateBuilder(args);
 
-var MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("OpenAll", policy =>
     {
-        policy.WithOrigins(["http://ec2-13-61-18-130.eu-north-1.compute.amazonaws.com", "http://localhost:3000", "https://test.buronet.co.in"])  // or your frontend URL
+        policy.WithOrigins(["http://localhost:3000", "https://test.buronet.co.in"])  // or your frontend URL
             .AllowAnyHeader()
             .AllowAnyMethod()
             .AllowCredentials();
@@ -66,7 +65,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-app.UseCors(MyAllowSpecificOrigins); // Apply CORS policy
+app.UseCors("OpenAll"); // Apply CORS policy
 app.UseAuthorization();
 app.MapControllers();
 app.Run();

@@ -6,7 +6,6 @@ using System.Text;
 var builder = WebApplication.CreateBuilder(args);
 
 // Define CORS policy
-var MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("OpenAll", policy =>
@@ -63,8 +62,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-app.UseCors(MyAllowSpecificOrigins); // Apply CORS policy
-
+app.UseCors("OpenAll");
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
