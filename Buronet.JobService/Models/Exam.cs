@@ -12,7 +12,7 @@ public class Exam
     public string? Id { get; set; }
 
     [BsonElement("exam_title")]
-    public string ExamTitle { get; set; } = null!;
+    public string? ExamTitle { get; set; }
 
     [BsonElement("reference_number")]
     public string? ReferenceNumber { get; set; }
@@ -57,7 +57,7 @@ public class Exam
     public string? UpdatedDate { get; set; }
 
     [BsonElement("original_extraction")]
-    public Exam? OriginalExtraction { get; set; }
+    public Exam? originalExtraction { get; set; }
 }
 
 // Nested Classes for the Exam Model

@@ -27,7 +27,6 @@ namespace Buronet.JobService.Services
             .Text(j => j.ExamPattern.Main.Summary);            
 
             var indexModel = new CreateIndexModel<Exam>(indexKeysDefinition);
-            // The driver will check if the index exists and only create it if it doesn't.
             _examsCollection.Indexes.CreateOne(indexModel);
         }
 
