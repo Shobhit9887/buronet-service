@@ -74,6 +74,18 @@ namespace Buronet.JobService.Services
         public async Task<bool> UpdateAsync(string id, Exam updatedExam)
         {
             updatedExam.Id = id;
+            
+            // Convert ApplicationFee from JsonElement to proper object if needed
+            if (updatedExam.ApplicationDetails?.ApplicationFee != null)
+            {
+                var appFee = updatedExam.ApplicationDetails.ApplicationFee;
+                if (appFee.GetType().Name == "JsonElement")
+                {
+                    // Convert JsonElement to string representation
+                    updatedExam.ApplicationDetails.ApplicationFee = appFee.ToString();
+                }
+            }
+            
             var result = await _examsCollection.ReplaceOneAsync(exam => exam.Id == id, updatedExam);
             return result.IsAcknowledged && result.ModifiedCount > 0;
         }

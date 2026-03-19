@@ -98,7 +98,7 @@ public class ApplicationDetails
     public string? ApplicationEndDate { get; set; }
 
     [BsonElement("application_fee")]
-    public string? ApplicationFee { get; set; } // Using object to handle potential null or complex fee structures
+    public object? ApplicationFee { get; set; }
 
     [BsonElement("how_to_apply")]
     public List<string> HowToApply { get; set; } = new();
