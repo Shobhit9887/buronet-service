@@ -6,8 +6,8 @@ namespace Buronet.JobService.Models;
 public class ApplyLinkInfo
 {
     [BsonElement("link")]
-    public string Link { get; set; } = string.Empty;
+    public string? Link { get; set; }
 
     [BsonElement("file_name")]
-    public string FileName { get; set; } = string.Empty;
+    public string? FileName { get; set; }
 }

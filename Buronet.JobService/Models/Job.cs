@@ -10,6 +10,7 @@ public class Job
     [BsonRepresentation(BsonType.ObjectId)]
     public string? Id { get; set; }
 
+    // Required fields
     [BsonElement("job_title")]
     public string JobTitle { get; set; } = null!;
 
@@ -19,29 +20,30 @@ public class Job
     [BsonElement("sector")]
     public string Sector { get; set; } = null!;
 
-    [BsonElement("reference_number")]
-    public string ReferenceNumber { get; set; } = null!;
-
     [BsonElement("organization_name")]
     public string OrganizationName { get; set; } = null!;
 
     [BsonElement("location")]
     public string Location { get; set; } = null!;
 
-    [BsonElement("compensation")]
-    public string Compensation { get; set; } = null!;
-
     [BsonElement("job_description")]
     public string JobDescription { get; set; } = null!;
 
+    // Optional fields
+    [BsonElement("reference_number")]
+    public string? ReferenceNumber { get; set; }
+
+    [BsonElement("compensation")]
+    public string? Compensation { get; set; }
+
     [BsonElement("contact_information")]
-    public string ContactInformation { get; set; } = null!;
+    public string? ContactInformation { get; set; }
 
     [BsonElement("employment_type")]
-    public string EmploymentType { get; set; } = null!;
+    public string? EmploymentType { get; set; }
 
     [BsonElement("date_of_issue")]
-    public string DateOfIssue { get; set; } = null!;
+    public string? DateOfIssue { get; set; }
 
     [BsonElement("qualifications")]
     public List<string> Qualifications { get; set; } = new();
@@ -62,21 +64,17 @@ public class Job
     public string? ContentHash { get; set; }
 
     [BsonElement("last_date_to_apply")]
-    //[BsonDateTimeOptions(Kind = DateTimeKind.Utc)]
-    public string LastDateToApply { get; set; }
+    public string? LastDateToApply { get; set; }
 
     [BsonElement("status")]
-    public string? Status { get; set; } = null!;
+    public string? Status { get; set; }
 
     [BsonElement("createdDate")]
-    public string CreatedDate { get; set; }
+    public string? CreatedDate { get; set; }
 
     [BsonElement("updatedDate")]
-    public string UpdatedDate { get; set; }
-
+    public string? UpdatedDate { get; set; }
 
     [BsonElement("original_extraction")]
     public Job? originalExtraction { get; set; }
-
-    // Add any other fields from your JSON object here
 }
