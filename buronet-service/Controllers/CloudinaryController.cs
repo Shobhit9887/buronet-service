@@ -16,11 +16,13 @@ namespace buronet_service.Controllers
     {
         private readonly ICloudinaryService _cloudinaryService;
         private readonly IConfiguration _configuration;
+        private readonly HttpClient _httpClient;
 
-        public CloudinaryController(ICloudinaryService cloudinaryService, IConfiguration configuration)
+        public CloudinaryController(ICloudinaryService cloudinaryService, IConfiguration configuration, HttpClient httpClient)
         {
             _cloudinaryService = cloudinaryService;
             _configuration = configuration;
+            _httpClient = httpClient;
         }
 
         private Guid? GetCurrentUserId()
@@ -92,7 +94,7 @@ namespace buronet_service.Controllers
         }
 
         /// <summary>
-        /// Deletes assets from Cloudinary by their URLs.
+        /// Deletes assets from Cloudinary by their URLs and removes the byte from MongoDB if it's a byte post.
         /// </summary>
         [HttpPost("delete-assets")]
         public async Task<IActionResult> DeleteAssets([FromBody] DeleteAssetsRequestDto request)
@@ -115,6 +117,9 @@ namespace buronet_service.Controllers
                         var deleted = await _cloudinaryService.DeleteAssetAsync(publicId, resourceType);
                         if (deleted) deletedCount++;
                     }
+
+                    // Delete byte from MongoDB if it's a byte post
+                    await DeleteByteFromMongoDbAsync(request.url);
                 }
 
                 // Delete thumbnail URL if provided
@@ -135,6 +140,36 @@ namespace buronet_service.Controllers
             catch (Exception ex)
             {
                 return StatusCode(500, new { message = "Failed to delete assets.", details = ex.Message });
+            }
+        }
+
+        private async Task DeleteByteFromMongoDbAsync(string mediaUrl)
+        {
+            try
+            {
+                var bytesApiUrl = _configuration["ServiceUrls:BytesApi"];
+                if (string.IsNullOrEmpty(bytesApiUrl))
+                    return;
+
+                var deleteUrl = $"{bytesApiUrl}/api/bytes/delete-by-media-url";
+                var request = new { mediaUrl = mediaUrl };
+                
+                var content = new StringContent(
+                    System.Text.Json.JsonSerializer.Serialize(request),
+                    System.Text.Encoding.UTF8,
+                    "application/json"
+                );
+
+                var response = await _httpClient.PostAsync(deleteUrl, content);
+                if (!response.IsSuccessStatusCode)
+                {
+                    System.Diagnostics.Debug.WriteLine($"Failed to delete byte from MongoDB: {response.StatusCode}");
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error deleting byte from MongoDB: {ex.Message}");
+                // Don't throw - Cloudinary deletion succeeded, MongoDB deletion is secondary
             }
         }
 

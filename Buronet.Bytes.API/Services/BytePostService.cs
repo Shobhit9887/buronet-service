@@ -99,6 +99,28 @@ public class BytePostService
         await _postsCollection.UpdateOneAsync(filter, update);
     }
 
+    public async Task DeleteByteByMediaUrlAsync(string mediaUrl)
+    {
+        if (string.IsNullOrEmpty(mediaUrl))
+            return;
+
+        // Find byte post by media URL
+        var filter = Builders<Models.BytePost>.Filter.Or(
+            Builders<Models.BytePost>.Filter.Eq(p => p.Submission.MediaUrl, mediaUrl),
+            Builders<Models.BytePost>.Filter.Eq(p => p.Submission.Thumbnail, mediaUrl)
+        );
+
+        var bytePost = await _postsCollection.Find(filter).FirstOrDefaultAsync();
+        if (bytePost == null)
+            return;
+
+        // Delete the byte post
+        await _postsCollection.DeleteOneAsync(f => f.Id == bytePost.Id);
+
+        // Delete associated comments
+        await _commentsCollection.DeleteManyAsync(c => c.ByteId == bytePost.Id);
+    }
+
     private async Task EnrichBytesWithProfilePicturesAsync(List<BytePost> bytes)
     {
         if (bytes == null || bytes.Count == 0)
