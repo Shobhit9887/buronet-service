@@ -30,6 +30,9 @@ namespace buronet_service.Models.User
         //[Column(TypeName = "blob")]
         public bool isAdmin { get; set; }
 
+        [Required]
+        public bool IsEmailConfirmed { get; set; } = false;
+
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 

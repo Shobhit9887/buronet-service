@@ -22,6 +22,7 @@ namespace buronet_service.Services
         private readonly IConfiguration _configuration;
 
         private static readonly TimeSpan RefreshTokenLifetime = TimeSpan.FromDays(30);
+        private static readonly TimeSpan EmailConfirmationTokenLifetime = TimeSpan.FromDays(7);
 
         public AuthService(AppDbContext context, JwtService jwt, IConfiguration configuration)
         {
@@ -60,6 +61,7 @@ namespace buronet_service.Services
 
             var usernameExists = await _context.Users.AsNoTracking().AnyAsync(u => u.Username == username);
             var emailExists = await _context.Users.AsNoTracking().AnyAsync(u => u.Email == email);
+            var pendingEmailExists = await _context.PendingUsers.AsNoTracking().AnyAsync(u => u.Email == email);
 
             if (usernameExists && emailExists)
             {
@@ -79,7 +81,7 @@ namespace buronet_service.Services
                 };
             }
 
-            if (emailExists)
+            if (emailExists || pendingEmailExists)
             {
                 return new RegisterResultDto
                 {
@@ -90,35 +92,32 @@ namespace buronet_service.Services
 
             PasswordHasher.CreateHash(dto.Password, out byte[] hash, out byte[] salt);
 
-            var user = new User
+            // Generate confirmation token
+            var confirmationTokenPlain = GenerateSecureTokenString(32);
+            var confirmationTokenHash = HashToken(confirmationTokenPlain);
+
+            var pendingUser = new PendingUser
             {
+                Id = Guid.NewGuid(),
                 Username = username,
                 Email = email,
                 PasswordHash = hash,
-                PasswordSalt = salt
-            };
-
-            _context.Users.Add(user);
-
-            var newProfile = new UserProfile
-            {
-                Id = user.Id,
-                FirstName = "",
-                LastName = "",
-                DateOfBirth = null,
-                PhoneNumber = "",
+                PasswordSalt = salt,
+                ConfirmationTokenHash = confirmationTokenHash,
                 CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow
+                TokenExpiresAt = DateTime.UtcNow.Add(EmailConfirmationTokenLifetime) // 7 days
             };
 
-            _context.UserProfiles.Add(newProfile);
+            _context.PendingUsers.Add(pendingUser);
             await _context.SaveChangesAsync();
+
+            // Send confirmation email
+            await SendConfirmationEmailAsync(email, username, confirmationTokenPlain);
 
             return new RegisterResultDto
             {
                 Success = true,
-                Token = _jwt.GenerateToken(user),
-                Message = "Registration successful."
+                Message = "Registration successful. Please check your email to confirm your account."
             };
         }
 
@@ -138,9 +137,38 @@ namespace buronet_service.Services
             var user = await _context.Users.FirstOrDefaultAsync(u =>
                 u.Username == loginIdentifier || u.Email == loginIdentifier);
 
-            if (user == null || !PasswordHasher.Verify(dto.Password, user.PasswordHash, user.PasswordSalt))
+            if (user == null)
+            {
+                // Check if user is pending (not yet confirmed)
+                var pendingUser = await _context.PendingUsers.FirstOrDefaultAsync(pu =>
+                    pu.Username == loginIdentifier || pu.Email == loginIdentifier);
+
+                if (pendingUser != null)
+                {
+                    // User exists but hasn't confirmed email yet
+                    return new LoginResultDto 
+                    { 
+                        Success = false,
+                        Message = "Please confirm your email address before logging in. Check your inbox for the confirmation link."
+                    };
+                }
+
+                return null;
+            }
+
+            if (!PasswordHasher.Verify(dto.Password, user.PasswordHash, user.PasswordSalt))
             {
                 return null;
+            }
+
+            // Check if email is confirmed
+            if (!user.IsEmailConfirmed)
+            {
+                return new LoginResultDto 
+                { 
+                    Success = false,
+                    Message = "Your email is not confirmed. Please check your inbox for the confirmation link."
+                };
             }
 
             var accessToken = _jwt.GenerateToken(user);
@@ -148,7 +176,11 @@ namespace buronet_service.Services
             // Default session: only access token (2 days)
             if (!dto.RememberMe)
             {
-                return new LoginResultDto { Token = accessToken };
+                return new LoginResultDto 
+                { 
+                    Success = true,
+                    Token = accessToken 
+                };
             }
 
             // RememberMe: also issue refresh token
@@ -169,6 +201,7 @@ namespace buronet_service.Services
 
             return new LoginResultDto
             {
+                Success = true,
                 Token = accessToken,
                 RefreshToken = refreshTokenPlain
             };
@@ -347,6 +380,119 @@ namespace buronet_service.Services
             return true;
         }
 
+        public async Task<bool> ConfirmEmailAsync(string token)
+        {
+            if (string.IsNullOrWhiteSpace(token))
+            {
+                return false;
+            }
+
+            var tokenHash = HashToken(token);
+
+            var pendingUser = await _context.PendingUsers
+                .AsTracking()
+                .FirstOrDefaultAsync(pu => pu.ConfirmationTokenHash == tokenHash);
+
+            if (pendingUser == null)
+            {
+                return false;
+            }
+
+            // Check if token has expired
+            if (pendingUser.TokenExpiresAt < DateTime.UtcNow)
+            {
+                // Delete expired pending user
+                _context.PendingUsers.Remove(pendingUser);
+                await _context.SaveChangesAsync();
+                return false;
+            }
+
+            // Check if already confirmed
+            if (pendingUser.ConfirmedAt.HasValue)
+            {
+                return false;
+            }
+
+            // Create actual user from pending user
+            var user = new User
+            {
+                Id = pendingUser.Id,
+                Username = pendingUser.Username,
+                Email = pendingUser.Email,
+                PasswordHash = pendingUser.PasswordHash,
+                PasswordSalt = pendingUser.PasswordSalt,
+                IsEmailConfirmed = true,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
+            };
+
+            _context.Users.Add(user);
+
+            // Create user profile
+            var userProfile = new UserProfile
+            {
+                Id = user.Id,
+                FirstName = "",
+                LastName = "",
+                DateOfBirth = null,
+                PhoneNumber = "",
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
+            };
+
+            _context.UserProfiles.Add(userProfile);
+
+            // Mark pending user as confirmed and remove it
+            pendingUser.ConfirmedAt = DateTime.UtcNow;
+            _context.PendingUsers.Remove(pendingUser);
+
+            await _context.SaveChangesAsync();
+
+            return true;
+        }
+
+        public async Task<bool> ResendConfirmationEmailAsync(string email)
+        {
+            if (string.IsNullOrWhiteSpace(email))
+            {
+                return false;
+            }
+
+            email = email.Trim();
+
+            // Find pending user by email
+            var pendingUser = await _context.PendingUsers
+                .AsTracking()
+                .FirstOrDefaultAsync(pu => pu.Email == email);
+
+            if (pendingUser == null)
+            {
+                // Security: don't reveal if email exists
+                return true;
+            }
+
+            // Check if already confirmed
+            if (pendingUser.ConfirmedAt.HasValue)
+            {
+                return true;
+            }
+
+            // Generate new confirmation token
+            var confirmationTokenPlain = GenerateSecureTokenString(32);
+            var confirmationTokenHash = HashToken(confirmationTokenPlain);
+
+            // Update pending user with new token and extended expiry
+            pendingUser.ConfirmationTokenHash = confirmationTokenHash;
+            pendingUser.TokenExpiresAt = DateTime.UtcNow.Add(EmailConfirmationTokenLifetime); // 7 days from now
+
+            await _context.SaveChangesAsync();
+
+            // Send confirmation email with new token
+            await SendConfirmationEmailAsync(email, pendingUser.Username, confirmationTokenPlain);
+
+            return true;
+        }
+
         public async Task<UserDto> GetProfileAsync(Guid userId)
         {
             var user = await _context.Users.FindAsync(userId);
@@ -459,6 +605,68 @@ namespace buronet_service.Services
                 "Please log in using this password and change it immediately.\n\n" +
                 "Regards,\n" +
                 "Buronet Admin";
+
+            var message = new MimeMessage();
+            message.From.Add(MailboxAddress.Parse(from));
+            message.To.Add(MailboxAddress.Parse(toEmail));
+            message.Subject = subject;
+            message.Body = new TextPart("plain")
+            {
+                Text = body
+            };
+
+            using var client = new SmtpClient();
+
+            var socketOptions = port == 465
+                ? SecureSocketOptions.SslOnConnect
+                : (enableSsl ? SecureSocketOptions.StartTls : SecureSocketOptions.Auto);
+
+            await client.ConnectAsync(host, port, socketOptions);
+            await client.AuthenticateAsync(smtpUsername, smtpPassword);
+            await client.SendAsync(message);
+            await client.DisconnectAsync(true);
+        }
+
+        private async Task SendConfirmationEmailAsync(string toEmail, string username, string confirmationToken)
+        {
+            var smtp = _configuration.GetSection("Smtp");
+
+            var host = smtp["Host"];
+            var portString = smtp["Port"];
+            var smtpUsername = smtp["Username"];
+            var smtpPassword = smtp["Password"];
+            var enableSslString = smtp["EnableSsl"];
+            var frontendUrl = _configuration["Frontend:Url"] ?? "http://localhost:3000";
+
+            var from = "admin@buronet.co.in";
+
+            if (string.IsNullOrWhiteSpace(host) ||
+                string.IsNullOrWhiteSpace(portString) ||
+                string.IsNullOrWhiteSpace(smtpUsername) ||
+                string.IsNullOrWhiteSpace(smtpPassword) ||
+                string.IsNullOrWhiteSpace(enableSslString))
+            {
+                throw new ApplicationException("SMTP configuration is missing.");
+            }
+
+            if (!int.TryParse(portString, out var port))
+            {
+                throw new ApplicationException("SMTP Port is invalid.");
+            }
+
+            _ = bool.TryParse(enableSslString, out var enableSsl);
+
+            var confirmationLink = $"{frontendUrl}/confirm-email?token={Uri.EscapeDataString(confirmationToken)}";
+
+            var subject = "[Buronet] Confirm Your Email Address";
+            var body =
+                $"Hi {username},\n\n" +
+                "Thank you for registering with Buronet. Please confirm your email address by clicking the link below:\n\n" +
+                $"{confirmationLink}\n\n" +
+                "This link will expire in 7 days.\n\n" +
+                "If you did not create this account, please ignore this email.\n\n" +
+                "Regards,\n" +
+                "Buronet Team";
 
             var message = new MimeMessage();
             message.From.Add(MailboxAddress.Parse(from));

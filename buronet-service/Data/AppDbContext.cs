@@ -22,6 +22,7 @@ namespace buronet_service.Data
 
         // All DbSets (assuming all corresponding models are correctly defined)
         public DbSet<User> Users { get; set; } = null!;
+        public DbSet<PendingUser> PendingUsers { get; set; } = null!;
         public DbSet<PasswordResetToken> PasswordResetTokens { get; set; } = null!;
         public DbSet<RefreshToken> RefreshTokens { get; set; } = null!; // <-- added
         public DbSet<UserProfile> UserProfiles { get; set; } = null!;
@@ -66,12 +67,21 @@ namespace buronet_service.Data
                       .IsRequired();
             });
 
+            // Configure PendingUser entity
+            modelBuilder.Entity<PendingUser>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.HasIndex(e => e.Email).IsUnique();
+                entity.Property(e => e.ConfirmationTokenHash).HasMaxLength(512);
+            });
+
             // Configure UserProfile entity (for its collections)
             modelBuilder.Entity<UserProfile>(entity =>
             {
                 entity.HasKey(e => e.Id); // Explicitly define PK, though it's FK from User
                 entity.Property(p => p.CreatedAt).HasColumnName("CreatedAt");
                 entity.Property(p => p.UpdatedAt).HasColumnName("UpdatedAt");
+                entity.Property(p => p.ProfilePictureUrl).HasColumnName("ProfilePictureUrl");
 
                 entity.HasMany(up => up.Experiences)
                       .WithOne(ue => ue.UserProfile)

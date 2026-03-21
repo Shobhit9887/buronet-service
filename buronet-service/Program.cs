@@ -57,6 +57,7 @@ builder.Services.AddScoped<INotificationsService, NotificationsService>();
 builder.Services.AddScoped<IBlobStorage, CloudinaryBlobStorage>();
 builder.Services.AddScoped<MediaService>();
 builder.Services.AddScoped<ICloudinaryService, CloudinaryService>();
+builder.Services.AddHostedService<PendingUserCleanupService>();
 //*********************** Add services to the container end.***********************
 
 // Add AutoMapper

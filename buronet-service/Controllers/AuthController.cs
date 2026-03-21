@@ -25,7 +25,40 @@ namespace buronet_service.Controllers
                 return BadRequest(new { message = result.Message });
             }
 
-            return Ok(new { token = result.Token, message = result.Message });
+            return Ok(new { message = result.Message });
+        }
+
+        [HttpPost("confirm-email")]
+        [AllowAnonymous]
+        public async Task<IActionResult> ConfirmEmail([FromBody] ConfirmEmailDto dto)
+        {
+            if (string.IsNullOrWhiteSpace(dto?.Token))
+            {
+                return BadRequest(new { success = false, message = "Confirmation token is required." });
+            }
+
+            var success = await _auth.ConfirmEmailAsync(dto.Token);
+            if (!success)
+            {
+                return BadRequest(new { success = false, message = "Invalid or expired confirmation token." });
+            }
+
+            return Ok(new { success = true, message = "Email confirmed successfully. You can now log in." });
+        }
+
+        [HttpPost("resend-confirmation-email")]
+        [AllowAnonymous]
+        public async Task<IActionResult> ResendConfirmationEmail([FromBody] ResendConfirmationEmailDto dto)
+        {
+            if (string.IsNullOrWhiteSpace(dto?.Email))
+            {
+                return BadRequest(new { success = false, message = "Email is required." });
+            }
+
+            await _auth.ResendConfirmationEmailAsync(dto.Email);
+            
+            // Security: always return success to prevent email enumeration
+            return Ok(new { success = true, message = "If an account with that email exists and is not confirmed, a confirmation email has been sent." });
         }
 
         [HttpPost("login")]
@@ -34,9 +67,17 @@ namespace buronet_service.Controllers
             var ip = HttpContext.Connection.RemoteIpAddress?.ToString();
             var result = await _auth.LoginAsync(dto, ip);
 
-            return result == null
-                ? Unauthorized("Invalid credentials")
-                : Ok(result);
+            if (result == null)
+            {
+                return Unauthorized(new { message = "Invalid credentials" });
+            }
+
+            if (!result.Success)
+            {
+                return BadRequest(new { message = result.Message });
+            }
+
+            return Ok(new { token = result.Token, refreshToken = result.RefreshToken });
         }
 
         [HttpPost("refresh")]
