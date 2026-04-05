@@ -1,4 +1,5 @@
 ﻿using Buronet.JobService.Models;
+using Buronet.JobService.Models.DTOs;
 using Buronet.JobService.Services.Interfaces;
 using Buronet.JobService.Settings;
 using JobService.Models;
@@ -96,6 +97,33 @@ namespace Buronet.JobService.Services
             var filter = Builders<Exam>.Filter.Text(keyword, new TextSearchOptions { CaseSensitive = false });
             var jobs = await _examsCollection.Find(filter).ToListAsync();
             return jobs;
+        }
+
+        public async Task<Exam> CreateFromFrontendAsync(CreateExamRequest request)
+        {
+            var now = DateTime.UtcNow.ToString("O");
+
+            var exam = new Exam
+            {
+                Id = null, // let Mongo generate
+                ExamTitle = request.ExamTitle.Trim(),
+                ReferenceNumber = request.ReferenceNumber?.Trim(),
+                ConductingBody = request.ConductingBody.Trim(),
+                PostsIncluded = request.PostsIncluded ?? new(),
+                ExamSummary = request.ExamSummary.Trim(),
+                EligibilityCriteria = request.EligibilityCriteria,
+                ApplicationDetails = request.ApplicationDetails,
+                ExamPattern = request.ExamPattern,
+                SyllabusSummary = request.SyllabusSummary?.Trim(),
+                ImportantLinks = request.ImportantLinks,
+                ExamDates = request.ExamDates,
+                Status = "Active",
+                CreatedDate = now,
+                UpdatedDate = now
+            };
+
+            await _examsCollection.InsertOneAsync(exam);
+            return exam;
         }
     }
 }

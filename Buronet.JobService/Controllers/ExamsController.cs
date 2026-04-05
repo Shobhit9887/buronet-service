@@ -1,4 +1,5 @@
 ﻿using Buronet.JobService.Models;
+using Buronet.JobService.Models.DTOs;
 using Buronet.JobService.Services.Interfaces;
 using JobService.Services;
 using Microsoft.AspNetCore.Mvc;
@@ -99,6 +100,18 @@ namespace Buronet.JobService.Controllers
 
             // 3. Return the results in a standard API response format.
             return Ok(new ApiSearchResponse<List<Exam>> { Success = true, Data = jobs });
+        }
+
+        [HttpPost("create")]
+        public async Task<IActionResult> CreateFromFrontend([FromBody] CreateExamRequest request)
+        {
+            if (!ModelState.IsValid)
+            {
+                return ValidationProblem(ModelState);
+            }
+
+            var created = await _examsService.CreateFromFrontendAsync(request);
+            return CreatedAtAction(nameof(Get), new { id = created.Id }, created);
         }
     }
 }
