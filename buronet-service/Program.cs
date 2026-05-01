@@ -144,6 +144,27 @@ using (var scope = app.Services.CreateScope())
     var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
     try
     {
+        Console.WriteLine("[STARTUP] Checking database state...");
+
+        // Check if the Users table actually exists
+        var conn = dbContext.Database.GetDbConnection();
+        await conn.OpenAsync();
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = "SELECT EXISTS (SELECT FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'Users');";
+        var usersTableExists = (bool)(await cmd.ExecuteScalarAsync() ?? false);
+        Console.WriteLine($"[STARTUP] Users table exists: {usersTableExists}");
+
+        if (!usersTableExists)
+        {
+            // The Users table doesn't exist — old migration history is stale.
+            // Drop it so EF Core re-runs all migrations from scratch.
+            Console.WriteLine("[STARTUP] Users table missing. Resetting migration history...");
+            cmd.CommandText = "DROP TABLE IF EXISTS \"__EFMigrationsHistory\";";
+            await cmd.ExecuteNonQueryAsync();
+            Console.WriteLine("[STARTUP] Migration history reset. Re-running all migrations...");
+        }
+        await conn.CloseAsync();
+
         Console.WriteLine("[STARTUP] Applying database migrations...");
         dbContext.Database.Migrate();
         Console.WriteLine("[STARTUP] Database migrations applied successfully.");
