@@ -1,4 +1,4 @@
-﻿// buronet_service/Data/AppDbContext.cs
+// buronet_service/Data/AppDbContext.cs
 using buronet_service.Models;
 using buronet_service.Data;
 using buronet_service.Entities;
@@ -284,19 +284,19 @@ namespace buronet_service.Data
 
         private static void ApplyUtcDateTimeConverters(ModelBuilder modelBuilder)
         {
-            // MySQL DATETIME has no timezone.
-            // Convention: store UTC as "Unspecified" in DB, materialize it back as DateTimeKind.Utc in app.
+            // PostgreSQL 'timestamp with time zone' requires DateTimeKind.Utc.
+            // Always convert to UTC before saving, and mark as UTC when reading back.
             var utcDateTimeConverter = new ValueConverter<DateTime, DateTime>(
-                toDb => DateTime.SpecifyKind(
-                    (toDb.Kind == DateTimeKind.Utc) ? toDb : toDb.ToUniversalTime(),
-                    DateTimeKind.Unspecified),
+                toDb => toDb.Kind == DateTimeKind.Utc
+                    ? toDb
+                    : DateTime.SpecifyKind(toDb.ToUniversalTime(), DateTimeKind.Utc),
                 fromDb => DateTime.SpecifyKind(fromDb, DateTimeKind.Utc));
 
             var utcNullableDateTimeConverter = new ValueConverter<DateTime?, DateTime?>(
                 toDb => toDb.HasValue
-                    ? DateTime.SpecifyKind(
-                        (toDb.Value.Kind == DateTimeKind.Utc) ? toDb.Value : toDb.Value.ToUniversalTime(),
-                        DateTimeKind.Unspecified)
+                    ? (toDb.Value.Kind == DateTimeKind.Utc
+                        ? toDb.Value
+                        : DateTime.SpecifyKind(toDb.Value.ToUniversalTime(), DateTimeKind.Utc))
                     : null,
                 fromDb => fromDb.HasValue
                     ? DateTime.SpecifyKind(fromDb.Value, DateTimeKind.Utc)
@@ -318,4 +318,4 @@ namespace buronet_service.Data
             }
         }
     }
-}
+}
