@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
@@ -14,7 +14,7 @@ namespace buronet_service.Migrations
             migrationBuilder.AddColumn<bool>(
                 name: "IsEmailConfirmed",
                 table: "Users",
-                type: "tinyint(1)",
+                type: "boolean",
                 nullable: false,
                 defaultValue: false);
 
@@ -22,24 +22,24 @@ namespace buronet_service.Migrations
                 name: "PendingUsers",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "char(36)", nullable: false, collation: "ascii_general_ci"),
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
                     Username = table.Column<string>(type: "varchar(100)", maxLength: 100, nullable: false)
-                        .Annotation("MySql:CharSet", "utf8mb4"),
+                        ,
                     Email = table.Column<string>(type: "varchar(255)", maxLength: 255, nullable: false)
-                        .Annotation("MySql:CharSet", "utf8mb4"),
-                    PasswordHash = table.Column<byte[]>(type: "longblob", nullable: false),
-                    PasswordSalt = table.Column<byte[]>(type: "longblob", nullable: false),
+                        ,
+                    PasswordHash = table.Column<byte[]>(type: "bytea", nullable: false),
+                    PasswordSalt = table.Column<byte[]>(type: "bytea", nullable: false),
                     ConfirmationTokenHash = table.Column<string>(type: "varchar(512)", maxLength: 512, nullable: false)
-                        .Annotation("MySql:CharSet", "utf8mb4"),
-                    CreatedAt = table.Column<DateTime>(type: "datetime(6)", nullable: false),
-                    TokenExpiresAt = table.Column<DateTime>(type: "datetime(6)", nullable: false),
-                    ConfirmedAt = table.Column<DateTime>(type: "datetime(6)", nullable: true)
+                        ,
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    TokenExpiresAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    ConfirmedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_PendingUsers", x => x.Id);
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+                ;
 
             migrationBuilder.CreateIndex(
                 name: "IX_PendingUsers_Email",
@@ -60,3 +60,4 @@ namespace buronet_service.Migrations
         }
     }
 }
+

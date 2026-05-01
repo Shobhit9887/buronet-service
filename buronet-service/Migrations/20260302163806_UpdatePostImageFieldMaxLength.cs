@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
@@ -14,14 +14,14 @@ namespace buronet_service.Migrations
             migrationBuilder.AlterColumn<string>(
                 name: "Image",
                 table: "Posts",
-                type: "longtext",
+                type: "text",
                 maxLength: 2147483647,
                 nullable: true,
                 oldClrType: typeof(Guid),
-                oldType: "char(36)",
+                oldType: "uuid",
                 oldNullable: true)
-                .Annotation("MySql:CharSet", "utf8mb4")
-                .OldAnnotation("Relational:Collation", "ascii_general_ci");
+                
+                ;
         }
 
         /// <inheritdoc />
@@ -30,14 +30,15 @@ namespace buronet_service.Migrations
             migrationBuilder.AlterColumn<Guid>(
                 name: "Image",
                 table: "Posts",
-                type: "char(36)",
+                type: "uuid",
                 nullable: true,
-                collation: "ascii_general_ci",
+                
                 oldClrType: typeof(string),
-                oldType: "longtext",
+                oldType: "text",
                 oldMaxLength: 2147483647,
                 oldNullable: true)
-                .OldAnnotation("MySql:CharSet", "utf8mb4");
+                ;
         }
     }
 }
+

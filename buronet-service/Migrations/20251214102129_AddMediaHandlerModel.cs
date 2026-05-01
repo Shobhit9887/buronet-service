@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
@@ -15,21 +15,21 @@ namespace buronet_service.Migrations
                 name: "MediaFiles",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "char(36)", nullable: false, collation: "ascii_general_ci"),
-                    FileName = table.Column<string>(type: "longtext", nullable: false)
-                        .Annotation("MySql:CharSet", "utf8mb4"),
-                    ContentType = table.Column<string>(type: "longtext", nullable: false)
-                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    FileName = table.Column<string>(type: "text", nullable: false)
+                        ,
+                    ContentType = table.Column<string>(type: "text", nullable: false)
+                        ,
                     FileSize = table.Column<long>(type: "bigint", nullable: false),
-                    StoragePath = table.Column<string>(type: "longtext", nullable: false)
-                        .Annotation("MySql:CharSet", "utf8mb4"),
-                    CreatedAt = table.Column<DateTime>(type: "datetime(6)", nullable: false)
+                    StoragePath = table.Column<string>(type: "text", nullable: false)
+                        ,
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_MediaFiles", x => x.Id);
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+                ;
         }
 
         /// <inheritdoc />
@@ -40,3 +40,4 @@ namespace buronet_service.Migrations
         }
     }
 }
+

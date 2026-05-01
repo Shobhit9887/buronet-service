@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
@@ -18,7 +18,7 @@ namespace buronet_service.Migrations
                 maxLength: 48,
                 nullable: true,
                 collation: "ascii_general_ci")
-                .Annotation("Relational:Collation", "ascii_general_ci");
+                ;
         }
 
         /// <inheritdoc />
@@ -34,8 +34,9 @@ namespace buronet_service.Migrations
                 oldType: "char(48)",
                 oldMaxLength: 48,
                 oldNullable: true)
-                .Annotation("MySql:CharSet", "utf8mb4")
-                .OldAnnotation("Relational:Collation", "ascii_general_ci");
+                
+                ;
         }
     }
 }
+

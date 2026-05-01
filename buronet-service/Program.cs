@@ -42,8 +42,13 @@ builder.Services.AddHttpClient("NotificationsService", client =>
 });
 
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseMySql(builder.Configuration.GetConnectionString("DefaultConnection"),
-        ServerVersion.AutoDetect(builder.Configuration.GetConnectionString("DefaultConnection"))));
+    options.UseNpgsql(
+        builder.Configuration.GetConnectionString("DefaultConnection"),
+        npgsqlOptions => npgsqlOptions.EnableRetryOnFailure(
+            maxRetryCount: 10,
+            maxRetryDelay: TimeSpan.FromSeconds(30),
+            errorCodesToAdd: null)
+    ));
 
 //*********************** Add services to the container.***********************
 builder.Services.AddSingleton<IHeroService, HeroService>();
@@ -132,6 +137,27 @@ builder.Services.AddCors(options =>
 });
 
 var app = builder.Build();
+
+// Automatically apply database migrations on startup
+using (var scope = app.Services.CreateScope())
+{
+    var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    try
+    {
+        Console.WriteLine("[STARTUP] Applying database migrations...");
+        dbContext.Database.Migrate();
+        Console.WriteLine("[STARTUP] Database migrations applied successfully.");
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"[STARTUP] CRITICAL: An error occurred while migrating the database!");
+        Console.WriteLine($"[STARTUP] Exception Type: {ex.GetType().FullName}");
+        Console.WriteLine($"[STARTUP] Exception Message: {ex.Message}");
+        if (ex.InnerException != null)
+            Console.WriteLine($"[STARTUP] Inner Exception: {ex.InnerException.Message}");
+        Console.WriteLine($"[STARTUP] Stack Trace: {ex.StackTrace}");
+    }
+}
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

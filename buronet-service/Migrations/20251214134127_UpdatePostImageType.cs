@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
@@ -18,19 +18,19 @@ namespace buronet_service.Migrations
             migrationBuilder.AlterColumn<Guid>(
                 name: "ProfilePictureMediaId",
                 table: "UserProfiles",
-                type: "char(36)",
+                type: "uuid",
                 nullable: true,
-                collation: "ascii_general_ci",
+                
                 oldClrType: typeof(string),
                 oldType: "char(48)",
                 oldMaxLength: 48,
                 oldNullable: true)
-                .OldAnnotation("MySql:CharSet", "utf8mb4");
+                ;
 
             migrationBuilder.AddColumn<Guid>(
                 name: "Image",
                 table: "Posts",
-                type: "char(36)",
+                type: "uuid",
                 nullable: true,
                 collation: "ascii_general_ci");
         }
@@ -49,10 +49,10 @@ namespace buronet_service.Migrations
                 maxLength: 48,
                 nullable: true,
                 oldClrType: typeof(Guid),
-                oldType: "char(36)",
+                oldType: "uuid",
                 oldNullable: true)
-                .Annotation("MySql:CharSet", "utf8mb4")
-                .OldAnnotation("Relational:Collation", "ascii_general_ci");
+                
+                ;
 
             migrationBuilder.AddColumn<string>(
                 name: "ImageUrl",
@@ -60,7 +60,8 @@ namespace buronet_service.Migrations
                 type: "varchar(500)",
                 maxLength: 500,
                 nullable: true)
-                .Annotation("MySql:CharSet", "utf8mb4");
+                ;
         }
     }
 }
+

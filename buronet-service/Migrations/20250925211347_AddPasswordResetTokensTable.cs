@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
 
@@ -15,26 +15,26 @@ namespace buronet_service.Migrations
             migrationBuilder.AddColumn<string>(
                 name: "PasswordResetToken",
                 table: "Users",
-                type: "longtext",
+                type: "text",
                 nullable: true)
-                .Annotation("MySql:CharSet", "utf8mb4");
+                ;
 
             migrationBuilder.AddColumn<DateTime>(
                 name: "ResetTokenExpires",
                 table: "Users",
-                type: "datetime(6)",
+                type: "timestamp with time zone",
                 nullable: true);
 
             migrationBuilder.CreateTable(
                 name: "PasswordResetTokens",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
-                    UserId = table.Column<Guid>(type: "char(36)", nullable: false, collation: "ascii_general_ci"),
-                    Token = table.Column<string>(type: "longtext", nullable: false)
-                        .Annotation("MySql:CharSet", "utf8mb4"),
-                    ExpiresAt = table.Column<DateTime>(type: "datetime(6)", nullable: false)
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    UserId = table.Column<Guid>(type: "uuid", nullable: false),
+                    Token = table.Column<string>(type: "text", nullable: false)
+                        ,
+                    ExpiresAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -46,7 +46,7 @@ namespace buronet_service.Migrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+                ;
 
             migrationBuilder.CreateIndex(
                 name: "IX_PasswordResetTokens_UserId",
@@ -70,3 +70,4 @@ namespace buronet_service.Migrations
         }
     }
 }
+

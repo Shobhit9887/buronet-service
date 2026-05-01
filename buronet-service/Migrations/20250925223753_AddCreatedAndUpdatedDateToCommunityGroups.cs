@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
@@ -14,14 +14,14 @@ namespace buronet_service.Migrations
             migrationBuilder.AddColumn<DateTime>(
                 name: "CreatedAt",
                 table: "UserCommunityGroups",
-                type: "datetime(6)",
+                type: "timestamp with time zone",
                 nullable: false,
                 defaultValue: new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified));
 
             migrationBuilder.AddColumn<DateTime>(
                 name: "UpdatedAt",
                 table: "UserCommunityGroups",
-                type: "datetime(6)",
+                type: "timestamp with time zone",
                 nullable: false,
                 defaultValue: new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified));
         }
@@ -39,3 +39,4 @@ namespace buronet_service.Migrations
         }
     }
 }
+
